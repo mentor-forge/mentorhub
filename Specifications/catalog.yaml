@@ -3,9 +3,25 @@ data_dictionaries:
     description: The IdP Identity of a person who is a user of the system. 
   - name: Profile
     description: User Preferences associated with one **Identity**.
-  - name: Control
-    description: A sample Control (CRUD) collection
-  - name: Create
-    description: A sample Create (Write Once, Read Many) collection
-  - name: Consume
-    description: A sample Consume (Read Only) collection
+  - name: Customer  
+    description: An customer who pays for the service for a craftsperson.
+  - name: Subscription
+    description: A subscription to the service for a customer.
+  - name: Dashboard
+    description: Dashboard configuration for a customer.
+  - name: Event
+    description: A meaningful event for a user.
+  - name: Resource
+    description: A learning resource (link)
+  - name: Path
+    description: A learning path through resources
+  - name: Plan
+    description: A encounter plan.
+  - name: Encounter
+    description: A learning encounter between a mentor and a craftsperson.
+  - name: Journey
+    description: A learning journey for a craftsperson.
+  - name: Rating
+    description: A rating of a resource.
+  - name: Note
+    description: A note about a resource.

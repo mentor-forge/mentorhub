@@ -1,6 +1,6 @@
-# {{info.name}} Developer Edition
+# Mentor Hub Developer Edition
 
-The {{info.name}} Developer Edition system provides a ``{{info.developer_cli}}`` Command Line Interface that supports key components of the developer experience. This CLI wraps docker compose commands, and secret management for local development environments. All developers should install this tooling, create and configure tokens, and review the linked standards before contributing to any repo.
+The Mentor Hub Developer Edition system provides a ``mh`` Command Line Interface that supports key components of the developer experience. This CLI wraps docker compose commands, and secret management for local development environments. All developers should install this tooling, create and configure tokens, and review the linked standards before contributing to any repo.
 
 ## Step 1 of 4 - Install Prerequisites
 
@@ -41,7 +41,7 @@ git config --global user.email yourname@example.com
 - **WSL** - For Windows users: https://learn.microsoft.com/en-us/windows/wsl/install
 
 ## Step 2 of 4 - Install the CLI
-Use these commands to install the Developer Edition ``{{info.developer_cli}}`` command line utility. 
+Use these commands to install the Developer Edition ``mh`` command line utility. 
 ```sh
 ## Install Developer Edition 
 make install
@@ -49,10 +49,10 @@ make install
 Remember to  ``source ~/.zshrc`` before proceeding.
 
 ## Step 3 of 4 - Configure access tokens
-When local environment values are required (GitHub access tokens, etc.) they are stored in the hidden folder ``~/.{{info.slug}}`` instead of a being replicated across multiple repo level .env files. 
+When local environment values are required (GitHub access tokens, etc.) they are stored in the hidden folder ``~/.mentorhub`` instead of a being replicated across multiple repo level .env files. 
 
 ### GITHUB_TOKEN
-We are using GitHub to publish the api_utils pypi package, the spa_utils npm package, and GitHub Container Registry to publish containers. Create a GitHub classic access token with `repo` `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the ``~/.{{info.slug}}/`` folder.
+We are using GitHub to publish the api_utils pypi package, the spa_utils npm package, and GitHub Container Registry to publish containers. Create a GitHub classic access token with `repo` `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the ``~/.mentorhub/`` folder.
 
 To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
   

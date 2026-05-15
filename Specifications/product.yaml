@@ -7,11 +7,11 @@ info:
   base_port: 8383
 
 organization:
-  name: Agile Learning Institute
+  name: Mentor Forge
   email: info@agile-learning-institute.com
-  founded: 2024
-  slug: agile-learning-institute
+  founded: 2026
+  slug: mentor-forge
   git_host: https://github.com
-  git_org: agile-learning-institute
+  git_org: mentor-forge
   docker_host: ghcr.io
-  docker_org: agile-learning-institute
+  docker_org: mentor-forge

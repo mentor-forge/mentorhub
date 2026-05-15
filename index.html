@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ info.name }} - Welcome</title>
+    <title>Mentor Hub - Welcome</title>
     <style>
         * {
             margin: 0;
@@ -118,54 +118,61 @@
     </style>
 </head>
 <body>
-{%- set journey_domains = architecture.domains | selectattr('is_journey', 'equalto', true) | list %}
-{%- set schema_domain = architecture.domains | selectattr('name', 'equalto', 'schema') | first %}
     <div class="container">
-        <h1>{{ info.name }}</h1>
+        <h1>Mentor Hub</h1>
         <p class="subtitle">Welcome to the Development Environment</p>
 
         <div class="welcome-auth">
             <h2>Local environment sign-in</h2>
             <p class="hint">Genny and Adam use fixed dev JWTs (developer / admin roles). Links are generated for each journey SPA from <code>architecture.yaml</code>. To customize personas or roles per journey, follow Tasks/AS_NEEDED.R101.</p>
-            {%- for label, suffix in [('Genny (generic user)', 'genny'), ('Adam (admin)', 'adam')] %}
             <div class="persona-row">
-                <span class="label">{{ label }}</span>
-                {%- for domain in journey_domains %}
-                {%- for repo in domain.repos %}
-                {%- if repo.type == 'spa' %}
-                <a class="persona" id="{{ domain.name }}-{{ suffix }}" href="#" target="_blank" rel="noopener noreferrer">{{ domain.name | replace('_', ' ') | title }}</a>
-                {%- endif %}
-                {%- endfor %}
-                {%- endfor %}
+                <span class="label">Genny (generic user)</span>
+                <a class="persona" id="customer-genny" href="#" target="_blank" rel="noopener noreferrer">Customer</a>
+                <a class="persona" id="coordinator-genny" href="#" target="_blank" rel="noopener noreferrer">Coordinator</a>
+                <a class="persona" id="mentor-genny" href="#" target="_blank" rel="noopener noreferrer">Mentor</a>
+                <a class="persona" id="craftsperson-genny" href="#" target="_blank" rel="noopener noreferrer">Craftsperson</a>
             </div>
-            {%- endfor %}
+            <div class="persona-row">
+                <span class="label">Adam (admin)</span>
+                <a class="persona" id="customer-adam" href="#" target="_blank" rel="noopener noreferrer">Customer</a>
+                <a class="persona" id="coordinator-adam" href="#" target="_blank" rel="noopener noreferrer">Coordinator</a>
+                <a class="persona" id="mentor-adam" href="#" target="_blank" rel="noopener noreferrer">Mentor</a>
+                <a class="persona" id="craftsperson-adam" href="#" target="_blank" rel="noopener noreferrer">Craftsperson</a>
+            </div>
         </div>
 
         <ul class="links">
-            {%- for domain in architecture.domains if domain.name != 'common_code' and (domain == schema_domain or domain.is_journey) %}
             <li class="service-block">
-                <div class="service-title">{{ domain.name | replace('_', ' ') | title }}</div>
-                {%- if domain == schema_domain %}
-                {%- set spa_ref = (domain.repos | selectattr('type', 'equalto', 'spa_ref') | list | first) %}
-                {%- set api_repo = (domain.repos | selectattr('type', 'equalto', 'api') | list | first) %}
-                <p class="service-meta">{{ info.slug }}_{{ spa_ref.name }} (utility)</p>
-                <a href="#" id="{{ domain.name }}-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">{{ domain.name | replace('_', ' ') | title }} configurator</a>
-                <a href="#" id="{{ domain.name }}-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                <a href="{{ org.git_host }}/{{ org.git_org }}/{{ info.slug }}_{{ api_repo.name }}" class="cell-link" target="_blank" rel="noopener noreferrer" title="{{ api_repo.name }} source">{{ info.slug }}_{{ api_repo.name }}</a>
-                {%- else %}
-                {%- for repo in domain.repos %}
-                {%- if repo.type == 'api' %}
-                <a href="#" id="{{ domain.name }}-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                {%- endif %}
-                {%- endfor %}
-                {%- for repo in domain.repos %}
-                {%- if repo.type in ['spa', 'api'] %}
-                <a href="{{ org.git_host }}/{{ org.git_org }}/{{ info.slug }}_{{ repo.name }}" class="cell-link" target="_blank" rel="noopener noreferrer" title="{{ repo.name }} source">{{ info.slug }}_{{ repo.name }}</a>
-                {%- endif %}
-                {%- endfor %}
-                {%- endif %}
+                <div class="service-title">Schema</div>
+                <p class="service-meta">mentorhub_configurator_spa (utility)</p>
+                <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
+                <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/mentor-forge/mentorhub_mongodb_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mongodb_api source">mentorhub_mongodb_api</a>
             </li>
-            {%- endfor %}
+            <li class="service-block">
+                <div class="service-title">Customer</div>
+                <a href="#" id="customer-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/mentor-forge/mentorhub_customer_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_api source">mentorhub_customer_api</a>
+                <a href="https://github.com/mentor-forge/mentorhub_customer_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_spa source">mentorhub_customer_spa</a>
+            </li>
+            <li class="service-block">
+                <div class="service-title">Coordinator</div>
+                <a href="#" id="coordinator-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/mentor-forge/mentorhub_coordinator_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_api source">mentorhub_coordinator_api</a>
+                <a href="https://github.com/mentor-forge/mentorhub_coordinator_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_spa source">mentorhub_coordinator_spa</a>
+            </li>
+            <li class="service-block">
+                <div class="service-title">Mentor</div>
+                <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/mentor-forge/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
+                <a href="https://github.com/mentor-forge/mentorhub_mentor_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_spa source">mentorhub_mentor_spa</a>
+            </li>
+            <li class="service-block">
+                <div class="service-title">Craftsperson</div>
+                <a href="#" id="craftsperson-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/mentor-forge/mentorhub_craftsperson_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="craftsperson_api source">mentorhub_craftsperson_api</a>
+                <a href="https://github.com/mentor-forge/mentorhub_craftsperson_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="craftsperson_spa source">mentorhub_craftsperson_spa</a>
+            </li>
         </ul>
     </div>
     <script>
@@ -191,26 +198,20 @@
             el.target = '_blank';
             el.rel = 'noopener noreferrer';
         }
-
-        {%- for domain in architecture.domains if domain.name != 'common_code' and (domain == schema_domain or domain.is_journey) %}
-        {%- for repo in domain.repos %}
-        {%- if repo.type == 'api' %}
-        document.getElementById('{{ domain.name }}-api-docs-link').href = `http://${hostname}:{{ repo.port }}{% if repo.template is defined and 'configurator_api' in repo.template %}/docs/index.html{% else %}/docs/explorer.html{% endif %}`;
-        {%- elif repo.type == 'spa_ref' %}
-        document.getElementById('{{ domain.name }}-spa-link').href = `http://${hostname}:{{ repo.port }}`;
-        {%- endif %}
-        {%- endfor %}
-        {%- endfor %}
-
-        {%- for domain in journey_domains %}
-        {%- for repo in domain.repos %}
-        {%- if repo.type == 'spa' %}
-        {%- for suffix, token_const, roles in [('genny', 'TOKEN_GENNY', 'developer'), ('adam', 'TOKEN_ADAM', 'admin')] %}
-        setPersonaLink('{{ domain.name }}-{{ suffix }}', {{ repo.port }}, {{ token_const }}, '{{ roles }}');
-        {%- endfor %}
-        {%- endif %}
-        {%- endfor %}
-        {%- endfor %}
+        document.getElementById('schema-api-docs-link').href = `http://${hostname}:8383/docs/index.html`;
+        document.getElementById('schema-spa-link').href = `http://${hostname}:8384`;
+        document.getElementById('customer-api-docs-link').href = `http://${hostname}:8387/docs/explorer.html`;
+        document.getElementById('coordinator-api-docs-link').href = `http://${hostname}:8389/docs/explorer.html`;
+        document.getElementById('mentor-api-docs-link').href = `http://${hostname}:8391/docs/explorer.html`;
+        document.getElementById('craftsperson-api-docs-link').href = `http://${hostname}:8393/docs/explorer.html`;
+        setPersonaLink('customer-genny', 8388, TOKEN_GENNY, 'developer');
+        setPersonaLink('customer-adam', 8388, TOKEN_ADAM, 'admin');
+        setPersonaLink('coordinator-genny', 8390, TOKEN_GENNY, 'developer');
+        setPersonaLink('coordinator-adam', 8390, TOKEN_ADAM, 'admin');
+        setPersonaLink('mentor-genny', 8392, TOKEN_GENNY, 'developer');
+        setPersonaLink('mentor-adam', 8392, TOKEN_ADAM, 'admin');
+        setPersonaLink('craftsperson-genny', 8394, TOKEN_GENNY, 'developer');
+        setPersonaLink('craftsperson-adam', 8394, TOKEN_ADAM, 'admin');
     </script>
 </body>
 </html>

@@ -23,7 +23,7 @@ Developer Edition CLI and compose uses a **stable `JWT_SECRET`** so SPAs and bac
 **Verifying the stack after compose or image changes** (from the product checkout root, for example the repo that contains `DeveloperEdition/`):
 
 ```sh
-cd {{ info.slug }}
+cd mentorhub
 make update
 im up all
 ```
@@ -66,7 +66,7 @@ Protected routes and the API client redirect the browser to the configured **log
 This keeps one redirect contract from local through production without per-SPA `/login` pages. 
 
 ## Service Configurability
-All API's are configured using a shared [Config singleton]( {{org.git_host}}/{{org.git_org}}/{{ info.slug }}_api_utils/blob/main/py_utils/config/config.py). The Config object manages all configuration items for all API and SPA code. Configuration values are read from the first of: Config File, Environment Var, Default Value. The configuration items and non-secret values are exposed through the Config API endpoint, which is used by the SPA to get runtime configuration values.
+All API's are configured using a shared [Config singleton]( https://github.com/mentor-forge/mentorhub_api_utils/blob/main/py_utils/config/config.py). The Config object manages all configuration items for all API and SPA code. Configuration values are read from the first of: Config File, Environment Var, Default Value. The configuration items and non-secret values are exposed through the Config API endpoint, which is used by the SPA to get runtime configuration values.
 
 ## Service Observability
 All API's expose a /metrics endpoint which exposes a text-based exposition format that Prometheus understands. This endpoint exposes detailed, real-time metrics about the API's performance, latency, error rates, and internal health.

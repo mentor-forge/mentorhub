@@ -1,28 +1,26 @@
-# docker-compose.yaml for {{ info.name }} developers edition
+# docker-compose.yaml for Mentor Hub developers edition
 
 
 
-{% set journey_domains = architecture.domains | selectattr('is_journey', 'equalto', true) | list -%}
-{%- set schema_domain = architecture.domains | selectattr('name', 'equalto', 'schema') | first -%}
-{%- set mongodb_api_repo = schema_domain.repos | selectattr('name', 'equalto', 'mongodb_api') | first -%}
-{%- set configurator_repo = schema_domain.repos | selectattr('name', 'equalto', 'configurator_spa') | first -%}
 services:
   ##################################
   # Welcome Service
   ##################################
   welcome:
-    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}:latest
+    image: ghcr.io/mentor-forge/mentorhub:latest
     ports:
       - "127.0.0.1:8080:80"
     profiles:
       - all
       - mongodb
-{%- for d in journey_domains %}
-      - {{ d.name }}
-{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
-      - {{ d.name }}-api
-{%- endif %}
-{%- endfor %}
+      - customer
+      - customer-api
+      - coordinator
+      - coordinator-api
+      - mentor
+      - mentor-api
+      - craftsperson
+      - craftsperson-api
 
   ##################################
   # Backing Services
@@ -43,111 +41,223 @@ services:
     profiles:
       - all
       - mongodb
-{%- for d in journey_domains %}
-      - {{ d.name }}
-{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
-      - {{ d.name }}-api
-{%- endif %}
-{%- endfor %}
+      - customer
+      - customer-api
+      - coordinator
+      - coordinator-api
+      - mentor
+      - mentor-api
+      - craftsperson
+      - craftsperson-api
 
   ##################################
   # Mongo Database Configuration Utilities
   ##################################
   mongodb_api:
-    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}_mongodb_api:latest
+    image: ghcr.io/mentor-forge/mentorhub_mongodb_api:latest
     restart: no
     ports:
-      - "127.0.0.1:{{ mongodb_api_repo.port }}:{{ mongodb_api_repo.port }}"
+      - "127.0.0.1:8383:8383"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
-      MONGO_DB_NAME: {{ info.db_name }}
+      MONGO_DB_NAME: mentor_hub
       AUTO_PROCESS: True
       LOAD_TEST_DATA: True
-      API_PORT: {{ mongodb_api_repo.port }}
-      SPA_PORT: {{ configurator_repo.port }}
-      UI_HEADER: "{{ info.name }} Schemas"
+      API_PORT: 8383
+      SPA_PORT: 8384
+      UI_HEADER: "Mentor Hub Schemas"
     depends_on:
       mongodb:
         condition: service_healthy
     profiles:
       - all
       - mongodb
-{%- for d in journey_domains %}
-      - {{ d.name }}
-{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
-      - {{ d.name }}-api
-{%- endif %}
-{%- endfor %}
+      - customer
+      - customer-api
+      - coordinator
+      - coordinator-api
+      - mentor
+      - mentor-api
+      - craftsperson
+      - craftsperson-api
 
   mongodb_spa:
-    # spa_ref (configurator_spa): fixed utility image, not {{ info.slug }}_…
+    # spa_ref (configurator_spa): fixed utility image, not mentorhub_…
     image: ghcr.io/agile-learning-institute/mongodb_configurator_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:{{ configurator_repo.port }}:{{ configurator_repo.port }}"
+      - "127.0.0.1:8384:8384"
     environment:
       API_HOST: mongodb_api
-      API_PORT: {{ mongodb_api_repo.port }}
-      SPA_PORT: {{ configurator_repo.port }}
+      API_PORT: 8383
+      SPA_PORT: 8384
     depends_on:
       mongodb_api:
         condition: service_started
     profiles:
       - all
       - mongodb
-{%- for d in journey_domains %}
-      - {{ d.name }}
-{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
-      - {{ d.name }}-api
-{%- endif %}
-{%- endfor %}
+      - customer
+      - customer-api
+      - coordinator
+      - coordinator-api
+      - mentor
+      - mentor-api
+      - craftsperson
+      - craftsperson-api
 
   ##################################
   # Microservice domains (from architecture)
   ##################################
-{%- for domain in journey_domains %}
-{%- set outer_last = loop.last %}
-{%- for repo in domain.repos %}
-{%- if repo.type == 'api' %}
-{%- set spa_match = domain.repos | selectattr('type', 'equalto', 'spa') | first %}
-  {{ repo.name }}:
-    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}_{{ repo.name }}:latest
+  customer_api:
+    image: ghcr.io/mentor-forge/mentorhub_customer_api:latest
     restart: no
     ports:
-      - "127.0.0.1:{{ repo.port }}:{{ repo.port }}"
+      - "127.0.0.1:8387:8387"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
-      MONGO_DB_NAME: {{ info.db_name }}
+      MONGO_DB_NAME: mentor_hub
       LOGGING_LEVEL: "INFO"
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
-      API_PORT: {{ repo.port }}
-      SAMPLE_API_PORT: {{ repo.port }}
-      SAMPLE_SPA_PORT: {{ spa_match.port }}
+      API_PORT: 8387
+      SAMPLE_API_PORT: 8387
+      SAMPLE_SPA_PORT: 8388
     depends_on:
       mongodb_api:
         condition: service_started
     profiles:
       - all
-      - {{ domain.name }}
-      - {{ domain.name }}-api{{ '\n' }}{% elif repo.type == 'spa' -%}
-{%- set api_match = domain.repos | selectattr('type', 'equalto', 'api') | first %}
-  {{ repo.name }}:
-    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}_{{ repo.name }}:latest
+      - customer
+      - customer-api
+
+  customer_spa:
+    image: ghcr.io/mentor-forge/mentorhub_customer_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:{{ repo.port }}:80"
+      - "127.0.0.1:8388:80"
     environment:
-      API_HOST: {{ api_match.name }}
-      API_PORT: {{ api_match.port }}
+      API_HOST: customer_api
+      API_PORT: 8387
       IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://localhost:8080/}
     depends_on:
-      {{ api_match.name }}:
+      customer_api:
         condition: service_started
     profiles:
       - all
-      - {{ domain.name }}{{ '\n' if not (outer_last and loop.last) else '' -}}
-{%- endif %}
-{%- endfor %}
-{%- endfor %}
+      - customer
+
+  coordinator_api:
+    image: ghcr.io/mentor-forge/mentorhub_coordinator_api:latest
+    restart: no
+    ports:
+      - "127.0.0.1:8389:8389"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: mentor_hub
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      API_PORT: 8389
+      SAMPLE_API_PORT: 8389
+      SAMPLE_SPA_PORT: 8390
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - coordinator
+      - coordinator-api
+
+  coordinator_spa:
+    image: ghcr.io/mentor-forge/mentorhub_coordinator_spa:latest
+    restart: no
+    ports:
+      - "127.0.0.1:8390:80"
+    environment:
+      API_HOST: coordinator_api
+      API_PORT: 8389
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://localhost:8080/}
+    depends_on:
+      coordinator_api:
+        condition: service_started
+    profiles:
+      - all
+      - coordinator
+
+  mentor_api:
+    image: ghcr.io/mentor-forge/mentorhub_mentor_api:latest
+    restart: no
+    ports:
+      - "127.0.0.1:8391:8391"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: mentor_hub
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      API_PORT: 8391
+      SAMPLE_API_PORT: 8391
+      SAMPLE_SPA_PORT: 8392
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - mentor
+      - mentor-api
+
+  mentor_spa:
+    image: ghcr.io/mentor-forge/mentorhub_mentor_spa:latest
+    restart: no
+    ports:
+      - "127.0.0.1:8392:80"
+    environment:
+      API_HOST: mentor_api
+      API_PORT: 8391
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://localhost:8080/}
+    depends_on:
+      mentor_api:
+        condition: service_started
+    profiles:
+      - all
+      - mentor
+
+  craftsperson_api:
+    image: ghcr.io/mentor-forge/mentorhub_craftsperson_api:latest
+    restart: no
+    ports:
+      - "127.0.0.1:8393:8393"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: mentor_hub
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      API_PORT: 8393
+      SAMPLE_API_PORT: 8393
+      SAMPLE_SPA_PORT: 8394
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - craftsperson
+      - craftsperson-api
+
+  craftsperson_spa:
+    image: ghcr.io/mentor-forge/mentorhub_craftsperson_spa:latest
+    restart: no
+    ports:
+      - "127.0.0.1:8394:80"
+    environment:
+      API_HOST: craftsperson_api
+      API_PORT: 8393
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://localhost:8080/}
+    depends_on:
+      craftsperson_api:
+        condition: service_started
+    profiles:
+      - all
+      - craftsperson

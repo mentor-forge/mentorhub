@@ -1,0 +1,151 @@
+architecture:
+  organization: Agile Learning Institute
+  product: Mentor Hub
+  environments:
+    - name: local
+    - name: development
+    - name: staging
+    - name: production
+  domains:
+    - name: schema
+      description: MongoDB Database Configuration and Management.
+      repos:
+        - name: mongodb_api
+          description: MongoDB Configurator API Server
+          template: agile-learning-institute/stage0_template_configurator_api
+          publish: make
+          type: api
+          port: 8383
+        - name: configurator_spa
+          description: MongoDB Configurator SPA (utility container, not a real repository)
+          type: spa_ref
+          port: 8384
+    - name: common_code
+      description: Shared code used across multiple API or SPA code bases are published to private dependency management libraries (NPM /PYPI).
+      repos:
+        - name: api_utils
+          description: Python PyPI API Utility Library
+          template: agile-learning-institute/stage0_template_py_utils
+          publish: pipenv
+          type: api
+          port: 8385
+        - name: spa_utils
+          description: Vue NPM SPA Utility Library
+          template: agile-learning-institute/stage0_template_vue_utils
+          publish: npm
+          type: spa
+          port: 8386
+    - name: customer
+      description: The Customer User Journey is responsible for managing customers and their interactions with the system.
+      is_journey: true
+      data_domains:
+        controls:
+          - Subscription
+          - Dashboard
+        creates:
+          - Event
+        consumes: 
+          - Profile
+          - Customer
+      repos:
+        - name: customer_api
+          description: Customer API
+          template: agile-learning-institute/stage0_template_flask_mongo
+          publish: pipenv
+          type: api
+          port: 8387
+        - name: customer_spa
+          description: Customer SPA
+          template: agile-learning-institute/stage0_template_vue_vuetify
+          publish: npm
+          type: spa
+          port: 8388
+    - name: coordinator
+      description: The Coordinator User Journey is responsible for matching mentors with craftsperson.
+      is_journey: true
+      data_domains:
+        controls:
+          - Customer 
+          - Journey
+          - Profile
+        creates:
+          - Event
+        consumes: []
+      repos:
+        - name: coordinator_api
+          description: Coordinator API
+          template: agile-learning-institute/stage0_template_flask_mongo
+          publish: pipenv
+          type: api
+          port: 8389
+        - name: coordinator_spa
+          description: Coordinator SPA
+          template: agile-learning-institute/stage0_template_vue_vuetify
+          publish: npm
+          type: spa
+          port: 8390
+    - name: mentor
+      description: Mentor User Journey Domain
+      is_journey: true
+      data_domains:
+        controls:
+          - Resource
+          - Path
+          - Plan
+          - Encounter
+        creates:
+          - Event
+        consumes:
+          - Profile
+      repos:
+        - name: mentor_api
+          description: Mentor API
+          template: agile-learning-institute/stage0_template_flask_mongo
+          publish: pipenv
+          type: api
+          port: 8391
+        - name: mentor_spa
+          description: Mentor SPA
+          template: agile-learning-institute/stage0_template_vue_vuetify
+          publish: npm
+          type: spa
+          port: 8392
+    - name: craftsperson
+      description: Craftsperson User Journey Domain
+      is_journey: true
+      data_domains:
+        controls:
+          - Journey
+          - Rating
+          - Note
+        creates:
+          - Event
+        consumes:
+          - Resource
+          - Path 
+      repos:
+        - name: craftsperson_api
+          description: Craftsperson API
+          template: agile-learning-institute/stage0_template_flask_mongo
+          publish: pipenv
+          type: api
+          port: 8393 
+        - name: craftsperson_spa
+          description: Craftsperson SPA
+          template: agile-learning-institute/stage0_template_vue_vuetify
+          publish: npm
+          type: spa
+          port: 8394                  
+    - name: runbook
+      description: Runbook Automation
+      repos:
+        - name: runbook_api
+          description: Runbook Automation API Server
+          template: agile-learning-institute/stage0_template_runbook_api
+          publish: make
+          type: api
+          port: 8395
+        - name: runbook_spa
+          description: Runbook Automation SPA (utility container, not a real repository)
+          type: spa_ref
+          port: 8396

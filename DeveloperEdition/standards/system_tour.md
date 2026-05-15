@@ -1,35 +1,35 @@
-{{info.name}} {{info.developer_cli}}
+Mentor Hub mh
 # System Tour
 
-Welcome to the {{info.name}} System - a poly-repo, backend for frontend, microservice architecture application. This is a tour-guide that will help you familiarize yourself with the codebase. Don't feel too overwhelmed, you will only work on a single repo at a time, this tour will introduce you to all of them. 
+Welcome to the Mentor Hub System - a poly-repo, backend for frontend, microservice architecture application. This is a tour-guide that will help you familiarize yourself with the codebase. Don't feel too overwhelmed, you will only work on a single repo at a time, this tour will introduce you to all of them. 
 
 ## Developer Edition
-If you haven't already installed the Developer Edition cli ``{{info.developer_cli}}`` you should do so now. Then let's take a look at what that tool actually does. 
+If you haven't already installed the Developer Edition cli ``mh`` you should do so now. Then let's take a look at what that tool actually does. 
 
-``{{info.developer_cli}}`` is just a bash script - that largely just wraps some ``docker compose`` commands. You should browse that script, and the [docker-compose.yaml](../docker-compose.yaml) to understand how the application is divided into services, and how they are run altogether or one at a time. 
+``mh`` is just a bash script - that largely just wraps some ``docker compose`` commands. You should browse that script, and the [docker-compose.yaml](../docker-compose.yaml) to understand how the application is divided into services, and how they are run altogether or one at a time. 
 
-Now - let's use ``{{info.developer_cli}}`` to pull the latest containers from our GitHub Container Registry. Use 
+Now - let's use ``mh`` to pull the latest containers from our GitHub Container Registry. Use 
 ```sh
 # pull all of the latest containers from GitHub
-{{info.developer_cli}} pull all  
+mh pull all  
 ``` 
 
-Now - let's use ``{{info.developer_cli}}`` to start the whole system. Use
+Now - let's use ``mh`` to start the whole system. Use
 ```sh
 # Start all containers
-{{info.developer_cli}} up all
+mh up all
 ```
 and then visit [localhost:8080](http://localhost:8080/) and explore the system. Note that the database is currently empty, so a lot of screens will be empty as well. After you run black-box and cypress tests as described below there will be data in the database that is left behind by the testing. All data is lost when you down/up services. When you are done exploring use 
 ```sh
 # Stop all containers (database data is lost)
-{{info.developer_cli}} down
+mh down
 ```
 
 ## Clone Everything
 Ok - now to look at all of the different repo's. You will first need to clone them down to your computer - you can do so using the stage0 launch UI. Use these commands:
 ```sh
 # to shut down the app if it's running
-{{info.developer_cli}} down
+mh down
 
 # to start the launch tools
 make stage0-launch-ui
@@ -39,7 +39,7 @@ Now open your browser to [localhost:8080](http://localhost:8080/) and click the 
 ## Tour common code libraries
 With the Backend for Frontend pattern, all of our services consist of a single API that supports a single SPA. Common code that is used by multiple API's or SPA's is shared in utility repo's. Review these repo's to see the overall patterns used.
 
-### {{info.slug}}_api_utils
+### mentorhub_api_utils
 Review the README - and then try these developer commands. 
 ```sh
 # to install dependencies
@@ -59,7 +59,7 @@ pipenv run e2e
 ```
 Leave the dev server running while we move on to the SPA
 
-### {{info.slug}}_spa_utils
+### mentorhub_spa_utils
 Review the README - and then try these developer commands
 ```sh
 # to install dependencies
@@ -76,11 +76,11 @@ npm run cypress:run
 ```
 You can now stop the API and SPA dev servers before moving on
 
-## Tour {{info.slug}} Services
+## Tour mentorhub Services
 
 Each service in the system has a paired API and SPA. Review the README's in each Repo (they all rhyme) and then try these developer commands - they should work in every API/SPA repo.
 
-### {{info.slug}}_*_api
+### mentorhub_*_api
 ```sh
 # install dependencies
 pipenv install --dev
@@ -104,7 +104,7 @@ pipenv run container
 pipenv run api
 ```
 
-### {{info.slug}}_*_spa
+### mentorhub_*_spa
 ```sh
 # install dependencies
 npm install --include=dev
@@ -131,7 +131,7 @@ npm run service
 ## Schema editor
 As we work on this system we will be using the Schema Configurator tool to describe data structures, generate JSON Schema for use with Task Automation, and configure MongoDB for use with the system. From the launchpad folder run 
 ```sh
-cd {{info.slug}}_mongodb_api
+cd mentorhub_mongodb_api
 make dev
 ```
 to start the Configurator in Edit mode. This should open Chrome, Click the ? icon and review the help screens. 
