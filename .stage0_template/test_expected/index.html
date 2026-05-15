@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Hub - Welcome</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 560px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .links {
+            list-style: none;
+        }
+        .service-block {
+            margin-bottom: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .service-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 2px;
+        }
+        .service-meta {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .cell-link {
+            display: block;
+            padding: 12px 20px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            border-left: 4px solid #667eea;
+            font-size: 14px;
+        }
+        .cell-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(4px);
+        }
+        .welcome-auth {
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #eee;
+        }
+        .welcome-auth h2 {
+            font-size: 1.15em;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        .welcome-auth .hint {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        .persona-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .persona-row span.label {
+            font-weight: 600;
+            color: #555;
+            min-width: 140px;
+        }
+        .persona-row a.persona {
+            display: inline-block;
+            padding: 8px 14px;
+            background: #eef2ff;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #3949ab;
+            font-size: 14px;
+            border: 1px solid #c5cae9;
+        }
+        .persona-row a.persona:hover {
+            background: #3949ab;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mentor Hub</h1>
+        <p class="subtitle">Welcome to the Development Environment</p>
+
+        <div class="welcome-auth">
+            <h2>Local environment sign-in</h2>
+            <p class="hint">Genny and Adam use fixed dev JWTs (developer / admin roles). Links are generated for each journey SPA from <code>architecture.yaml</code>. To customize personas or roles per journey, follow Tasks/AS_NEEDED.R101.</p>
+            <div class="persona-row">
+                <span class="label">Genny (generic user)</span>
+                <a class="persona" id="profile-genny" href="#" target="_blank" rel="noopener noreferrer">Profile</a>
+                <a class="persona" id="mentor-genny" href="#" target="_blank" rel="noopener noreferrer">Mentor</a>
+                <a class="persona" id="member-genny" href="#" target="_blank" rel="noopener noreferrer">Member</a>
+            </div>
+            <div class="persona-row">
+                <span class="label">Adam (admin)</span>
+                <a class="persona" id="profile-adam" href="#" target="_blank" rel="noopener noreferrer">Profile</a>
+                <a class="persona" id="mentor-adam" href="#" target="_blank" rel="noopener noreferrer">Mentor</a>
+                <a class="persona" id="member-adam" href="#" target="_blank" rel="noopener noreferrer">Member</a>
+            </div>
+        </div>
+
+        <ul class="links">
+            <li class="service-block">
+                <div class="service-title">Schema</div>
+                <p class="service-meta">mentorhub_configurator_spa (utility)</p>
+                <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
+                <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_mongodb_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mongodb_api source">mentorhub_mongodb_api</a>
+            </li>
+            <li class="service-block">
+                <div class="service-title">Profile</div>
+                <a href="#" id="profile-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_profile_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="profile_api source">mentorhub_profile_api</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_profile_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="profile_spa source">mentorhub_profile_spa</a>
+            </li>
+            <li class="service-block">
+                <div class="service-title">Mentor</div>
+                <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_mentor_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_spa source">mentorhub_mentor_spa</a>
+            </li>
+            <li class="service-block">
+                <div class="service-title">Member</div>
+                <a href="#" id="member-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_member_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="member_api source">mentorhub_member_api</a>
+                <a href="https://github.com/agile-learning-institute/mentorhub_member_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="member_spa source">mentorhub_member_spa</a>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const hostname = window.location.hostname || 'localhost';
+
+        /** HS256 dev-only persona JWTs: iss dev-idp, aud dev-api. Must match JWT_SECRET local-dev-jwt-secret-fixed (journey API Pipfile dev/e2e, e2e_auth, Developer Edition compose default). */
+        const PERSONA_TOKEN_EXPIRES_AT = '2036-03-23T19:24:11+00:00';
+        const TOKEN_GENNY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkZXYtaWRwIiwiYXVkIjoiZGV2LWFwaSIsInN1YiI6Imdlbm55IiwiaWF0IjoxNzc0NTUzMDUxLCJleHAiOjIwODk5MTMwNTEsInJvbGVzIjpbImRldmVsb3BlciJdfQ.2b2PXQp3ntZykvbcVVdAhABN96BvDTZFuJQSJHMMfBo';
+        const TOKEN_ADAM = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkZXYtaWRwIiwiYXVkIjoiZGV2LWFwaSIsInN1YiI6ImFkYW0iLCJpYXQiOjE3NzQ1NTMwNTEsImV4cCI6MjA4OTkxMzA1MSwicm9sZXMiOlsiYWRtaW4iXX0.S_Vxouja_C6kshlUyiU8sqiVGrpAIl3oSMxwNRUNDIQ';
+
+        function spaAuthHash(token, rolesComma) {
+            const p = new URLSearchParams();
+            p.set('access_token', token);
+            p.set('expires_at', PERSONA_TOKEN_EXPIRES_AT);
+            p.set('roles', rolesComma);
+            return '#' + p.toString();
+        }
+
+        function setPersonaLink(elId, port, token, roles) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.href = 'http://' + hostname + ':' + port + '/' + spaAuthHash(token, roles);
+            el.target = '_blank';
+            el.rel = 'noopener noreferrer';
+        }
+        document.getElementById('schema-api-docs-link').href = `http://${hostname}:8383/docs/index.html`;
+        document.getElementById('schema-spa-link').href = `http://${hostname}:8384`;
+        document.getElementById('profile-api-docs-link').href = `http://${hostname}:8387/docs/explorer.html`;
+        document.getElementById('mentor-api-docs-link').href = `http://${hostname}:8389/docs/explorer.html`;
+        document.getElementById('member-api-docs-link').href = `http://${hostname}:8391/docs/explorer.html`;
+        setPersonaLink('profile-genny', 8388, TOKEN_GENNY, 'developer');
+        setPersonaLink('profile-adam', 8388, TOKEN_ADAM, 'admin');
+        setPersonaLink('mentor-genny', 8390, TOKEN_GENNY, 'developer');
+        setPersonaLink('mentor-adam', 8390, TOKEN_ADAM, 'admin');
+        setPersonaLink('member-genny', 8392, TOKEN_GENNY, 'developer');
+        setPersonaLink('member-adam', 8392, TOKEN_ADAM, 'admin');
+    </script>
+</body>
+</html>

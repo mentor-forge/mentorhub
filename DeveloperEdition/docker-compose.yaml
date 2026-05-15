@@ -1,0 +1,153 @@
+# docker-compose.yaml for {{ info.name }} developers edition
+
+
+
+{% set journey_domains = architecture.domains | selectattr('is_journey', 'equalto', true) | list -%}
+{%- set schema_domain = architecture.domains | selectattr('name', 'equalto', 'schema') | first -%}
+{%- set mongodb_api_repo = schema_domain.repos | selectattr('name', 'equalto', 'mongodb_api') | first -%}
+{%- set configurator_repo = schema_domain.repos | selectattr('name', 'equalto', 'configurator_spa') | first -%}
+services:
+  ##################################
+  # Welcome Service
+  ##################################
+  welcome:
+    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}:latest
+    ports:
+      - "127.0.0.1:8080:80"
+    profiles:
+      - all
+      - mongodb
+{%- for d in journey_domains %}
+      - {{ d.name }}
+{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
+      - {{ d.name }}-api
+{%- endif %}
+{%- endfor %}
+
+  ##################################
+  # Backing Services
+  ##################################
+  mongodb:
+    image: mongo:7.0.5
+    ports:
+      - "127.0.0.1:27017:27017"
+    extra_hosts:
+      - "mongodb:127.0.0.1"
+    healthcheck:
+      test: echo "db.runCommand('ping')" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      retries: 3
+    command: ["--bind_ip_all", "--port", "27017"]
+    profiles:
+      - all
+      - mongodb
+{%- for d in journey_domains %}
+      - {{ d.name }}
+{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
+      - {{ d.name }}-api
+{%- endif %}
+{%- endfor %}
+
+  ##################################
+  # Mongo Database Configuration Utilities
+  ##################################
+  mongodb_api:
+    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}_mongodb_api:latest
+    restart: no
+    ports:
+      - "127.0.0.1:{{ mongodb_api_repo.port }}:{{ mongodb_api_repo.port }}"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: {{ info.db_name }}
+      AUTO_PROCESS: True
+      LOAD_TEST_DATA: True
+      API_PORT: {{ mongodb_api_repo.port }}
+      SPA_PORT: {{ configurator_repo.port }}
+      UI_HEADER: "{{ info.name }} Schemas"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    profiles:
+      - all
+      - mongodb
+{%- for d in journey_domains %}
+      - {{ d.name }}
+{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
+      - {{ d.name }}-api
+{%- endif %}
+{%- endfor %}
+
+  mongodb_spa:
+    # spa_ref (configurator_spa): fixed utility image, not {{ info.slug }}_…
+    image: ghcr.io/agile-learning-institute/mongodb_configurator_spa:latest
+    restart: no
+    ports:
+      - "127.0.0.1:{{ configurator_repo.port }}:{{ configurator_repo.port }}"
+    environment:
+      API_HOST: mongodb_api
+      API_PORT: {{ mongodb_api_repo.port }}
+      SPA_PORT: {{ configurator_repo.port }}
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - mongodb
+{%- for d in journey_domains %}
+      - {{ d.name }}
+{%- if d.repos | selectattr('type', 'equalto', 'api') | list | length %}
+      - {{ d.name }}-api
+{%- endif %}
+{%- endfor %}
+
+  ##################################
+  # Microservice domains (from architecture)
+  ##################################
+{%- for domain in journey_domains %}
+{%- set outer_last = loop.last %}
+{%- for repo in domain.repos %}
+{%- if repo.type == 'api' %}
+{%- set spa_match = domain.repos | selectattr('type', 'equalto', 'spa') | first %}
+  {{ repo.name }}:
+    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}_{{ repo.name }}:latest
+    restart: no
+    ports:
+      - "127.0.0.1:{{ repo.port }}:{{ repo.port }}"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: {{ info.db_name }}
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      API_PORT: {{ repo.port }}
+      SAMPLE_API_PORT: {{ repo.port }}
+      SAMPLE_SPA_PORT: {{ spa_match.port }}
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - {{ domain.name }}
+      - {{ domain.name }}-api{{ '\n' }}{% elif repo.type == 'spa' -%}
+{%- set api_match = domain.repos | selectattr('type', 'equalto', 'api') | first %}
+  {{ repo.name }}:
+    image: {{ org.docker_host }}/{{ org.docker_org }}/{{ info.slug }}_{{ repo.name }}:latest
+    restart: no
+    ports:
+      - "127.0.0.1:{{ repo.port }}:80"
+    environment:
+      API_HOST: {{ api_match.name }}
+      API_PORT: {{ api_match.port }}
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://localhost:8080/}
+    depends_on:
+      {{ api_match.name }}:
+        condition: service_started
+    profiles:
+      - all
+      - {{ domain.name }}{{ '\n' if not (outer_last and loop.last) else '' -}}
+{%- endif %}
+{%- endfor %}
+{%- endfor %}

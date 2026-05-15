@@ -1,0 +1,14 @@
+journeys:
+  - name: User Journey Name
+    description: User Journey Description
+    actor: Stakeholder Name
+    events:
+      - name: Event Name
+        description: 
+          - Event description text
+        intent:
+          - Intent Description
+        inputs: 
+          - Input Dictionary
+        outputs:
+          - Output Dictionary

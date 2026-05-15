@@ -1,0 +1,401 @@
+#! /bin/zsh
+
+export COMMAND="$1"
+export NEW_PROFILE="$2"
+export INSTALL_PATH=$(dirname "$0")
+export GITHUB_TOKEN=$(cat ~/.mentorhub/GITHUB_TOKEN)
+# Stable default so welcome-page persona JWTs match API containers (override with JWT_SECRET).
+if [[ -z "${JWT_SECRET:-}" ]]; then
+  if [[ -f "$HOME/.mentorhub/JWT_DEV_SECRET" ]]; then
+    export JWT_SECRET=$(<"$HOME/.mentorhub/JWT_DEV_SECRET")
+  else
+    export JWT_SECRET="local-dev-jwt-secret-fixed"
+  fi
+fi
+
+################################################################################
+# Print Manual Page
+################################################################################
+function manual {
+cat <<END
+NAME
+       mh - Mentor Hub Developers Edition
+
+SYNOPSIS
+       mh COMMAND
+
+DESCRIPTION
+       mh is a simple utility to run the Mentor Hub system, or portions 
+       of it, in local docker containers. You must have docker desktop 
+       installed
+
+COMMANDS
+    up [profile1,profile2,...]
+        Launches the profile(s) specified.
+        Start the system with a newly initialized database if not already running.
+
+    down
+        Remove existing containers. This will permanently delete the
+        data in the test databases.
+
+    start
+        restarts the previously stopped profiles
+
+    stop
+        stop currently running profiles.
+
+    tail [service]
+        tail the logs for a service
+
+    prune
+        Prune all orphaned images and volumes
+
+    pull [profile1,profile2,...]
+        Pull latest images for the specified profile(s).
+
+    clean
+        Delete all Mentor Hub specific containers, volumes, and images
+
+    version
+        print the Mentor Hub Developers Edition version
+    
+    list-profiles
+        List all available profiles related to Mentor Hub Developers Edition
+
+    list-services
+        List all available services related to Mentor Hub Developers Edition
+
+END
+}
+
+################################################################################
+# Print Usage
+################################################################################
+usage() {
+  cat <<END
+
+Usage: mhCOMMAND
+
+Commands:
+  up             Launch containers from a profile
+  down           Remove existing containers
+  start          Restart a profile
+  stop           Stop a profile
+  tail           Tail a service log
+  prune          Prune all orphaned images and volumes
+  pull           Pull latest images for a profile
+  clean          Delete all Mentor Hub specific containers, volumes, and images
+  version        Print the Mentor Hub Developers Edition version
+  list-profiles  List all available profiles
+  list-services  List all available services
+  manual         Show the manual
+END
+}
+
+################################################################################
+# Make sure Docker is running
+################################################################################
+function checkAndStartDocker {
+    if ! docker info >/dev/null 2>&1; then
+        echo "Docker is not running. Attempting to start Docker..."
+        if [[ "$(uname -s)" == "Darwin" ]]; then
+            open -a Docker
+        elif [[ "$(uname -s)" == "Linux" ]]; then
+            echo "Please ensure Docker is installed and start it manually."
+            # For Linux, starting Docker depends on the installation method
+            # systemctl start docker might work for systems using systemd
+        fi
+        # Wait a bit for Docker to start
+        sleep 10
+        if ! docker info >/dev/null 2>&1; then
+            echo "Failed to start Docker. Please start Docker manually."
+            exit 1
+        fi
+    fi
+}
+
+################################################################################
+# Print list of all profiles
+################################################################################
+function listProfiles {
+    PROFILES=$(docker compose -f "$INSTALL_PATH/docker-compose.yaml" config --profiles)
+    echo "Available profiles:"
+    echo $PROFILES
+}
+
+################################################################################
+# Print list of all profiles
+################################################################################
+function listServices {
+    SERVICES=$(docker compose -f "$INSTALL_PATH/docker-compose.yaml" --profile '*' config --services)
+    echo "Available services:"
+    echo $SERVICES
+}
+
+################################################################################
+# Get the currently running profile
+################################################################################
+function getCurrentProfile {
+    typeset -g CURRENT_PROFILES=()
+    if [[ -f "$INSTALL_PATH/CURRENT" ]]; then
+        OLD_IFS=$IFS
+        IFS=$' \n,'
+        CURRENT_PROFILES=( $(<"$INSTALL_PATH/CURRENT") )
+        IFS=$OLD_IFS
+    fi
+}
+
+################################################################################
+# docker compose down of current profile
+################################################################################
+function downCurrent {
+    getCurrentProfile
+    if [[ ${#CURRENT_PROFILES[@]} -gt 0 ]]; then
+        docker_compose_args=("-f" "$INSTALL_PATH/docker-compose.yaml")
+        for profile in "${CURRENT_PROFILES[@]}"; do
+            docker_compose_args+=("--profile" "$profile")
+        done
+        docker compose "${docker_compose_args[@]}" down
+        docker volume prune -f
+        echo > "$INSTALL_PATH/CURRENT"
+    else
+        echo "No profiles currently running"
+    fi
+}
+
+################################################################################
+# docker compose up of current profile
+################################################################################
+function upProfile {
+    if [[ -z $NEW_PROFILE ]]; then
+        echo "Error: No profile specified. Use 'mh up [profile1,profile2,...]'"
+        listProfiles
+        return 1
+    fi
+    
+    docker_compose_args=("-f" "$INSTALL_PATH/docker-compose.yaml")
+    for profile in "${(s:,:)NEW_PROFILE}"; do
+        docker_compose_args+=("--profile" "$profile")
+    done
+    docker compose "${docker_compose_args[@]}" up --detach
+    docker_compose_status=$?
+    if [[ $docker_compose_status -ne 0 ]]; then
+        echo "Docker compose command failed with status $docker_compose_status"
+        listProfiles
+        return 1
+    fi
+    
+    # Update CURRENT file with new profiles
+    getCurrentProfile
+    NEW_PROFILES_ARRAY=(${(s:,:)NEW_PROFILE})
+    ALL_PROFILES=(${CURRENT_PROFILES[@]} ${NEW_PROFILES_ARRAY[@]})
+    # Remove duplicates and write back
+    UNIQUE_PROFILES=(${(u)ALL_PROFILES})
+    echo "${(j:,:)UNIQUE_PROFILES}" > "$INSTALL_PATH/CURRENT"
+}
+
+################################################################################
+# docker compose stop of current profile
+################################################################################
+function stopCurrent {
+    getCurrentProfile
+    if [[ ${#CURRENT_PROFILES[@]} -gt 0 ]]; then
+        docker_compose_args=("-f" "$INSTALL_PATH/docker-compose.yaml")
+        for profile in "${CURRENT_PROFILES[@]}"; do
+            docker_compose_args+=("--profile" "$profile")
+        done
+        docker compose "${docker_compose_args[@]}" stop
+    else
+        echo "No profiles currently running"
+    fi
+}
+
+################################################################################
+# docker compose start of new profile profile
+################################################################################
+function startCurrent {
+    getCurrentProfile
+    if [[ ${#CURRENT_PROFILES[@]} -gt 0 ]]; then
+        docker_compose_args=("-f" "$INSTALL_PATH/docker-compose.yaml")
+        for profile in "${CURRENT_PROFILES[@]}"; do
+            docker_compose_args+=("--profile" "$profile")
+        done
+        docker compose "${docker_compose_args[@]}" start 
+    else
+        echo "No profiles found to start. Use 'mh up [profile]' first."
+    fi
+}
+
+################################################################################
+# docker compose logs
+################################################################################
+function tailServiceLogs {
+    if [[ -z $NEW_PROFILE ]]; then
+        listServices
+        echo "No service provided, exiting with exit code 1"
+        return 1
+    fi
+    docker_compose_args=("-f" "$INSTALL_PATH/docker-compose.yaml" "logs" "-f" "$NEW_PROFILE")
+    docker compose "${docker_compose_args[@]}"
+    docker_compose_status=$?
+    if [[ $docker_compose_status -ne 0 ]]; then
+        echo "Docker compose command failed with status $docker_compose_status"
+        listServices
+        return 1
+    fi
+}
+
+################################################################################
+# Pull latest images
+################################################################################
+function pull {
+    if [[ -z $NEW_PROFILE ]]; then
+        echo "Error: No profile specified. Use 'mh pull [profile1,profile2,...]'"
+        listProfiles
+        return 1
+    fi
+    
+    docker_compose_args=("--project-directory" "$INSTALL_PATH" "-f" "$INSTALL_PATH/docker-compose.yaml")
+    for profile in "${(s:,:)NEW_PROFILE}"; do
+        docker_compose_args+=("--profile" "$profile")
+    done
+    docker compose "${docker_compose_args[@]}" pull
+    docker_compose_status=$?
+    if [[ $docker_compose_status -ne 0 ]]; then
+        echo "Docker compose command failed with status $docker_compose_status"
+        listProfiles
+        return 1
+    fi
+    echo "Pull completed"
+}
+
+################################################################################
+# Prune orphaned images and volumes
+################################################################################
+function prune {
+    echo "Pruning orphaned images and volumes"
+    docker image prune -f
+    docker volume prune -f
+    echo "Prune completed"
+}
+
+################################################################################
+# force rm all containers
+################################################################################
+function deleteContainers {
+    docker compose -f $INSTALL_PATH/docker-compose.yaml ps -a --format '{{ .Names }}' | while read -r container; do
+        echo "- removing container $container" 
+        docker container rm -f "$container" > /dev/null 2>&1
+    done
+    echo > "$INSTALL_PATH/CURRENT"
+}
+################################################################################
+# force rm all images
+################################################################################
+function deleteImages {
+    docker compose -f "$INSTALL_PATH/docker-compose.yaml" --profile '*' config --images | while read -r image; do
+        echo "- removing image $image" 
+        docker image rm -f "$image"
+    done
+
+    docker volume ls | awk 'NR > 1 {print $2}' | while read -r volume; do
+        echo "- removing volume $volume"
+        docker volume rm -f "$volume" 
+    done
+
+}
+
+################################################################################
+# Clean up images and containers
+################################################################################
+function clean {
+
+    deleteContainers
+
+    deleteImages
+
+    echo > "$INSTALL_PATH/CURRENT"
+}
+
+##########################################################################
+# Main 
+echo "$(date) mh start $COMMAND $NEW_PROFILE"
+checkAndStartDocker
+
+case $COMMAND in
+
+  "up")
+
+    upProfile
+    ;;
+
+  "down")
+
+    downCurrent
+    ;;
+
+  "start")
+
+    startCurrent
+    ;;
+
+  "stop")
+
+    stopCurrent
+    ;;
+
+  "tail")
+
+    tailServiceLogs
+    ;;
+
+  "prune")
+
+    prune
+    ;;
+
+  "pull")
+
+    pull
+    ;;
+
+  "man")
+
+    manual
+    ;;
+
+  "clean")
+
+    clean
+    ;;
+
+  "version")
+
+    echo "v1.0.0"
+    ;;
+
+  "list-profiles")
+
+    listProfiles
+    ;;
+
+  "list-services")
+    
+    listServices
+    ;;
+
+  "manual")
+
+    manual
+    ;;
+
+  *)
+
+    usage
+    ;;
+
+  esac
+
+exit 0
+# End Main 
+##########################################################################
