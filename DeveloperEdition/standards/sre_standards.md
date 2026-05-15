@@ -13,7 +13,7 @@
 - Runbook Automation: [stage0 runbooks](https://github.com/agile-learning-institute/stage0_runbooks)
 
 ## Developer Experience
-The ``im`` Developer Edition CLI is how SRE provides a strong developer experience. It manages developer environment values (keys, secrets, JWT material for local tooling, etc.) and wraps the services configured in the system [docker-compose](../docker-compose.yaml) file. Developers can run the full stack on local hardware without using `docker compose` directly for normal workflows.
+The ``mh`` Developer Edition CLI is how SRE provides a strong developer experience. It manages developer environment values (keys, secrets, JWT material for local tooling, etc.) and wraps the services configured in the system [docker-compose](../docker-compose.yaml) file. Developers can run the full stack on local hardware without using `docker compose` directly for normal workflows.
 
 ## Authentication
 See the [API Standards authentication](./api_standards.md#authentication) sections for core auth implementation details, and [SPA Standards authentication](./spa_standards.md#authentication-pattern) for the UI implementations. 
@@ -25,7 +25,7 @@ Developer Edition CLI and compose uses a **stable `JWT_SECRET`** so SPAs and bac
 ```sh
 cd mentorhub
 make update
-im up all
+mh up all
 ```
 
 ## Production alignment
