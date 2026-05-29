@@ -1,0 +1,26 @@
+{
+  "name": "mentor-forge main (required checks)",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": []
+      }
+    }
+  ],
+  "bypass_actors": [
+    {
+      "actor_type": "OrganizationAdmin",
+      "bypass_mode": "always"
+    }
+  ]
+}
