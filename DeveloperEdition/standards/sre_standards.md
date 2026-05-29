@@ -33,7 +33,27 @@ mh up all
 **API gateway and commercial IdP:** In production, traffic is intended to sit behind an **API gateway** (or edge proxy) with **TLS**, routing to SPA static assets and API services. **Authentication** uses a **commercial IdP** (OAuth2/OIDC). Access tokens are issued by the IdP (or a BFF); applications do not use APIs as a substitute IdP. APIs validate JWTs (shared secret or JWKS) with the same claim expectations as in Developer Edition. SPAs redirect to the real IdP login/authorize entry via the configured login base URL—preserving a single auth story from the local welcome page through to production IdP.
 
 ## Continuous Integration
-The developer workflow follows the feature branch pattern. A developer creates a branch to work on a feature, and submit a pull request (PR) when the feature is ready to be deployed. When a PR is approved by a reviewer and merged to the main branch, the CI automation will build and push a new container with a :latest tag to the system's container registry. These containers are deployed to a cloud DEV environment, and available for developers to use for local development.
+
+The developer workflow follows the feature branch pattern. A developer creates a branch to work on a feature and submits a pull request (PR) when the feature is ready to be deployed. When a PR is approved by a reviewer and **merged to `main`**, CI builds and pushes a new container with a `:latest` tag to the system's container registry. Those images are deployed to a cloud DEV environment and are available for developers to use locally.
+
+### Current state (container publish only)
+
+- **`.github/workflows/docker-push.yml`** runs on **`push` to `main` only** — not on feature-branch pushes or open PRs.
+- Merging a PR to `main` produces a single `push` event; that triggers one publish run.
+- Peer review and branch protection (soft phase) gate merges; automated test gates on PRs are not enabled yet.
+
+Canonical workflow reference: [examples/docker-push.yml](./examples/docker-push.yml). Apply the same `on:` pattern in every mentor-forge repo that publishes images.
+
+### Future state (PR automated tests)
+
+When automated tests should run before merge, add a separate **`.github/workflows/ci.yml`** that triggers on `pull_request` to `main` only. That workflow is distinct from `docker-push.yml`:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` (future) | `pull_request` → `main` | Run tests on PR branches; required checks for hard/full branch protection |
+| `docker-push.yml` | `push` → `main` | Build and publish container images after merge |
+
+Do not add `pull_request` triggers to `docker-push.yml`. Do not add bare `push:` (all branches) triggers to either workflow.
 
 ## Continuous Deployment
 Infrastructure provisioning and maintenance has not been implemented.
