@@ -1,0 +1,100 @@
+{
+  "organization": "mentor-forge",
+  "default_branch": "main",
+  "repository_name_pattern": "mentorhub*",
+  "org_ruleset_name": "mentor-forge main (base)",
+  "repo_ruleset_name": "mentor-forge main (required checks)",
+  "repos": [
+    {
+      "name": "mentorhub",
+      "group": "umbrella",
+      "checks_soft": [],
+      "checks_hard": ["CI / verify"],
+      "checks_full": ["CI / verify"]
+    },
+    {
+      "name": "mentorhub_api_utils",
+      "group": "api_utils",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / lint"]
+    },
+    {
+      "name": "mentorhub_customer_api",
+      "group": "domain_api",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / lint"]
+    },
+    {
+      "name": "mentorhub_coordinator_api",
+      "group": "domain_api",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / lint"]
+    },
+    {
+      "name": "mentorhub_mentor_api",
+      "group": "domain_api",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / lint"]
+    },
+    {
+      "name": "mentorhub_craftsperson_api",
+      "group": "domain_api",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / lint"]
+    },
+    {
+      "name": "mentorhub_spa_utils",
+      "group": "spa_utils",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / lint"]
+    },
+    {
+      "name": "mentorhub_customer_spa",
+      "group": "domain_spa",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / build"]
+    },
+    {
+      "name": "mentorhub_coordinator_spa",
+      "group": "domain_spa",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / build"]
+    },
+    {
+      "name": "mentorhub_mentor_spa",
+      "group": "domain_spa",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / build"]
+    },
+    {
+      "name": "mentorhub_craftsperson_spa",
+      "group": "domain_spa",
+      "checks_soft": [],
+      "checks_hard": ["CI / test"],
+      "checks_full": ["CI / test", "CI / build"]
+    },
+    {
+      "name": "mentorhub_mongodb_api",
+      "group": "mongodb_api",
+      "checks_soft": [],
+      "checks_hard": ["CI / validate"],
+      "checks_full": ["CI / validate"]
+    },
+    {
+      "name": "mentorhub_runbook_api",
+      "group": "runbook_api",
+      "checks_soft": [],
+      "checks_hard": ["CI / validate"],
+      "checks_full": ["CI / validate"]
+    }
+  ]
+}
