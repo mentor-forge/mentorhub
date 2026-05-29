@@ -1,6 +1,6 @@
 # Branch Protection Standards (Draft)
 
-> **Status:** Draft — not yet enforced. Configure in GitHub org/repo settings after PR CI workflows exist.
+> **Status:** Soft protection (org ruleset) may be applied now. Required PR CI checks (hard/full phases) are **future state** — see [SRE Standards](./sre_standards.md#continuous-integration).
 
 This document defines how mentor-forge protects the `main` branch across repositories. It implements the workflow described in [CONTRIBUTING.md](../../CONTRIBUTING.md) and [SRE Standards](./sre_standards.md#continuous-integration).
 
@@ -10,7 +10,7 @@ This document defines how mentor-forge protects the `main` branch across reposit
 |--------------------|----------------------------------|
 | Feature branches and PRs to `main` | Same, but direct pushes to `main` are blocked |
 | Peer review before merge | At least one approval required |
-| Tests passing before merge | Required CI checks must pass on the PR |
+| Tests passing before merge (local / reviewer) | **Future:** required CI checks on the PR (`hard` / `full` phases) |
 | Merge to `main` triggers `docker-push` | Unchanged — post-merge publishing stays as-is |
 
 Branch protection is configured in **GitHub** (org rulesets or per-repo settings). It is not stored in application source code.
@@ -52,22 +52,22 @@ These rules apply to every repository in scope.
 - **Block deletion** of `main`.
 - **Require branches to be up to date** before merging (recommended).
 
-### Status checks
+### Status checks (future — hard / full phases)
 
-- **Require status checks to pass** before merging.
+- **Require status checks to pass** before merging — **not enabled in soft phase**.
 - Required check names are **per repository** (see [Required CI checks](#required-ci-checks)).
-- Enable checks only after the corresponding workflow has run successfully on at least one PR.
+- Enable only after a separate `ci.yml` runs on open PRs and checks are green.
 
 ### Bypass
 
 - **Do not allow bypassing** the above settings, or limit bypass to **organization admins** for documented emergencies only.
 - Emergency merges should be rare; follow up with a retrospective PR if code skipped the normal gate.
 
-## Required CI checks
+## Required CI checks (future state)
 
-Branch protection can only require checks that run on **open** pull requests. Existing `docker-push.yml` workflows run after merge and are **not** sufficient as merge gates.
+Branch protection can only require checks that run on **open** pull requests. Existing `docker-push.yml` workflows run after merge and must **not** use `pull_request` triggers — see [SRE Standards](./sre_standards.md#continuous-integration).
 
-### Target checks (once PR CI exists)
+### Target checks (once PR `ci.yml` exists)
 
 | Repository | Required checks (initial) | Follow-up checks |
 |------------|---------------------------|------------------|
@@ -89,11 +89,11 @@ Check names appear in GitHub as **`CI / <job_name>`** after a workflow named `CI
 
 ### PR CI prerequisites (not branch protection itself)
 
-Before enabling required checks, each repo needs a `.github/workflows/ci.yml` that:
+Before enabling required checks, each repo needs a **separate** `.github/workflows/ci.yml` that:
 
-1. Triggers on `pull_request` and `push` to `main`.
+1. Triggers on `pull_request` to `main` only (not on feature-branch `push` events).
 2. Runs the same commands developers use locally (e.g. `pipenv run test`, `npm test`).
-3. Does **not** replace `docker-push.yml` — keep post-merge image publishing separate.
+3. Does **not** replace `docker-push.yml` — keep post-merge image publishing on `push` to `main` only.
 
 **Dependencies:**
 
@@ -122,21 +122,25 @@ Use when rolling out one repo at a time or when org rulesets are unavailable.
 
 ## Rollout plan
 
-### Phase 1 — PR CI workflows
+### Phase 1 — Soft protection (current)
+
+Enable PR + 1 approval on `main` without required status checks. `docker-push.yml` publishes images on merge to `main` only.
+
+### Phase 2 — PR CI workflows (future)
 
 Add `ci.yml` to each repository. Verify `CI / test` passes on a test PR before requiring it.
 
 Suggested order: domain APIs → `api_utils` → `spa_utils` → SPAs → make-based repos (`mongodb_api`, `runbook_api`, `mentorhub`).
 
-### Phase 2 — Soft protection
-
-Enable PR + 1 approval on `main` without required status checks yet. Confirms review workflow without blocking on CI gaps.
-
-### Phase 3 — Hard protection
+### Phase 3 — Hard protection (future)
 
 Add required status checks per repo as CI stabilizes. Start with `CI / test` only; add lint/build checks after formatting or build baselines are green.
 
-### Phase 4 — Org ruleset
+### Phase 4 — Full protection (future)
+
+Add additional required checks per repo (`checks_full` in branch-protection config).
+
+### Phase 5 — Org ruleset maintenance
 
 Consolidate shared rules under one organization ruleset; audit quarterly for drift.
 

@@ -26,8 +26,8 @@ gh auth status
 | Phase | What it applies |
 |-------|-----------------|
 | `soft` | Org ruleset: PR + 1 approval, stale dismiss, no force-push/delete |
-| `hard` | Per-repo rulesets requiring `checks_hard` (e.g. `CI / test`) |
-| `full` | Per-repo rulesets requiring `checks_full` (e.g. `CI / lint`) |
+| `hard` | Per-repo rulesets requiring `checks_hard` (e.g. `CI / test`) — **future; needs `ci.yml` on PRs** |
+| `full` | Per-repo rulesets requiring `checks_full` (e.g. `CI / lint`) — **future; needs `ci.yml` on PRs** |
 
 ## Quick start
 
@@ -85,6 +85,8 @@ Filter to one repo or group:
 2. **Per-repo rulesets** (`mentor-forge main (required checks)`) — required CI status checks for hard/full phases.
 
 The script is idempotent: re-running `apply` updates existing rulesets by name.
+
+**CI workflows:** `docker-push.yml` must trigger on `push` to `main` only (merge publish). Do not use `pull_request` triggers on publish workflows. See [SRE Standards](../../standards/sre_standards.md#continuous-integration) and [examples/docker-push.yml](../../standards/examples/docker-push.yml).
 
 ## Related docs
 

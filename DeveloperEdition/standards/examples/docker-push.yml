@@ -1,8 +1,11 @@
+# Canonical merge-to-main container publish workflow for mentor-forge repos.
+# Copy to .github/workflows/docker-push.yml and adjust image tags per repository.
+#
+# See SRE Standards § Continuous Integration.
+
 name: Build and Push Docker Image
 run-name: ${{ github.actor }} ran Build and Push
 
-# Publish containers only when code lands on main (including via merged PR).
-# Do not trigger on feature branches or open PRs — see SRE Standards § Continuous Integration.
 on:
   push:
     branches:
@@ -15,29 +18,24 @@ jobs:
       contents: read
       packages: write
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      -
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      -
-        name: Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Build and push
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/mentor-forge/mentorhub:latest
+          tags: ghcr.io/mentor-forge/REPLACE_ME:latest
           build-args: |
             GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
