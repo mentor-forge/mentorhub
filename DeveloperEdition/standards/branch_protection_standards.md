@@ -50,7 +50,7 @@ These rules apply to every repository in scope.
 
 - **Block force pushes** to `main`.
 - **Block deletion** of `main`.
-- **Require branches to be up to date** before merging (recommended).
+- **Require branches to be up to date** before merging (recommended) — enable with required status checks in hard/full phases, not the ruleset `update` rule (that restricts all merges to bypass actors only).
 
 ### Status checks (future — hard / full phases)
 
