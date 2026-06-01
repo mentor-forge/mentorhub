@@ -1,13 +1,13 @@
 <mxfile host="65bd71144e">
     <diagram id="Im9zfJVUR9Wd93SpzTTU" name="Page-1">
-        <mxGraphModel dx="2975" dy="1036" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="1883" dy="570" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="2" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=21.220619201660156;strokeColor=#b46504;strokeWidth=2;fillColor=#fad7ac;" parent="1" vertex="1">
                     <mxGeometry x="-30" y="90" width="140" height="450" as="geometry"/>
                 </mxCell>
-                <mxCell id="40" value="Profile&lt;br&gt;Identity&lt;br&gt;Login" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" parent="1" vertex="1">
+                <mxCell id="40" value="Customer &lt;br&gt;Profile&lt;br&gt;Identity&lt;br&gt;Login" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="-10" y="419.75" width="100" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="24" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#000000;strokeWidth=2;" parent="1" source="3" edge="1">
@@ -150,7 +150,7 @@
                 <mxCell id="38" value="coordinator_spa" style="shape=display;whiteSpace=wrap;html=1;strokeColor=#82b366;strokeWidth=2;fillColor=#d5e8d4;gradientColor=#97d077;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="-360" y="444.75" width="110" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="39" value="Customer&lt;br&gt;Subscription&lt;br&gt;Dashboard" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" parent="1" vertex="1">
+                <mxCell id="39" value="Subscription&lt;br&gt;Dashboard" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="-10" y="339.75" width="100" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="18" value="Journey&lt;br&gt;Rating&lt;br&gt;Note" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" parent="1" vertex="1">
@@ -209,16 +209,16 @@
                 <mxCell id="70" value="App Microservices" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=50;gradientColor=#97d077;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="-690" y="190" width="140" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="73" value="" style="edgeStyle=none;html=1;fontColor=#000000;strokeColor=#000000;startArrow=classic;startFill=1;endArrow=none;endFill=0;" edge="1" parent="1" source="71" target="72">
+                <mxCell id="73" value="" style="edgeStyle=none;html=1;fontColor=#000000;strokeColor=#000000;startArrow=classic;startFill=1;endArrow=none;endFill=0;" parent="1" source="71" target="72" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="71" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3c800;fontColor=#000000;strokeColor=#B09500;" vertex="1" parent="1">
+                <mxCell id="71" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3c800;fontColor=#000000;strokeColor=#B09500;" parent="1" vertex="1">
                     <mxGeometry x="-680" y="320" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="72" value="Browser" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#1ba1e2;fontColor=#000000;strokeColor=#006EAF;" vertex="1" parent="1">
+                <mxCell id="72" value="Browser" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#1ba1e2;fontColor=#000000;strokeColor=#006EAF;" parent="1" vertex="1">
                     <mxGeometry x="-780" y="320" width="30" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="74" value="Events" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" vertex="1" parent="1">
+                <mxCell id="74" value="Events" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;strokeColor=#B09500;strokeWidth=2;fillColor=#e3c800;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="-10" y="137.5" width="100" height="60" as="geometry"/>
                 </mxCell>
             </root>
