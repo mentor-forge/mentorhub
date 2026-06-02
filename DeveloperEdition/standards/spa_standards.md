@@ -91,30 +91,30 @@ Automation IDs support multiple use cases:
 Follow the pattern: `{domain}-{page}-{element}`
 
 **Components**:
-- `{domain}`: The business domain (control, create, consume, etc.)
+- `{domain}`: The business domain (customer, resource, rating, etc.)
 - `{page}`: The page type (list, new, edit, view, admin)
 - `{element}`: The element's purpose (search, name-input, submit-button, etc.)
 
 **Examples**:
 ```html
 <!-- List page -->
-<input data-automation-id="control-list-search" />
-<button data-automation-id="control-list-new-button" />
+<input data-automation-id="customer-list-search" />
+<button data-automation-id="customer-list-new-button" />
 
 <!-- New/Create page -->
-<input data-automation-id="control-new-name-input" />
-<textarea data-automation-id="control-new-description-input" />
-<select data-automation-id="control-new-status-select" />
-<button data-automation-id="control-new-submit-button" />
-<button data-automation-id="control-new-cancel-button" />
+<input data-automation-id="customer-new-name-input" />
+<textarea data-automation-id="customer-new-description-input" />
+<select data-automation-id="customer-new-status-select" />
+<button data-automation-id="customer-new-submit-button" />
+<button data-automation-id="customer-new-cancel-button" />
 
 <!-- Edit page -->
-<input data-automation-id="control-edit-name-input" />
-<button data-automation-id="control-edit-save-button" />
+<input data-automation-id="customer-edit-name-input" />
+<button data-automation-id="customer-edit-save-button" />
 
 <!-- Navigation -->
 <button data-automation-id="nav-drawer-toggle" />
-<a data-automation-id="nav-controls-list-link" />
+<a data-automation-id="nav-customers-list-link" />
 ```
 
 ### Implementation Guidelines
@@ -123,7 +123,7 @@ Follow the pattern: `{domain}-{page}-{element}`
    - Form inputs (text, textarea, select, checkbox, radio)
    - Buttons (submit, cancel, action buttons)
    - Links that trigger navigation or actions
-   - Data tables and their controls
+   - Data tables and their Controls
 
 2. **Add to key display elements**:
    - Page headings (for verification)
@@ -141,9 +141,9 @@ Follow the pattern: `{domain}-{page}-{element}`
    - `-table` for data tables
 
 4. **Keep IDs semantic, not structural**:
-   - ✅ Good: `control-new-name-input` (describes purpose)
+   - ✅ Good: `customer-new-name-input` (describes purpose)
    - ❌ Bad: `form-field-1` (describes structure)
-   - ✅ Good: `control-list-search` (describes what it does)
+   - ✅ Good: `customer-list-search` (describes what it does)
    - ❌ Bad: `input-at-top-left` (describes location)
 
 5. **One ID per interactive element**:
@@ -158,7 +158,7 @@ In Cypress tests:
 cy.contains('label', 'Name').parent().parent().find('input').type('value')
 
 // Use automation IDs:
-cy.get('[data-automation-id="control-new-name-input"]').type('value')
+cy.get('[data-automation-id="customer-new-name-input"]').type('value')
 ```
 
 ### Breaking Changes
