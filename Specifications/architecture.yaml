@@ -66,8 +66,9 @@ architecture:
       data_domains:
         controls:
           - Customer 
-          - Journey
+          - Identity
           - Profile
+          - Login
         creates:
           - Event
         consumes: []
