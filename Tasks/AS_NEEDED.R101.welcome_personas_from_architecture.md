@@ -8,7 +8,7 @@
 
 Refactor `index.html` (welcome page **persona** section and related script) so personas, role strings, and JWT payloads align with **your** journey domains and RBAC model, using `Specifications/architecture.yaml` as the source of truth.
 
-The merged umbrella template intentionally ships **Genny** and **Adam** with **static** HS256 tokens (`developer` / `admin` roles) so the welcome page works immediately after merge without minting per-domain JWTs. Run this task when you want journey-specific subjects, roles, or extra personas instead.
+The merged umbrella template ships legacy **Genny** / **Adam** (`developer` / `admin`). The target persona set is defined in [DevLoginRefactor.md](../Specifications/DevLoginRefactor.md#developer-personas-and-roles): **Carol** (`coordinator`), **Maria** (`mentor`), **Cat** (`customer`), **Mark** (`mentee`), **Stan** (`admin` / SRE)—five personas, five roles, one JWT each. Run this task to mint tokens and update welcome markup/script.
 
 ## Context / Input files
 
@@ -27,12 +27,12 @@ The merged umbrella template intentionally ships **Genny** and **Adam** with **s
 1. **Drive SPA links from architecture**  
    Keep (or reapply) loops over journey domains and SPA repos so every journey SPA gets persona anchor(s) with stable `id`s (e.g. `{domain}-{personaKey}`).
 
-2. **Replace or supplement Genny/Adam**  
-   - Either keep two generic personas and change **labels** only, or  
-   - Introduce one row/link per journey domain (or per domain × role), per your product.
+2. **Replace Genny/Adam with five personas**  
+   - Carol, Maria, Cat, Mark, Stan — each with a single role (`coordinator`, `mentor`, `customer`, `mentee`, `admin`).  
+   - See [DevLoginRefactor.md](../Specifications/DevLoginRefactor.md#developer-personas-and-roles) for `sub` and journey hints.
 
 3. **JWT and URL `roles` must agree**  
-   For each link, the `access_token` payload (claims, especially `roles`) should match what SPAs/APIs expect, and the hash query `roles` should be consistent with those claims (comma-separated as today).
+   `login.html` mints JWTs at Login from the user dropdown + role checkboxes. Payload `roles` array must match hash `roles` (comma-separated). Default roles per persona are in [DevLoginRefactor.md](../Specifications/DevLoginRefactor.md#developer-personas-and-roles); users may override checkboxes before Login.
 
 4. **Mint tokens with the real dev secret**  
    Use the same secret as running APIs (e.g. PyJWT, `HS256`). Default Developer Edition and compose use `local-dev-jwt-secret-fixed` (no product slug in the string). After changing `JWT_SECRET` or claims, re-run this task and update inlined tokens in `index.html`.
@@ -51,8 +51,8 @@ The merged umbrella template intentionally ships **Genny** and **Adam** with **s
 ## Testing expectations
 
 - Open the welcome page locally (`welcome` service / port from Developer Edition).  
-- For each journey SPA, open Genny (or refactored) link: app loads with hash auth; APIs accept token if `JWT_SECRET` matches.  
-- Toggle or exercise admin persona if you keep a second role.  
+- For each journey SPA, sign in as the matching persona (Cat → customer, Carol → coordinator, Maria → mentor, Mark → craftsperson/mentee, Stan → admin routes).  
+- APIs accept tokens when `JWT_SECRET` matches; use Stan for admin-gated endpoints.  
 - After changes, run umbrella `make test` if you are working in the template repo.
 
 ## Dependencies / Ordering
@@ -63,7 +63,7 @@ The merged umbrella template intentionally ships **Genny** and **Adam** with **s
 ## Change control checklist
 
 - [ ] Read current `architecture.yaml` journey domains and SPA ports.  
-- [ ] Decide persona matrix (who × which SPA links).  
+- [ ] Confirm five personas (Carol … Stan) and roles per DevLoginRefactor.  
 - [ ] Mint JWTs; update `index.html` script and markup.  
 - [ ] Manually verify one SPA per journey.  
 - [ ] Note completion and date in implementation notes below.
