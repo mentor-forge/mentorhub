@@ -13,9 +13,13 @@
 
 ## Dependency Management
 - All dependencies are managed by `pipenv` via `Pipfile` and `Pipfile.lock`
-- The `api_utils` shared library is installed via HTTPS from GitHub
-- Docker builds use `GITHUB_TOKEN` build argument for authentication
-- Local development requires git credential configuration (see Developer Edition [README](../README.md))
+- The `api_utils` shared library is published to AWS CodeArtifact (PyPI name `api-utils`, distribution `api_utils`) — see [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md)
+- Domain API Pipfiles use a **single** CodeArtifact `[[source]]` with PyPI upstream so public packages (Flask, pymongo, etc.) and `api-utils` resolve from one index
+- Pin exact semver for `api-utils` (for example `==0.2.0`); do not track `main` or use bare `*` (public PyPI package `api-utils` is unrelated and breaks Config/auth)
+- Local development: `mh codeartifact login` then `pipenv install --dev` (see [SRE Standards](./sre_standards.md#codeartifact-local-authentication))
+- Docker builds: GitHub Actions obtains a short-lived CodeArtifact token and passes `PIP_INDEX_URL` as a build arg — no git or `GH_PAT` for dependency install (see [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml))
+
+**Transitional state:** Until migration completes, some repos still install `api_utils` from GitHub with `GITHUB_TOKEN`/`GH_PAT` in Docker builds. Follow the rollout in [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md).
 
 ## Standard Developer Commands
 - pipenv run build (package code for deployment)
