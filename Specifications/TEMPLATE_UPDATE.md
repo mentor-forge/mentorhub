@@ -99,9 +99,50 @@ Update `README.md.template` and `CONTRIBUTING.md`:
 - Developer Edition: set `VITE_IDP_LOGIN_URI` to dev sign-in page (placeholder `http://127.0.0.1:8080/login.html`), not the catalog at `/`.
 - Cypress: prefer `cy.login()` / `cy.loginAsPersona('stan')` for admin routes.
 
-### A.5 Template hygiene
+### A.5 `README.md.template` — replace hardcoded Control / Create examples
 
-- [ ] Run template build/test so `.stage0_template/test_expected/**` matches sources (per Stage0 process for vue_utils).
+**Problem:** `README.md.template` (and merged `README.md` / `test_expected`) use fixed collection names from the template fixture—**Control**, **Create**, `ControlsListPage`, `CreatesListPage`, `getControls`, `useInfiniteScroll<Control>`, and links to `template_vue_vuetify`. After merge into a real product (e.g. Mentor Hub), those names are wrong.
+
+**Goal:** All example paths, type names, and API method names in the README should render from **`Specifications/architecture.yaml`** via Jinja, using the same naming rules as `stage0_template_vue_vuetify` (`{{ item }}sListPage`, `get{{ item }}s`, etc.).
+
+#### A.5.1 Extend `.stage0_template/process.yaml` context
+
+Add selectors so the README can reference one **example journey domain** (template self-test uses the `sample` domain with `Control` / `Create`; merged umbrellas use their first journey domain or keep `sample` in architecture for docs):
+
+| Context key | Purpose |
+|-------------|---------|
+| `example_domain` | Journey domain used for README examples—e.g. selector on `architecture.domains` where `name` is `sample`, or first domain with `data_domains.controls` (pick one rule and document it in `process.yaml` comments). |
+| `example_control` | `example_domain.data_domains.controls[0]` |
+| `example_create` | `example_domain.data_domains.creates[0]` |
+| `example_spa_repo` | SPA repo on `example_domain` (`type: spa`, not `spa_ref`) — e.g. `sample_spa` → `{{ info.slug }}_sample_spa` after merge |
+
+Require `example_domain.data_domains.controls[0]` (and optionally `creates[0]`) in `requires:` so merge fails fast if architecture omits them.
+
+#### A.5.2 Replace literals in `README.md.template`
+
+| Was (hardcoded) | Becomes (Jinja) |
+|-----------------|-----------------|
+| `template_vue_vuetify` repo links | `{{ org.git_org }}/{{ info.slug }}_{{ example_domain.name }}_spa` |
+| `CreatesListPage` | `{{ example_create }}sListPage` |
+| `ControlsListPage` | `{{ example_control }}sListPage` |
+| `ControlEditPage` / `ControlNewPage` | `{{ example_control }}EditPage`, `{{ example_control }}NewPage` |
+| `useInfiniteScroll<Control>` | `useInfiniteScroll<{{ example_control }}>` |
+| `queryKey: ['controls']` | `['{{ example_control | lower }}s']` (match SPA list routes) |
+| `api.getControls` | `api.get{{ example_control }}s` |
+
+Apply the same pattern anywhere the README cites “real-world” SPA pages or API shapes. Fix the duplicate `{{org.git_host}}/{{org.git_host}}` segment in existing links while editing (use `{{ org.git_host }}/{{ org.git_org }}/...`).
+
+**Note:** `useResourceList` examples can point at `{{ example_create }}sListPage`; `useInfiniteScroll` at `{{ example_control }}sListPage`—or swap if you prefer creates for infinite scroll; stay consistent with vue_vuetify template page types.
+
+#### A.5.3 Hygiene
+
+- [ ] Update `README.md.template` only (not hand-edit merged product READMEs).
+- [ ] Re-run template test → refresh `.stage0_template/test_expected/README.md`.
+- [ ] Spot-check merged `mentorhub_spa_utils` README after re-launch reads Customer/Subscription (or whatever the chosen `example_domain` provides).
+
+### A.6 Template hygiene
+
+- [ ] Run template build/test so `.stage0_template/test_expected/**` matches sources (per Stage0 process for vue_utils), including README from A.5.
 - [ ] Bump template patch version in `package.json` / changelog note for consumers.
 
 ---
@@ -336,6 +377,7 @@ Once templates and re-launched SPAs include Part A/B:
 - [ ] Re-launched Mentor Hub SPAs behave as above without hand-editing each repo’s router/client.
 - [ ] Umbrella template provides `index.html` (catalog) + `login.html` (IdP); `IDP_LOGIN_URI` defaults to `/login.html`.
 - [ ] Mentor Hub in-place refactor matches Part E without re-launching umbrella.
+- [ ] `spa_utils` `README.md.template` uses architecture-driven example domain/collection names (no hardcoded Control/Create).
 
 ---
 
@@ -350,7 +392,8 @@ Once templates and re-launched SPAs include Part A/B:
 | Edit | `src/utils/index.ts` |
 | Edit | `tests/utils/index.test.ts` |
 | Optional | `cypress/config/devPersonas.ts`, `registerAuthCommands.ts`, `cypress/tasks/signCypressJwt.ts` |
-| Edit | `README.md.template`, `CONTRIBUTING.md` |
+| Edit | `README.md.template` (A.5 domain variables; A.4 IdP docs), `CONTRIBUTING.md` |
+| Edit | `.stage0_template/process.yaml` — `example_domain`, `example_control`, `example_create` context |
 | Sync | `.stage0_template/test_expected/**` |
 
 ### `stage0_template_vue_vuetify`
