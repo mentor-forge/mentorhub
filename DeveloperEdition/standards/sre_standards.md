@@ -204,12 +204,11 @@ Recipients: Mike and appropriate SRE contacts.
 
 ### Regions
 
-Use one primary AWS region for the initial MentorHub development environment. Record the selected region in repository and platform documentation before creating CodeArtifact or application infrastructure.
+**Primary region (decided):** `us-east-1` (N. Virginia), recorded 2026-06-04 per [DEPENDENCY_MOVE.md Phase -1.5](../../Specifications/DEPENDENCY_MOVE.md#-15-record-primary-aws-region).
 
-Recommended default unless there is a reason to choose otherwise:
-- `us-east-1`
+Canonical values: [Specifications/aws-platform.yaml](../../Specifications/aws-platform.yaml). Local shell defaults: [DeveloperEdition/aws-platform.env](../aws-platform.env) (installed to `~/.mentorhub/aws-platform.env` by `make update`).
 
-All GitHub Actions, CodeArtifact repositories, ECR repositories, and developer setup instructions should use the same recorded region.
+All GitHub Actions, CodeArtifact repositories, ECR repositories, and developer setup instructions must use **`us-east-1`** unless a future platform decision documents otherwise.
 
 ## AWS Shared Service Placement
 
@@ -241,7 +240,7 @@ CodeArtifact Domain:  mentor-forge
 Record for GitHub org variables and developer tooling:
 
 ```text
-AWS_REGION=<chosen-region>
+AWS_REGION=us-east-1
 AWS_SHARED_SERVICES_ACCOUNT_ID=<shared-services-account-id>
 CODEARTIFACT_DOMAIN=mentor-forge
 CODEARTIFACT_PYPI_REPO=mentorhub-pypi

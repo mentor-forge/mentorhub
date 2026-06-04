@@ -4,6 +4,13 @@ export COMMAND="$1"
 export NEW_PROFILE="$2"
 export INSTALL_PATH=$(dirname "$0")
 export GITHUB_TOKEN=$(cat ~/.mentorhub/GITHUB_TOKEN)
+# AWS platform defaults (region, CodeArtifact names, SSO profile names)
+if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
+  source "$HOME/.mentorhub/aws-platform.env"
+fi
+if [[ -f "$HOME/.mentorhub/aws-platform.local.env" ]]; then
+  source "$HOME/.mentorhub/aws-platform.local.env"
+fi
 # Stable default so welcome-page persona JWTs match API containers (override with JWT_SECRET).
 if [[ -z "${JWT_SECRET:-}" ]]; then
   if [[ -f "$HOME/.mentorhub/JWT_DEV_SECRET" ]]; then
