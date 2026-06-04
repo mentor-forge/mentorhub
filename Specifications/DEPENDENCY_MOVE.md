@@ -23,14 +23,17 @@ Identity and access:
 - IAM Identity Center is enabled from the Management Account.
 - Human users are created in IAM Identity Center, not as IAM users.
 - Groups: `Organization-Admin`, `SRE`, `Developer`.
-- Permission sets: `Organization-Admin`, `SRE`, `Developer`.
-- Account assignments:
+- Permission sets (today): `Organization-Admin`, `SRE`, `Developer`.
+- Account assignments (today):
   - `Organization-Admin` → Management Account.
   - `SRE` → `MentorHub-Dev`.
   - `Developer` → `MentorHub-Dev`.
+- **Target (Phase -1):** add `Shared-Services` account and `Developer-Packages` permission set — see [Identity Center assignments](#-12-assign-iam-identity-center-access).
 - Team accounts have been created in IAM Identity Center.
 - Root users for the Management Account and `MentorHub-Dev` are MFA/passkey protected and emergency-only.
 - `mike-admin` remains as a backup IAM administrator during transition.
+
+> **Standards docs:** Revise [sre_standards.md](../DeveloperEdition/standards/sre_standards.md) to match as-implemented AWS configuration after Phase -1 and Phase 0 are complete. This migration plan is the source of truth until then.
 
 Audit baseline:
 - `MentorHub-Dev` CloudTrail trail has been created.
@@ -175,14 +178,27 @@ Root-user standard:
 
 ### -1.2 Assign IAM Identity Center access
 
-In the Management Account, assign:
+Use **one `Developer` group** for all application developers. Do not create a separate group for package access. Use **account assignments and permission sets** to scope what each group can do in each account.
+
+Target assignments after `Shared-Services` exists:
 
 | Account | Group | Permission Set | Purpose |
 |---------|-------|----------------|---------|
-| Shared-Services | SRE | SRE | Manage CodeArtifact and shared CI/CD integration |
-| Shared-Services | Developer | Developer (CodeArtifact read) | Local `pipenv`/`npm` installs; required on migration day one |
+| Shared-Services | SRE | SRE | CodeArtifact administration, GitHub OIDC roles |
+| Shared-Services | Developer | **Developer-Packages** | CodeArtifact read — permanent floor for all developers |
+| MentorHub-Dev | SRE | SRE | Workload infrastructure (unchanged) |
+| MentorHub-Dev | Developer | Developer | Application/workload access (unchanged; may narrow later) |
 
-Developers do not need console admin access to Shared-Services. They **do** need CodeArtifact read permissions via IAM Identity Center before consumer repos migrate. See Phase -1.8.
+**Why a separate `Developer-Packages` permission set**
+
+IAM Identity Center applies the same permission set policy bundle in every account where it is assigned. The `Developer` permission set for `MentorHub-Dev` will likely include broader workload access than you want in `Shared-Services`. A dedicated `Developer-Packages` set assigned only in `Shared-Services` gives every developer CodeArtifact read without granting unrelated services in that account.
+
+Principles:
+- **All developers** in the `Developer` group receive `Developer-Packages` on `Shared-Services`. This access is not optional and should not be removed when other permissions are tightened.
+- **`Developer`** on `MentorHub-Dev` may be restricted over time; **`Developer-Packages`** stays stable.
+- Developers do not need console admin in `Shared-Services`. They need package read for `mh codeartifact login`, `pipenv install`, and `npm ci`.
+
+See Phase -1.8 to create the `Developer-Packages` permission set.
 
 ### -1.3 Create budget for Shared-Services
 
@@ -218,10 +234,10 @@ AWS_REGION=us-east-1
 ```
 
 Record this in:
-- SRE standards.
 - GitHub organization variables.
-- Developer onboarding docs.
+- Developer onboarding docs (`CONTRIBUTING.md`).
 - `mh` CLI defaults.
+- [sre_standards.md](../DeveloperEdition/standards/sre_standards.md) after as-implemented revision.
 
 ### -1.6 Configure local AWS SSO profiles
 
@@ -230,9 +246,11 @@ Before testing CodeArtifact, each SRE/developer should be able to use AWS CLI wi
 Recommended profile names:
 
 ```text
-mentorhub-shared
-mentorhub-dev
+mentorhub-shared   # SSO into Shared-Services with Developer-Packages
+mentorhub-dev      # SSO into MentorHub-Dev with Developer
 ```
+
+When configuring `mentorhub-shared`, select account **Shared-Services** and permission set **Developer-Packages** at the AWS access portal.
 
 Example setup:
 
@@ -256,23 +274,36 @@ Shared-Services
 
 These roles should use GitHub OIDC, not static AWS access keys.
 
-### -1.8 Grant Developer CodeArtifact read access
+### -1.8 Create `Developer-Packages` permission set
 
-Before any developer or consumer repo migrates off git deps, ensure Identity Center users in the `Developer` group can read packages from `Shared-Services`.
+Before any developer or consumer repo migrates off git deps, create and assign the `Developer-Packages` permission set in the Management Account (IAM Identity Center).
 
-**Option A — Permission set (recommended):** Extend or clone the `Developer` permission set assigned to `Shared-Services` with:
+**Create permission set:** `Developer-Packages`
+
+Attach an inline policy (or customer-managed policy) with at least:
 
 ```text
 codeartifact:GetAuthorizationToken
+codeartifact:GetRepositoryEndpoint
 codeartifact:ReadFromRepository
 sts:GetServiceBearerToken
 ```
 
-Scope resources to `arn:aws:codeartifact:<region>:<shared-services-account-id>:domain/mentor-forge` and repositories `mentorhub-pypi`, `mentorhub-npm`.
+Scope resources to the `Shared-Services` account, for example:
 
-**Option B — Repository resource policy:** Allow the `MentorHub-Dev` account or specific IAM roles to read from CodeArtifact repositories. Use when cross-account automation needs access without Identity Center.
+```text
+arn:aws:codeartifact:<region>:<shared-services-account-id>:domain/mentor-forge
+arn:aws:codeartifact:<region>:<shared-services-account-id>:repository/mentor-forge/mentorhub-pypi
+arn:aws:codeartifact:<region>:<shared-services-account-id>:repository/mentor-forge/mentorhub-npm
+```
 
-Validation:
+**Assign:** `Developer` group → `Shared-Services` account → `Developer-Packages` permission set.
+
+Do not fold these permissions into the `Developer` permission set unless that set is already scoped so narrowly that assigning it to `Shared-Services` would not grant unwanted access there.
+
+**Optional — repository resource policy:** For cross-account automation that does not use Identity Center (unusual for human devs), a CodeArtifact repository resource policy can grant read to the `MentorHub-Dev` account or specific IAM roles. GitHub Actions should use OIDC roles in `Shared-Services` (Phase 0.2), not developer permission sets.
+
+Validation (run as a user in the `Developer` group):
 
 ```bash
 aws sso login --profile mentorhub-shared
@@ -283,7 +314,9 @@ aws codeartifact list-packages \
   --profile mentorhub-shared
 ```
 
-A developer in the `Developer` group should succeed after utils packages are published.
+Succeeds after utils packages are published (Phase 1.3). Fails with `AccessDenied` if assignment or policy is wrong — fix before migrating consumer repos.
+
+Document the as-built permission set name, policy, and assignments in `sre_standards.md` when Phase -1 is complete.
 
 ## Phase 0 — CodeArtifact infrastructure
 
@@ -422,10 +455,11 @@ Document that CodeArtifact auth tokens expire (~12 hours) and must be refreshed 
 | Item | Value |
 |------|-------|
 | AWS profile | `mentorhub-shared` (override: `MH_AWS_PROFILE`) |
+| SSO target | Account `Shared-Services`, permission set `Developer-Packages` |
 | pip | `aws codeartifact login --tool pip --domain mentor-forge --domain-owner <account-id> --repository mentorhub-pypi --profile <profile>` |
 | npm | `aws codeartifact login --tool npm --domain mentor-forge --domain-owner <account-id> --repository mentorhub-npm --profile <profile>` |
 | Prerequisites | Valid SSO session (`aws sso login --profile mentorhub-shared`) |
-| Failure mode | Print actionable message if SSO or permissions missing |
+| Failure mode | Print actionable message if SSO session expired or `Developer-Packages` assignment missing |
 | Integration | Called from `make update`; document in `CONTRIBUTING.md` |
 
 GitHub tokens remain required for git operations; they are not used for shared library installs after migration.
@@ -617,7 +651,7 @@ Repo: `mentorhub`
 | `CONTRIBUTING.md` | Add AWS SSO + CodeArtifact setup alongside GitHub token notes |
 | `make verify` | Check `aws` CLI, SSO profile, and optional CodeArtifact reachability |
 | `mh` CLI | Add `mh codeartifact login` for pip + npm credentials |
-| `DeveloperEdition/standards/sre_standards.md` | Promote AWS/CodeArtifact standards (done in this rollout) |
+| `DeveloperEdition/standards/sre_standards.md` | Revise to match as-implemented AWS (after Phase -1 / Phase 0) |
 | `DeveloperEdition/standards/api_standards.md` | Update Dependency Management section |
 | `DeveloperEdition/standards/branch_protection_standards.md` | Update PR CI dependency prerequisites |
 | `DeveloperEdition/standards/examples/docker-push-codeartifact.yml` | Canonical post-migration workflow |
@@ -641,7 +675,7 @@ No GitHub token should be required for shared utility dependency installation af
 
 | Step | Action | Validation |
 |------|--------|------------|
-| 0 | Create `Shared-Services`, budget, CloudTrail, Identity Center assignment | SRE can access account through portal |
+| 0 | Create `Shared-Services`, budget, CloudTrail, Identity Center assignments including `Developer-Packages` | SRE and Developer can access Shared-Services via portal |
 | 1 | Create CodeArtifact domain/repos and upstreams | `aws codeartifact list-repositories` |
 | 2 | Configure GitHub OIDC roles and org variables | Test `aws sts get-caller-identity` in workflow |
 | 3 | Publish utils `0.2.0` to CodeArtifact | Manual pip/npm install test |
@@ -713,7 +747,8 @@ Do not change all repos in one PR. Utility publish must happen first, then one A
 - [ ] `CONTRIBUTING.md`
 - [ ] Developer Edition scripts / `make verify`
 - [ ] `mh codeartifact login`
-- [ ] `DeveloperEdition/standards/sre_standards.md` (promoted)
+- [ ] `Developer-Packages` permission set created and assigned (Phase -1.8)
+- [ ] `DeveloperEdition/standards/sre_standards.md` (revise as-implemented)
 - [ ] `DeveloperEdition/standards/api_standards.md`
 - [ ] `DeveloperEdition/standards/branch_protection_standards.md`
 - [ ] `DeveloperEdition/standards/examples/docker-push-codeartifact.yml`
@@ -820,6 +855,7 @@ RUN --mount=type=cache,target=/app/node_modules/.vite \
 4. Local builds are documented through AWS SSO + `mh codeartifact login`.
 5. Lockfiles are committed and reproducible.
 6. CodeArtifact is hosted in `Shared-Services` or explicitly documented as temporary if hosted elsewhere.
+7. Every user in the `Developer` group has `Developer-Packages` on `Shared-Services` and can run `mh codeartifact login` successfully.
 
 ---
 
@@ -839,3 +875,4 @@ RUN --mount=type=cache,target=/app/node_modules/.vite \
 | 2026-06-01 | Initial plan |
 | 2026-06-04 | Updated for as-built AWS Organization, IAM Identity Center, MentorHub-Dev, CloudTrail/KMS, and recommended Shared-Services account before CodeArtifact |
 | 2026-06-04 | Phase -1.8 developer read access; reference implementation appendix; promoted sre_standards; concrete Dockerfile/CI patterns |
+| 2026-06-04 | `Developer-Packages` permission set strategy; sre_standards deferred to as-implemented revision |
