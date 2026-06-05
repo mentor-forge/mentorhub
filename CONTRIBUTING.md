@@ -55,7 +55,30 @@ When local environment values are required (GitHub access tokens, etc.) they are
 We are using GitHub to publish the api_utils pypi package, the spa_utils npm package, and GitHub Container Registry to publish containers. Create a GitHub classic access token with `repo` `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the ``~/.mentorhub/`` folder.
 
 To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-  
+
+### AWS SSO and CodeArtifact (Shared-Services)
+
+MentorHub uses **`us-east-1`** as the primary AWS region for CodeArtifact, GitHub Actions, and future application infrastructure. See [Specifications/aws-platform.yaml](./Specifications/aws-platform.yaml).
+
+1. Install the [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+2. Configure SSO profiles (one-time):
+
+```sh
+aws configure sso --profile mentorhub-shared   # account: Shared-Services, role: Developer-Packages or SRE
+aws configure sso --profile mentorhub-dev      # account: MentorHub-Dev, role: Developer or SRE
+```
+
+3. Before `pipenv install` / `npm ci` against private packages (after CodeArtifact migration):
+
+```sh
+aws sso login --profile mentorhub-shared
+# future: mh codeartifact login
+```
+
+Platform defaults (`AWS_REGION=us-east-1`, profile names, CodeArtifact domain/repos) are in `DeveloperEdition/aws-platform.env` and installed to `~/.mentorhub/aws-platform.env` by `make update`. Override account-specific values in `~/.mentorhub/aws-platform.local.env` (not committed).
+
+GitHub Actions org variable **`AWS_REGION`** should be set to **`us-east-1`** in the `mentor-forge` organization (Settings → Secrets and variables → Actions → Variables).
+
 ## Step 4 of 4 - Finally
 After you have everything installed and your token in place, run update to finish the install.
 ```sh

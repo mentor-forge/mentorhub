@@ -1,0 +1,22 @@
+# MentorHub AWS platform configuration
+# Source of truth for region and CodeArtifact identifiers.
+# See Specifications/DEPENDENCY_MOVE.md Phase -1.5 and Phase 0.
+
+aws:
+  primary_region: us-east-1
+  recorded: 2026-06-04
+  phase: dependency-move-phase-minus-1
+
+# GitHub organization variables (mentor-forge → Settings → Secrets and variables → Actions → Variables)
+# Set these in GitHub when Phase 0 infrastructure is ready.
+github_org_variables:
+  AWS_REGION: us-east-1
+  # AWS_SHARED_SERVICES_ACCOUNT_ID: "<Shared-Services account ID>"
+  CODEARTIFACT_DOMAIN: mentor-forge
+  CODEARTIFACT_PYPI_REPO: mentorhub-pypi
+  CODEARTIFACT_NPM_REPO: mentorhub-npm
+
+# Local AWS CLI SSO profile names (see CONTRIBUTING.md)
+sso_profiles:
+  shared_services: mentorhub-shared   # Shared-Services + Developer-Packages (or SRE)
+  dev_workload: mentorhub-dev         # MentorHub-Dev + Developer (or SRE)

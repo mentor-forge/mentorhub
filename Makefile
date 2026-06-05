@@ -103,6 +103,7 @@ update: verify
 	@cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
 	chmod +x ~/.mentorhub/mh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
+	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \
 	GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
 	echo "$$GITHUB_TOKEN" | docker login ghcr.io -u $(ORG) --password-stdin && \
 	echo "Docker login completed" && \

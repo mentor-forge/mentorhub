@@ -1,22 +1,282 @@
 # SRE Standards
 
 ## Tech Stack
-- Source Control: Github 
-- CI Automation: Github Actions
-- Private Container Registry: GitHub Container Registry
-- Private PyPi Registry: GitHub (see [API Standards](./api_standards.md)) 
-- Private NPM Registry: GitHub (see [SPA Standards](./spa_standards.md))
-- Infrastructure Automation: Docker Compose for local dev environment
-- Container Runtime Hosting: TBD
-- Container Orchestration: TBD
-- Monitoring: Prometheus, Grafana, ELK
+- Source Control: GitHub
+- CI Automation: GitHub Actions
+- Private Container Registry: GitHub Container Registry today; AWS ECR is the preferred AWS-native target for cloud deployment (separate from dependency registry migration)
+- Private PyPI Registry: AWS CodeArtifact (see [Dependency Registry Migration](../../Specifications/DEPENDENCY_MOVE.md))
+- Private NPM Registry: AWS CodeArtifact (see [Dependency Registry Migration](../../Specifications/DEPENDENCY_MOVE.md))
+- Infrastructure Automation: Docker Compose for local dev environment; AWS infrastructure automation TBD
+- Container Runtime Hosting: AWS, first target account `MentorHub-Dev`
+- Container Orchestration: TBD; ECS/Fargate is the preferred first AWS runtime unless/until EKS is justified
+- Monitoring: Prometheus, Grafana, ELK for application observability; AWS CloudTrail for AWS API audit logging; CloudWatch for AWS-native logs/metrics
 - Runbook Automation: [stage0 runbooks](https://github.com/agile-learning-institute/stage0_runbooks)
 
+## AWS Account and Identity Standards
+
+### As-built AWS organization
+
+MentorHub uses AWS Organizations with a separate management account and development workload account.
+
+```text
+AWS Organization
+└── Root
+    ├── Mike Storey
+    │   └── Management account
+    └── MentorHub-Dev
+        └── Development workload account
+```
+
+Target model before CodeArtifact (see [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) Phase -1):
+
+```text
+AWS Organization
+└── Root
+    ├── Management
+    ├── Shared-Services
+    └── MentorHub-Dev
+```
+
+### Management account
+
+The existing long-lived AWS account is the **Management Account**.
+
+Purpose:
+- AWS Organizations administration
+- IAM Identity Center administration
+- Account creation and governance
+- Billing and payment ownership
+- Emergency/root recovery path
+
+Standards:
+- Do not deploy MentorHub application workloads into the Management Account.
+- Do not create routine development resources in the Management Account.
+- Use the Management Account only for organization, identity, billing, and governance activities.
+- Root user is emergency-only and protected by MFA/passkey.
+- The legacy `flatballflyer` IAM user is retained as historical/legacy access pending later cleanup.
+- The `mike-admin` IAM user is retained as a backup administrator while IAM Identity Center is being adopted.
+
+### MentorHub-Dev account
+
+The `MentorHub-Dev` member account is the first MentorHub workload account.
+
+Purpose:
+- Development deployments
+- Team learning and apprentice experimentation
+- Early Stage0/MentorHub AWS integration
+- Future ECS/ECR/VPC/application infrastructure
+
+Standards:
+- MentorHub development resources belong in `MentorHub-Dev`, not the Management Account.
+- The root user for `MentorHub-Dev` is protected by MFA/passkey and is emergency-only.
+- Human access should come through IAM Identity Center, not account-local IAM users.
+- Application and automation access should use IAM roles, not long-lived access keys.
+
+### Shared-Services account
+
+The `Shared-Services` member account hosts shared platform services (CodeArtifact first).
+
+Purpose:
+- Private npm and PyPI package registries
+- GitHub Actions OIDC roles for package publish and read
+- Future shared platform services that are not application workloads
+
+Standards:
+- Do not deploy MentorHub application containers or databases into `Shared-Services`.
+- Enable CloudTrail and a monthly budget before turning on CodeArtifact.
+- Root user follows the same emergency-only MFA/passkey standard as other accounts.
+
+### IAM Identity Center
+
+IAM Identity Center is enabled from the Management Account and is the standard for all human AWS access.
+
+```text
+Humans      -> IAM Identity Center users and groups
+Automation  -> IAM roles / OIDC federation
+Emergency   -> Root user and backup IAM admin only
+```
+
+Configured Identity Center groups:
+- `Organization-Admin`
+- `SRE`
+- `Developer`
+
+Configured permission sets:
+- `Organization-Admin`
+- `SRE`
+- `Developer`
+
+Account assignment standard:
+
+| Account | Group | Permission Set | Purpose |
+|---------|-------|----------------|---------|
+| Management | Organization-Admin | Organization-Admin | Organization, identity, billing/governance administration |
+| MentorHub-Dev | SRE | SRE | Infrastructure administration in development |
+| MentorHub-Dev | Developer | Developer | Developer/apprentice access without IAM administration |
+| Shared-Services | SRE | SRE | CodeArtifact administration, GitHub OIDC roles |
+| Shared-Services | Developer | Developer (CodeArtifact read) | Local `pipenv`/`npm` installs; no console admin required |
+
+The Developer permission set in `Shared-Services` must allow CodeArtifact read (`GetAuthorizationToken`, `ReadFromRepository`, `GetServiceBearerToken`). Customize the permission set or add a repository resource policy if the default Developer set is too broad.
+
+User assignment standard:
+- Mike belongs to `Organization-Admin` and `SRE`.
+- SRE team members belong to `SRE`.
+- Apprentices and application developers belong to `Developer`.
+
+Access pattern:
+
+```text
+AWS Access Portal
+  -> sign in as Identity Center user
+  -> choose AWS account
+  -> choose permission set / role
+```
+
+Recommended local AWS CLI profile names:
+- `mentorhub-shared` — `Shared-Services` (CodeArtifact)
+- `mentorhub-dev` — `MentorHub-Dev` (application infrastructure)
+
+Do not ask team members to use root-account sign-in or IAM-user sign-in for normal work.
+
+### Root account standard
+
+Each AWS account has its own root user. Root users are not shared across accounts.
+
+```text
+Management Account root       -> existing management account email
+MentorHub-Dev Account root      -> mentorhub-dev@agile-learning.institute
+Shared-Services Account root    -> shared-services@agile-learning.institute
+Future Prod roots               -> account-specific aliases
+```
+
+Root-user requirements for every AWS account:
+- Verify the account email alias works before account creation.
+- Set a strong password and store it in the approved password manager.
+- Enable MFA/passkey.
+- Sign out and do not use root for daily work.
+
+### IAM user standard
+
+Do not create IAM users for team members.
+
+Permitted IAM users:
+- Legacy users retained temporarily for cleanup/migration.
+- Backup administrative user during IAM Identity Center adoption.
+
+Preferred alternatives:
+- Human access: IAM Identity Center.
+- GitHub Actions: AWS OIDC role assumption.
+- Runtime services: IAM roles.
+- Local developer CLI access: IAM Identity Center / AWS SSO profiles.
+
+## AWS Audit and Security Baseline
+
+### CloudTrail
+
+`MentorHub-Dev` has a CloudTrail trail configured for AWS API audit logging.
+
+Standard trail settings for workload and shared-service accounts:
+
+| Account | Trail name | KMS alias |
+|---------|------------|-----------|
+| MentorHub-Dev | `mentorhub-dev-trail` | `alias/mentorhub-dev-cloudtrail` |
+| Shared-Services | `shared-services-trail` | `alias/shared-services-cloudtrail` |
+
+Common settings:
+- Scope: multi-region trail when available
+- Events: management events, read and write
+- Data events: disabled by default unless specifically needed
+- Insights events: disabled by default unless specifically needed
+- Log encryption: AWS KMS
+
+CloudTrail should be enabled before team members begin creating AWS resources in an account.
+
+### Budgets
+
+Every non-management account should have an AWS Budget before substantial service usage.
+
+| Account | Monthly budget | Alerts |
+|---------|----------------|--------|
+| MentorHub-Dev | `$50` | 80%, 100% |
+| Shared-Services | `$25` | 80%, 100% |
+
+Recipients: Mike and appropriate SRE contacts.
+
+### Regions
+
+**Primary region (decided):** `us-east-1` (N. Virginia), recorded 2026-06-04 per [DEPENDENCY_MOVE.md Phase -1.5](../../Specifications/DEPENDENCY_MOVE.md#-15-record-primary-aws-region).
+
+Canonical values: [Specifications/aws-platform.yaml](../../Specifications/aws-platform.yaml). Local shell defaults: [DeveloperEdition/aws-platform.env](../aws-platform.env) (installed to `~/.mentorhub/aws-platform.env` by `make update`).
+
+All GitHub Actions, CodeArtifact repositories, ECR repositories, and developer setup instructions must use **`us-east-1`** unless a future platform decision documents otherwise.
+
+## AWS Shared Service Placement
+
+CodeArtifact is a shared platform service rather than an application workload. The preferred long-term placement is a dedicated `Shared-Services` AWS account.
+
+Recommended account model before production:
+
+```text
+AWS Organization
+└── Root
+    ├── Management
+    ├── Shared-Services
+    └── MentorHub-Dev
+```
+
+If CodeArtifact is created before a `Shared-Services` account exists, treat that as temporary and document the migration path. Prefer creating `Shared-Services` first to avoid moving package registries later.
+
+### CodeArtifact layout
+
+Implementation details and rollout steps: [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md).
+
+```text
+AWS Account:     Shared-Services
+CodeArtifact Domain:  mentor-forge
+├── Repository: mentorhub-pypi   (internal packages + PyPI upstream)
+└── Repository: mentorhub-npm    (internal packages + npmjs upstream)
+```
+
+Record for GitHub org variables and developer tooling:
+
+```text
+AWS_REGION=us-east-1
+AWS_SHARED_SERVICES_ACCOUNT_ID=<shared-services-account-id>
+CODEARTIFACT_DOMAIN=mentor-forge
+CODEARTIFACT_PYPI_REPO=mentorhub-pypi
+CODEARTIFACT_NPM_REPO=mentorhub-npm
+```
+
+**Container images** stay on GitHub Container Registry until ECR migration is explicitly planned. This migration changes **library** install sources only.
+
 ## Developer Experience
-The ``mh`` Developer Edition CLI is how SRE provides a strong developer experience. It manages developer environment values (keys, secrets, JWT material for local tooling, etc.) and wraps the services configured in the system [docker-compose](../docker-compose.yaml) file. Developers can run the full stack on local hardware without using `docker compose` directly for normal workflows.
+
+The `mh` Developer Edition CLI is how SRE provides a strong developer experience. It manages developer environment values (keys, secrets, JWT material for local tooling, AWS/CodeArtifact login helpers, etc.) and wraps the services configured in the system [docker-compose](../docker-compose.yaml) file. Developers can run the full stack on local hardware without using `docker compose` directly for normal workflows.
+
+### CodeArtifact local authentication
+
+After the dependency registry migration, developers refresh private package credentials with:
+
+```sh
+mh codeartifact login
+```
+
+Behavior (target specification — implement in `mentorhub` Developer Edition):
+
+| Item | Standard |
+|------|----------|
+| AWS profile | `mentorhub-shared` (override with `MH_AWS_PROFILE` if needed) |
+| Prerequisites | `aws sso login --profile mentorhub-shared` when SSO session expired |
+| pip | `aws codeartifact login --tool pip --domain mentor-forge --domain-owner <account-id> --repository mentorhub-pypi` |
+| npm | `aws codeartifact login --tool npm --domain mentor-forge --domain-owner <account-id> --repository mentorhub-npm` |
+| Token lifetime | ~12 hours; re-run before `pipenv install`, `npm ci`, or `pipenv run container` / `npm run container` if auth fails |
+| Integration | Hook into `make update` so routine developer refreshes stay current |
+
+GitHub tokens remain required for git clone/push; they are **not** required for installing `api_utils` or `mentorhub_spa_utils` after migration.
 
 ## Authentication
-See the [API Standards authentication](./api_standards.md#authentication) sections for core auth implementation details, and [SPA Standards authentication](./spa_standards.md#authentication-pattern) for the UI implementations. 
+
+See the [API Standards authentication](./api_standards.md#authentication) sections for core auth implementation details, and [SPA Standards authentication](./spa_standards.md#authentication-pattern) for the UI implementations.
 
 Developer Edition CLI and compose uses a **stable `JWT_SECRET`** so SPAs and backends agree across restarts. The umbrella **welcome page** (`index.html`) issues persona links: it opens each SPA with URL-hash bootstrap parameters (`access_token`, `expires_at`, `roles`). SPAs call **`bootstrapAuthFromUrl`** from shared SPA utilities before boot so `localStorage` matches production-style bearer usage. **`IDP_LOGIN_URI`** / **`VITE_IDP_LOGIN_URI`** default to the welcome page origin (for example `http://127.0.0.1:8080/`) so unauthenticated guards, `401` handling, and logout send users back to that page—not to a per-SPA `/login` route.
 
@@ -41,8 +301,14 @@ The developer workflow follows the feature branch pattern. A developer creates a
 - **`.github/workflows/docker-push.yml`** runs on **`push` to `main` only** — not on feature-branch pushes or open PRs.
 - Merging a PR to `main` produces a single `push` event; that triggers one publish run.
 - Peer review and branch protection (soft phase) gate merges; automated test gates on PRs are not enabled yet.
+- Existing container workflows publish to GitHub Container Registry until the ECR migration is explicitly planned.
+- Shared library installs still use git + `GH_PAT`/`GITHUB_TOKEN` today; migrate to CodeArtifact per [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md).
 
-Canonical workflow reference: [examples/docker-push.yml](./examples/docker-push.yml). Apply the same `on:` pattern in every mentor-forge repo that publishes images.
+Canonical workflow references:
+- Pre-migration (git deps): [examples/docker-push.yml](./examples/docker-push.yml)
+- Post-migration (CodeArtifact): [examples/docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml)
+
+Apply the same `on:` pattern in every mentor-forge repo that publishes images.
 
 ### Future state (PR automated tests)
 
@@ -55,13 +321,40 @@ When automated tests should run before merge, add a separate **`.github/workflow
 
 Do not add `pull_request` triggers to `docker-push.yml`. Do not add bare `push:` (all branches) triggers to either workflow.
 
+Future PR CI should use the same CodeArtifact read OIDC role as Docker builds — not `GH_PAT` for dependency access.
+
 ## Continuous Deployment
-Infrastructure provisioning and maintenance has not been implemented.
+
+Continuous deployment promotes immutable container images.
+
+Standards:
+- Build once.
+- Tag images for promotion.
+- Deploy the same image through test, staging, and production.
+- Do not rebuild per environment.
+- The container image is the deployable artifact.
+- Environment-specific configuration changes between environments; the artifact does not.
+
+Recommended promotion model:
+
+```text
+main merge
+  -> build container image
+  -> push immutable image to registry
+  -> deploy to test/dev
+  -> tag/promote same image to staging
+  -> run migration validation + automated tests
+  -> tag/promote same image to production
+```
+
+Infrastructure provisioning and maintenance automation is not yet complete. Initial AWS deployment automation should target `MentorHub-Dev` first.
 
 ## API Reverse Proxy
-All SPA's are served by NGINX with reverse proxy configuration for API endpoints. This allows for secure networking configurations that do not expose the API to external access, establishing a clear separation between the front end and back end networks.
+
+All SPAs are served by NGINX with reverse proxy configuration for API endpoints. This allows for secure networking configurations that do not expose the API to external access, establishing a clear separation between the front end and back end networks.
 
 ### NGINX Configuration Pattern
+
 SPA containers use an NGINX configuration template (`nginx.conf.template`) that is processed at container startup using `envsubst`. The template supports the following environment variables:
 
 - **`API_HOST`**: Hostname of the API server (default: `localhost`)
@@ -71,6 +364,7 @@ SPA containers use an NGINX configuration template (`nginx.conf.template`) that 
 Build-time SPA env (**`VITE_IDP_LOGIN_URI`**) should match the same logical URL so the client can redirect without relying on NGINX-only rewrites.
 
 ### Reverse Proxy Routes
+
 The NGINX configuration proxies the following routes to the API server:
 
 - **`/api/*`**: All API endpoints are proxied to `http://${API_HOST}:${API_PORT}/api/`
@@ -78,18 +372,21 @@ The NGINX configuration proxies the following routes to the API server:
 Proxy only **`/api/*`** (and static assets) through this SPA NGINX layer; do not expose ad-hoc authentication helper routes on the API reverse proxy.
 
 ### Authentication Redirect Pattern
+
 Protected routes and the API client redirect the browser to the configured **login base URL** (`getIdpLoginBaseUrl()` / `VITE_IDP_LOGIN_URI`) when the user is unauthenticated or tokens are cleared:
 
 - **Developer Edition:** Points at the umbrella welcome page so developers pick a persona and land in the SPA with hash bootstrap.
 - **Production:** Points at the commercial IdP (or gateway-hosted login) with TLS.
 
-This keeps one redirect contract from local through production without per-SPA `/login` pages. 
+This keeps one redirect contract from local through production without per-SPA `/login` pages.
 
 ## Service Configurability
-All API's are configured using a shared [Config singleton]( https://github.com/mentor-forge/mentorhub_api_utils/blob/main/py_utils/config/config.py). The Config object manages all configuration items for all API and SPA code. Configuration values are read from the first of: Config File, Environment Var, Default Value. The configuration items and non-secret values are exposed through the Config API endpoint, which is used by the SPA to get runtime configuration values.
+
+All APIs are configured using a shared [Config singleton](https://github.com/mentor-forge/mentorhub_api_utils/blob/main/py_utils/config/config.py). The Config object manages all configuration items for all API and SPA code. Configuration values are read from the first of: Config File, Environment Variable, Default Value. The configuration items and non-secret values are exposed through the Config API endpoint, which is used by the SPA to get runtime configuration values.
 
 ## Service Observability
-All API's expose a /metrics endpoint which exposes a text-based exposition format that Prometheus understands. This endpoint exposes detailed, real-time metrics about the API's performance, latency, error rates, and internal health.
+
+All APIs expose a `/metrics` endpoint which exposes a text-based exposition format that Prometheus understands. This endpoint exposes detailed, real-time metrics about the API's performance, latency, error rates, and internal health.
 
 ## API Security Standards
 
@@ -102,6 +399,10 @@ Before deploying any API to production, ensure:
 - [ ] HTTPS/TLS is configured via reverse proxy
 - [ ] Monitoring and logging are enabled
 - [ ] All dependencies are up to date
+- [ ] AWS account has CloudTrail enabled
+- [ ] AWS budget alarms are configured
+- [ ] Human access is through IAM Identity Center
+- [ ] Automation uses IAM roles/OIDC, not static access keys
 
 ### JWT Security
 
@@ -122,6 +423,7 @@ Before deploying any API to production, ensure:
 | Logging | INFO or DEBUG | WARNING or ERROR |
 
 ## API Container Configuration
+
 - Dockerfile must define `API_HOST` and `API_PORT` environment variables
 - NGINX configuration template (`nginx.conf.template` or `default.conf.template`) must use `${API_HOST}` and `${API_PORT}` in proxy_pass directive
 - Template pattern: `proxy_pass http://${API_HOST}:${API_PORT}/api/;`
@@ -129,3 +431,10 @@ Before deploying any API to production, ensure:
 - Container exposes port 80 by default (or `SPA_PORT` if specified)
 
 See Also: [security_standards](./security_standards.md)
+
+## Revision history
+
+| Date | Change |
+|------|--------|
+| 2026-05-29 | Initial SRE standards |
+| 2026-06-04 | AWS Organization, IAM Identity Center, MentorHub-Dev, CodeArtifact target, Shared-Services placement, CD promotion model |
