@@ -1,8 +1,10 @@
 # Solution Architecture
 
-![DrawIO Render](./ArchitectureDiagram.svg)
+## Local Dev Environment
+![DrawIO Render](./ArchitectureDiagram.local.svg)
 
-Or use the [DrawIO Github App](https://app.diagrams.net/) to view/edit it on Github
+## Cloud Dev Environment
+![DrawIO Render](./ArchitectureDiagram.dev.svg)
 
 ## drawio plugin 
     Name: Draw.io Integration

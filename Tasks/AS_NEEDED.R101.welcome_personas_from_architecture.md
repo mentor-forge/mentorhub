@@ -8,7 +8,7 @@
 
 Refactor `index.html` (welcome page **persona** section and related script) so personas, role strings, and JWT payloads align with **your** journey domains and RBAC model, using `Specifications/architecture.yaml` as the source of truth.
 
-The merged umbrella template ships legacy **Genny** / **Adam** (`developer` / `admin`). The target persona set is defined in [DevLoginRefactor.md](../Specifications/DevLoginRefactor.md#developer-personas-and-roles): **Carol** (`coordinator`), **Maria** (`mentor`), **Cat** (`customer`), **Mark** (`mentee`), **Stan** (`admin` / SRE)—five personas, five roles, one JWT each. Run this task to mint tokens and update welcome markup/script.
+The merged umbrella template ships legacy **Genny** / **Adam** (`developer` / `admin`). The target persona set is defined in [DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md#reference--target-behavior): **Carol** (`coordinator`), **Maria** (`mentor`), **Cat** (`customer`), **Mark** (`mentee`), **Stan** (`admin` / SRE)—five personas, five roles, one JWT each. Run this task to mint tokens and update welcome markup/script.
 
 ## Context / Input files
 
@@ -29,10 +29,10 @@ The merged umbrella template ships legacy **Genny** / **Adam** (`developer` / `a
 
 2. **Replace Genny/Adam with five personas**  
    - Carol, Maria, Cat, Mark, Stan — each with a single role (`coordinator`, `mentor`, `customer`, `mentee`, `admin`).  
-   - See [DevLoginRefactor.md](../Specifications/DevLoginRefactor.md#developer-personas-and-roles) for `sub` and journey hints.
+   - See [DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md#reference--target-behavior) for `sub` and journey hints.
 
 3. **JWT and URL `roles` must agree**  
-   `login.html` mints JWTs at Login from the user dropdown + role checkboxes. Payload `roles` array must match hash `roles` (comma-separated). Default roles per persona are in [DevLoginRefactor.md](../Specifications/DevLoginRefactor.md#developer-personas-and-roles); users may override checkboxes before Login.
+   `login.html` mints JWTs at Login from the user dropdown + role checkboxes. Payload `roles` array must match hash `roles` (comma-separated). Default roles per persona are in [DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md#reference--target-behavior); users may override checkboxes before Login.
 
 4. **Mint tokens with the real dev secret**  
    Use the same secret as running APIs (e.g. PyJWT, `HS256`). Default Developer Edition and compose use `local-dev-jwt-secret-fixed` (no product slug in the string). After changing `JWT_SECRET` or claims, re-run this task and update inlined tokens in `index.html`.
@@ -63,7 +63,7 @@ The merged umbrella template ships legacy **Genny** / **Adam** (`developer` / `a
 ## Change control checklist
 
 - [ ] Read current `architecture.yaml` journey domains and SPA ports.  
-- [ ] Confirm five personas (Carol … Stan) and roles per DevLoginRefactor.  
+- [ ] Confirm five personas (Carol … Stan) and roles per DevLoginLaunchPlan.  
 - [ ] Mint JWTs; update `index.html` script and markup.  
 - [ ] Manually verify one SPA per journey.  
 - [ ] Note completion and date in implementation notes below.
