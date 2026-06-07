@@ -4,8 +4,10 @@
 A platform to connect mentors with engineers engaged in a life long learning journey.
 
 ## Development Team 
-- TBD
-- TBD
+- Daniel: Primary SPA Engineering, Secondary SPA Engineering
+- Mary: Primary Data Engineering, Secondary SPA Engineering
+- Luther: Primary SRE Engineering, Secondary API Engineering
+- Lucky: Primary API Engineering, Secondary SRE Engineering
 
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 
