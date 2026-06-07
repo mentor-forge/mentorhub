@@ -4,10 +4,10 @@
 A platform to connect mentors with engineers engaged in a life long learning journey.
 
 ## Development Team 
-- Daniel: Primary SPA Engineering, Secondary SPA Engineering
-- Mary: Primary Data Engineering, Secondary SPA Engineering
-- Luther: Primary SRE Engineering, Secondary API Engineering
-- Lucky: Primary API Engineering, Secondary SRE Engineering
+- Daniel Dissler: Primary SPA Engineering, Secondary SPA Engineering
+- Mary Anderson: Primary Data Engineering, Secondary SPA Engineering
+- Luther (Luke) Still: Primary SRE Engineering, Secondary API Engineering
+- Curtis(Lucky) Minyard: Primary API Engineering, Secondary SRE Engineering
 
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 
