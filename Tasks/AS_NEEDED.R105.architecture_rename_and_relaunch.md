@@ -10,7 +10,7 @@ After journey repos are deleted ([R104](./AS_NEEDED.R104.stage0_delete_journey_r
 
 1. Update **`Specifications/architecture.yaml`** (and related specs) with **team-agreed** domain names, repo names, and ports
 2. Align umbrella Developer Edition files with the new architecture ([R100](./AS_NEEDED.R100.after_specs_update.md))
-3. **`stage0_launch`** to re-create **`mentorhub_spa_utils`** and all journey **api/spa** pairs from templates updated in [R103](./AS_NEEDED.R103.dev_login_stage0_templates.md)
+3. **`stage0_launch`** to re-create **`mentorhub_spa_utils`** and all journey **api/spa** pairs from templates updated in [R102](./AS_NEEDED.R102.dev_login_pilot.md) Phase B
 
 Umbrella **`mentorhub` is not re-launched** — only spec/compose/catalog updates plus launch of child repos.
 
@@ -23,7 +23,7 @@ Umbrella **`mentorhub` is not re-launched** — only spec/compose/catalog update
 - `DeveloperEdition/docker-compose.yaml`, `index.html` (catalog ports)
 - [R100](./AS_NEEDED.R100.after_specs_update.md) — compose + `index.html` after yaml changes
 - [R101](./AS_NEEDED.R101.welcome_personas_from_architecture.md) — if persona defaults on `login.html` need yaml-driven tweaks
-- Stage0 templates from R103
+- Stage0 templates from R102 Phase B
 
 ## Requirements
 
@@ -58,7 +58,7 @@ Umbrella **`mentorhub` is not re-launched** — only spec/compose/catalog update
 ## Dependencies / Ordering
 
 - Run **after** [R104](./AS_NEEDED.R104.stage0_delete_journey_repos.md)
-- Requires [R103](./AS_NEEDED.R103.dev_login_stage0_templates.md) templates
+- Requires [R102](./AS_NEEDED.R102.dev_login_pilot.md) Phase B templates
 - Uses [R100](./AS_NEEDED.R100.after_specs_update.md) after yaml stabilizes
 
 ## Change control checklist

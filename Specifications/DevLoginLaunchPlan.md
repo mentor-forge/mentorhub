@@ -49,19 +49,18 @@ Run **one task at a time** per [Tasks/README.md](../Tasks/README.md). Each task 
 
 | Order | Task | Phase | PR focus |
 |-------|------|-------|----------|
-| 1 | **[R102](../Tasks/AS_NEEDED.R102.dev_login_pilot.md)** — Dev login pilot | Implement in `mentorhub`, `mentorhub_spa_utils`, `mentorhub_customer_spa`; manual smoke | `feature/dev-login-pilot` |
-| 2 | **[R103](../Tasks/AS_NEEDED.R103.dev_login_stage0_templates.md)** — Stage0 templates | Port pilot to `stage0_template_vue_utils`, `vue_vuetify`, `umbrella`; parity test | `feature/dev-login-templates` |
-| 3 | **[R104](../Tasks/AS_NEEDED.R104.stage0_delete_journey_repos.md)** — Delete journey repos | `stage0_launch` delete `spa_utils` + all journey api/spa | Ops / doc PR |
-| 4 | **[R105](../Tasks/AS_NEEDED.R105.architecture_rename_and_relaunch.md)** — Rename + re-launch | Team updates `architecture.yaml`; R100; `stage0_launch` create repos | Spec PR + launch tracking |
+| 1 | **[R102](../Tasks/AS_NEEDED.R102.dev_login_pilot.md)** — Dev login pilot + Stage0 templates | **A:** live repos (`mentorhub`, `spa_utils`, `customer_spa`); **B:** port to Stage0 templates | `feature/dev-login-pilot` then `feature/dev-login-templates` |
+| 2 | **[R104](../Tasks/AS_NEEDED.R104.stage0_delete_journey_repos.md)** — Delete journey repos | `stage0_launch` delete `spa_utils` + all journey api/spa | Ops / doc PR |
+| 3 | **[R105](../Tasks/AS_NEEDED.R105.architecture_rename_and_relaunch.md)** — Rename + re-launch | Team updates `architecture.yaml`; R100; `stage0_launch` create repos | Spec PR + launch tracking |
 
 ```mermaid
 flowchart TD
-  R102[R102 Pilot]
-  R103[R103 Templates]
+  R102A[R102 Phase A Pilot]
+  R102B[R102 Phase B Templates]
   R104[R104 Delete repos]
   R105[R105 Rename + relaunch]
-  R102 --> R103
-  R103 --> R104
+  R102A --> R102B
+  R102B --> R104
   R104 --> R105
 ```
 

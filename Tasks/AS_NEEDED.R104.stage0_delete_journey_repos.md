@@ -17,7 +17,7 @@ Use **`stage0_launch`** (per Developer Edition / Stage0 docs) to **delete** the 
 - [DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md)
 - `Specifications/architecture.yaml` — list of journey domains/repos to delete
 - Developer Edition / Stage0 launch documentation for delete workflow
-- [R102](./AS_NEEDED.R102.dev_login_pilot.md), [R103](./AS_NEEDED.R103.dev_login_stage0_templates.md) — must be complete so templates are ready for later re-launch
+- [R102](./AS_NEEDED.R102.dev_login_pilot.md) — must be **Shipped** (Phase A pilot + Phase B Stage0 templates) before delete/re-launch
 
 ## Requirements
 
@@ -46,7 +46,7 @@ Use **`stage0_launch`** (per Developer Edition / Stage0 docs) to **delete** the 
 
 ## Dependencies / Ordering
 
-- Run **after** [R102](./AS_NEEDED.R102.dev_login_pilot.md) and [R103](./AS_NEEDED.R103.dev_login_stage0_templates.md) are **Shipped**
+- Run **after** [R102](./AS_NEEDED.R102.dev_login_pilot.md) is **Shipped** (both phases)
 - Run **before** [R105](./AS_NEEDED.R105.architecture_rename_and_relaunch.md)
 
 ## Change control checklist
