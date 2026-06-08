@@ -105,7 +105,7 @@ User dropdown resets role checkboxes to defaults; user may edit roles before Log
 ### SPA / Cypress / curl
 
 - `bootstrapAuthFromUrl()` in `initAuth.ts` (unchanged)
-- Vue `/login` = redirect stub when IdP configured
+- No per-SPA `/login` route — guards, `401`, and logout call `redirectToIdpLogin` only
 - **Cypress:** keep `cy.login()` — do not drive `login.html` in domain specs
 - **curl:** `test/e2e/e2e_auth.get_auth_token()`
 
