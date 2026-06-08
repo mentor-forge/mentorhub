@@ -6,9 +6,9 @@
 
 ## Goal
 
-Refactor `index.html` (welcome page **persona** section and related script) so personas, role strings, and JWT payloads align with **your** journey domains and RBAC model, using `Specifications/architecture.yaml` as the source of truth.
+Align welcome **persona** data with `Specifications/architecture.yaml` and the dev-login design in [DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md). Primary JWT minting moves to **`login.html`** in [R102](./AS_NEEDED.R102.dev_login_pilot.md); `index.html` becomes catalog-only (no persona matrix).
 
-The merged umbrella template ships legacy **Genny** / **Adam** (`developer` / `admin`). The target persona set is defined in [DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md#reference--target-behavior): **Carol** (`coordinator`), **Maria** (`mentor`), **Cat** (`customer`), **Mark** (`mentee`), **Stan** (`admin` / SRE)—five personas, five roles, one JWT each. Run this task to mint tokens and update welcome markup/script.
+Target personas: **Carol** (`coordinator`), **Maria** (`mentor`), **Cat** (`customer`), **Mark** (`mentee`), **Stan** (`admin` / SRE)—five personas, five roles, one JWT each. Use this task when architecture or persona definitions change; implement welcome/login split in R102.
 
 ## Context / Input files
 
