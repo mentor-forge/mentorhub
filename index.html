@@ -73,47 +73,16 @@
             color: white;
             transform: translateX(4px);
         }
-        .welcome-auth {
-            margin-bottom: 28px;
-            padding-bottom: 24px;
+        .portal-note {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
             border-bottom: 1px solid #eee;
-        }
-        .welcome-auth h2 {
-            font-size: 1.15em;
-            color: #444;
-            margin-bottom: 8px;
-        }
-        .welcome-auth .hint {
-            color: #666;
-            font-size: 0.95em;
-            margin-bottom: 16px;
-            line-height: 1.4;
-        }
-        .persona-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 12px;
-            align-items: center;
-        }
-        .persona-row span.label {
-            font-weight: 600;
             color: #555;
-            min-width: 140px;
+            font-size: 0.95em;
+            line-height: 1.5;
         }
-        .persona-row a.persona {
-            display: inline-block;
-            padding: 8px 14px;
-            background: #eef2ff;
-            border-radius: 6px;
-            text-decoration: none;
+        .portal-note a {
             color: #3949ab;
-            font-size: 14px;
-            border: 1px solid #c5cae9;
-        }
-        .persona-row a.persona:hover {
-            background: #3949ab;
-            color: #fff;
         }
     </style>
 </head>
@@ -122,24 +91,11 @@
         <h1>Mentor Hub</h1>
         <p class="subtitle">Welcome to the Development Environment</p>
 
-        <div class="welcome-auth">
-            <h2>Local environment sign-in</h2>
-            <p class="hint">Genny and Adam use fixed dev JWTs (developer / admin roles). Links are generated for each journey SPA from <code>architecture.yaml</code>. To customize personas or roles per journey, follow Tasks/AS_NEEDED.R101.</p>
-            <div class="persona-row">
-                <span class="label">Genny (generic user)</span>
-                <a class="persona" id="customer-genny" href="#" target="_blank" rel="noopener noreferrer">Customer</a>
-                <a class="persona" id="coordinator-genny" href="#" target="_blank" rel="noopener noreferrer">Coordinator</a>
-                <a class="persona" id="mentor-genny" href="#" target="_blank" rel="noopener noreferrer">Mentor</a>
-                <a class="persona" id="craftsperson-genny" href="#" target="_blank" rel="noopener noreferrer">Craftsperson</a>
-            </div>
-            <div class="persona-row">
-                <span class="label">Adam (admin)</span>
-                <a class="persona" id="customer-adam" href="#" target="_blank" rel="noopener noreferrer">Customer</a>
-                <a class="persona" id="coordinator-adam" href="#" target="_blank" rel="noopener noreferrer">Coordinator</a>
-                <a class="persona" id="mentor-adam" href="#" target="_blank" rel="noopener noreferrer">Mentor</a>
-                <a class="persona" id="craftsperson-adam" href="#" target="_blank" rel="noopener noreferrer">Craftsperson</a>
-            </div>
-        </div>
+        <p class="portal-note">
+            Journey SPAs redirect unauthenticated users to
+            <a href="/login.html">developer sign-in</a>.
+            Links below open each SPA without embedded tokens; sign in when prompted.
+        </p>
 
         <ul class="links">
             <li class="service-block">
@@ -151,24 +107,28 @@
             </li>
             <li class="service-block">
                 <div class="service-title">Customer</div>
+                <a href="#" id="customer-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer SPA</a>
                 <a href="#" id="customer-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
                 <a href="https://github.com/mentor-forge/mentorhub_customer_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_api source">mentorhub_customer_api</a>
                 <a href="https://github.com/mentor-forge/mentorhub_customer_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_spa source">mentorhub_customer_spa</a>
             </li>
             <li class="service-block">
                 <div class="service-title">Coordinator</div>
+                <a href="#" id="coordinator-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Coordinator SPA</a>
                 <a href="#" id="coordinator-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
                 <a href="https://github.com/mentor-forge/mentorhub_coordinator_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_api source">mentorhub_coordinator_api</a>
                 <a href="https://github.com/mentor-forge/mentorhub_coordinator_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_spa source">mentorhub_coordinator_spa</a>
             </li>
             <li class="service-block">
                 <div class="service-title">Mentor</div>
+                <a href="#" id="mentor-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor SPA</a>
                 <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
                 <a href="https://github.com/mentor-forge/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
                 <a href="https://github.com/mentor-forge/mentorhub_mentor_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_spa source">mentorhub_mentor_spa</a>
             </li>
             <li class="service-block">
                 <div class="service-title">Craftsperson</div>
+                <a href="#" id="craftsperson-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Craftsperson SPA</a>
                 <a href="#" id="craftsperson-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
                 <a href="https://github.com/mentor-forge/mentorhub_craftsperson_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="craftsperson_api source">mentorhub_craftsperson_api</a>
                 <a href="https://github.com/mentor-forge/mentorhub_craftsperson_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="craftsperson_spa source">mentorhub_craftsperson_spa</a>
@@ -178,40 +138,16 @@
     <script>
         const hostname = window.location.hostname || 'localhost';
 
-        /** HS256 dev-only persona JWTs: iss dev-idp, aud dev-api. Must match JWT_SECRET local-dev-jwt-secret-fixed (journey API Pipfile dev/e2e, e2e_auth, Developer Edition compose default). */
-        const PERSONA_TOKEN_EXPIRES_AT = '2036-03-23T19:24:11+00:00';
-        const TOKEN_GENNY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkZXYtaWRwIiwiYXVkIjoiZGV2LWFwaSIsInN1YiI6Imdlbm55IiwiaWF0IjoxNzc0NTUzMDUxLCJleHAiOjIwODk5MTMwNTEsInJvbGVzIjpbImRldmVsb3BlciJdfQ.2b2PXQp3ntZykvbcVVdAhABN96BvDTZFuJQSJHMMfBo';
-        const TOKEN_ADAM = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkZXYtaWRwIiwiYXVkIjoiZGV2LWFwaSIsInN1YiI6ImFkYW0iLCJpYXQiOjE3NzQ1NTMwNTEsImV4cCI6MjA4OTkxMzA1MSwicm9sZXMiOlsiYWRtaW4iXX0.S_Vxouja_C6kshlUyiU8sqiVGrpAIl3oSMxwNRUNDIQ';
-
-        function spaAuthHash(token, rolesComma) {
-            const p = new URLSearchParams();
-            p.set('access_token', token);
-            p.set('expires_at', PERSONA_TOKEN_EXPIRES_AT);
-            p.set('roles', rolesComma);
-            return '#' + p.toString();
-        }
-
-        function setPersonaLink(elId, port, token, roles) {
-            const el = document.getElementById(elId);
-            if (!el) return;
-            el.href = 'http://' + hostname + ':' + port + '/' + spaAuthHash(token, roles);
-            el.target = '_blank';
-            el.rel = 'noopener noreferrer';
-        }
         document.getElementById('schema-api-docs-link').href = `http://${hostname}:8383/docs/index.html`;
         document.getElementById('schema-spa-link').href = `http://${hostname}:8384`;
+        document.getElementById('customer-spa-link').href = `http://${hostname}:8388/`;
         document.getElementById('customer-api-docs-link').href = `http://${hostname}:8387/docs/explorer.html`;
+        document.getElementById('coordinator-spa-link').href = `http://${hostname}:8390/`;
         document.getElementById('coordinator-api-docs-link').href = `http://${hostname}:8389/docs/explorer.html`;
+        document.getElementById('mentor-spa-link').href = `http://${hostname}:8392/`;
         document.getElementById('mentor-api-docs-link').href = `http://${hostname}:8391/docs/explorer.html`;
+        document.getElementById('craftsperson-spa-link').href = `http://${hostname}:8394/`;
         document.getElementById('craftsperson-api-docs-link').href = `http://${hostname}:8393/docs/explorer.html`;
-        setPersonaLink('customer-genny', 8388, TOKEN_GENNY, 'developer');
-        setPersonaLink('customer-adam', 8388, TOKEN_ADAM, 'admin');
-        setPersonaLink('coordinator-genny', 8390, TOKEN_GENNY, 'developer');
-        setPersonaLink('coordinator-adam', 8390, TOKEN_ADAM, 'admin');
-        setPersonaLink('mentor-genny', 8392, TOKEN_GENNY, 'developer');
-        setPersonaLink('mentor-adam', 8392, TOKEN_ADAM, 'admin');
-        setPersonaLink('craftsperson-genny', 8394, TOKEN_GENNY, 'developer');
-        setPersonaLink('craftsperson-adam', 8394, TOKEN_ADAM, 'admin');
     </script>
 </body>
 </html>

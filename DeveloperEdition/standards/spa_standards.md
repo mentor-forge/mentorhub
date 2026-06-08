@@ -49,7 +49,7 @@
 - JWT tokens stored in localStorage (`access_token`, `token_expires_at`, `user_roles` when present)
 - `useAuth()` composable manages authentication state
 - **URL bootstrap:** Call **`bootstrapAuthFromUrl()`** from `spa_utils` once before the router mounts. Hash `#access_token=...&expires_at=...&roles=...` seeds localStorage (Developer Edition welcome page / IdP-style callback). Query `?clear_stored_auth=1` clears stored tokens when needed.
-- Router guards protect authenticated routes; unauthenticated users redirect using **`VITE_IDP_LOGIN_URI`** / runtime login base URL (welcome page in Developer Edition, real IdP in production)
+- Router guards protect authenticated routes; unauthenticated users redirect using **`VITE_IDP_LOGIN_URI`** / runtime login base URL (Developer Edition: `http://127.0.0.1:8080/login.html`; production: commercial IdP)
 - Config is loaded when the app runs; it does not depend on a backend-issued “login” exchange in the SPA product flow
 
 ## Component Patterns

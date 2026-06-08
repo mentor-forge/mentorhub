@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Hub - Developer Sign In</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 520px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1em;
+            line-height: 1.4;
+        }
+        .dev-banner {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #664d03;
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 24px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+        .roles {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .role-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+        .role-row input {
+            width: auto;
+            margin: 0;
+        }
+        .error {
+            color: #b00020;
+            font-size: 0.9em;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button[type="submit"]:disabled {
+            background: #bbb;
+            cursor: not-allowed;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Developer sign-in</h1>
+        <p class="subtitle">Local IdP for Developer Edition journey SPAs. Pick a persona, adjust roles, then sign in.</p>
+
+        <div class="dev-banner" role="alert">
+            Dev-only: JWTs are minted in the browser with a fixed HS256 secret (<code>local-dev-jwt-secret-fixed</code>).
+            Do not use this page outside local development.
+        </div>
+
+        <form id="welcome-login-form">
+            <label for="welcome-login-user-id">User</label>
+            <select id="welcome-login-user-id" data-automation-id="welcome-login-user-id">
+                <option value="carol">Carol</option>
+                <option value="maria">Maria</option>
+                <option value="cat">Cat</option>
+                <option value="mark">Mark</option>
+                <option value="stan">Stan</option>
+            </select>
+
+            <label>Roles</label>
+            <div class="roles">
+                <label class="role-row">
+                    <input type="checkbox" id="welcome-login-role-coordinator" data-automation-id="welcome-login-role-coordinator">
+                    coordinator
+                </label>
+                <label class="role-row">
+                    <input type="checkbox" id="welcome-login-role-mentor" data-automation-id="welcome-login-role-mentor">
+                    mentor
+                </label>
+                <label class="role-row">
+                    <input type="checkbox" id="welcome-login-role-customer" data-automation-id="welcome-login-role-customer">
+                    customer
+                </label>
+                <label class="role-row">
+                    <input type="checkbox" id="welcome-login-role-mentee" data-automation-id="welcome-login-role-mentee">
+                    mentee
+                </label>
+                <label class="role-row">
+                    <input type="checkbox" id="welcome-login-role-admin" data-automation-id="welcome-login-role-admin">
+                    admin
+                </label>
+            </div>
+
+            <input type="hidden" id="welcome-login-return-to">
+
+            <p id="welcome-login-return-to-error" class="error" hidden></p>
+
+            <button type="submit" id="welcome-login-submit" data-automation-id="welcome-login-submit">Login</button>
+        </form>
+
+        <a href="/index.html" class="back-link" data-automation-id="welcome-back-to-portal">Back to developer portal</a>
+    </div>
+    <script src="/welcome-auth.js"></script>
+</body>
+</html>
