@@ -278,7 +278,7 @@ GitHub tokens remain required for git clone/push; they are **not** required for 
 
 See the [API Standards authentication](./api_standards.md#authentication) sections for core auth implementation details, and [SPA Standards authentication](./spa_standards.md#authentication-pattern) for the UI implementations.
 
-Developer Edition CLI and compose uses a **stable `JWT_SECRET`** so SPAs and backends agree across restarts. The umbrella **welcome page** (`index.html`) issues persona links: it opens each SPA with URL-hash bootstrap parameters (`access_token`, `expires_at`, `roles`). SPAs call **`bootstrapAuthFromUrl`** from shared SPA utilities before boot so `localStorage` matches production-style bearer usage. **`IDP_LOGIN_URI`** / **`VITE_IDP_LOGIN_URI`** default to the welcome page origin (for example `http://127.0.0.1:8080/`) so unauthenticated guards, `401` handling, and logout send users back to that page—not to a per-SPA `/login` route.
+Developer Edition CLI and compose uses a **stable `JWT_SECRET`** so SPAs and backends agree across restarts. The umbrella **developer sign-in page** (`login.html`) mints persona JWTs client-side; journey SPAs load tokens into `localStorage` via `bootstrapAuthFromUrl()` from shared SPA utilities before boot. **`IDP_LOGIN_URI`** / **`VITE_IDP_LOGIN_URI`** default to `http://127.0.0.1:8080/login.html` so unauthenticated guards, `401` handling, and logout send users to that page—not to a per-SPA `/login` route.
 
 **Verifying the stack after compose or image changes** (from the product checkout root, for example the repo that contains `DeveloperEdition/`):
 
@@ -359,7 +359,7 @@ SPA containers use an NGINX configuration template (`nginx.conf.template`) that 
 
 - **`API_HOST`**: Hostname of the API server (default: `localhost`)
 - **`API_PORT`**: Port of the API server (default: `8083`)
-- **`IDP_LOGIN_URI`**: Full base URL for login redirect after logout, on `401`, or when the SPA is not authenticated (Developer Edition default: umbrella welcome page, e.g. `http://127.0.0.1:8080/`; production: IdP or gateway login entry)
+- **`IDP_LOGIN_URI`**: Full URL for login redirect after logout, on `401`, or when the SPA is not authenticated (Developer Edition default: `http://127.0.0.1:8080/login.html`; production: IdP or gateway login entry)
 
 Build-time SPA env (**`VITE_IDP_LOGIN_URI`**) should match the same logical URL so the client can redirect without relying on NGINX-only rewrites.
 
@@ -375,7 +375,7 @@ Proxy only **`/api/*`** (and static assets) through this SPA NGINX layer; do not
 
 Protected routes and the API client redirect the browser to the configured **login base URL** (`getIdpLoginBaseUrl()` / `VITE_IDP_LOGIN_URI`) when the user is unauthenticated or tokens are cleared:
 
-- **Developer Edition:** Points at the umbrella welcome page so developers pick a persona and land in the SPA with hash bootstrap.
+- **Developer Edition:** Points at the umbrella developer sign-in page (`login.html`) so developers pick a persona and land in the SPA with hash bootstrap.
 - **Production:** Points at the commercial IdP (or gateway-hosted login) with TLS.
 
 This keeps one redirect contract from local through production without per-SPA `/login` pages.
