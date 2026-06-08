@@ -1,7 +1,4 @@
 # docker-compose.yaml for Mentor Hub developers edition
-
-
-
 services:
   ##################################
   # Welcome Service
@@ -19,8 +16,8 @@ services:
       - coordinator-api
       - mentor
       - mentor-api
-      - craftsperson
-      - craftsperson-api
+      - mentee
+      - mentee-api
 
   ##################################
   # Backing Services
@@ -148,6 +145,17 @@ services:
       - all
       - customer
 
+# mock_stripe_api:
+#   image: stripe/strip-mock:latest
+#   restart: no
+#   ports:
+#     - "127.0.0.1:12111:12111"
+#   environment:
+#   profiles:
+#     - all
+#     - customer-api
+#     - customer
+
   coordinator_api:
     image: ghcr.io/mentor-forge/mentorhub_coordinator_api:latest
     restart: no
@@ -224,8 +232,8 @@ services:
       - all
       - mentor
 
-  craftsperson_api:
-    image: ghcr.io/mentor-forge/mentorhub_craftsperson_api:latest
+  mentee_api:
+    image: ghcr.io/mentor-forge/mentorhub_mentee_api:latest
     restart: no
     ports:
       - "127.0.0.1:8393:8393"
@@ -243,21 +251,21 @@ services:
         condition: service_started
     profiles:
       - all
-      - craftsperson
-      - craftsperson-api
+      - mentee
+      - mentee-api
 
-  craftsperson_spa:
-    image: ghcr.io/mentor-forge/mentorhub_craftsperson_spa:latest
+  mentee_spa:
+    image: ghcr.io/mentor-forge/mentorhub_mentee_spa:latest
     restart: no
     ports:
       - "127.0.0.1:8394:80"
     environment:
-      API_HOST: craftsperson_api
+      API_HOST: mentee_api
       API_PORT: 8393
       IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://127.0.0.1:8080/login.html}
     depends_on:
-      craftsperson_api:
+      mentee_api:
         condition: service_started
     profiles:
       - all
-      - craftsperson
+      - mentee

@@ -42,11 +42,15 @@ architecture:
         controls:
           - Subscription
           - Dashboard
+          - Card
         creates:
           - Event
         consumes: 
           - Profile
           - Customer
+          - Journey
+          - Rating
+          - Note
       repos:
         - name: customer_api
           description: Customer API
@@ -111,8 +115,8 @@ architecture:
           publish: npm
           type: spa
           port: 8392
-    - name: craftsperson
-      description: Craftsperson User Journey Domain
+    - name: mentee
+      description: Mentee User Journey Domain
       is_journey: true
       data_domains:
         controls:
@@ -125,14 +129,14 @@ architecture:
           - Resource
           - Path 
       repos:
-        - name: craftsperson_api
-          description: Craftsperson API
+        - name: mentee_api
+          description: Mentee API
           template: agile-learning-institute/stage0_template_flask_mongo
           publish: pipenv
           type: api
           port: 8393 
-        - name: craftsperson_spa
-          description: Craftsperson SPA
+        - name: mentee_spa
+          description: Mentee SPA
           template: agile-learning-institute/stage0_template_vue_vuetify
           publish: npm
           type: spa
