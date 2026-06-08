@@ -7,6 +7,8 @@ data_dictionaries:
     description: An customer who pays for the service for a craftsperson.
   - name: Subscription
     description: A subscription to the service for a customer.
+  - name: Card
+    description: Credit Card details
   - name: Dashboard
     description: Dashboard configuration for a customer.
   - name: Event

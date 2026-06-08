@@ -44,10 +44,10 @@ Implement the Developer Edition dev-login flow in **live** repos, then port the 
 
 ### Phase A — `mentorhub` (welcome + compose)
 
-- **`index.html`:** catalog only — remove `.welcome-auth`, `setPersonaLink`, static `TOKEN_*`; plain SPA links (no JWT in URL)
-- **`login.html`** (+ `welcome-auth.js`): `return_to` allowlist; user ID dropdown (Carol … Stan); five role checkboxes (defaults on user change; editable); client-side HS256 mint on Login
-- **`Dockerfile`:** `COPY index.html`, `login.html`, and JS
-- **`DeveloperEdition/docker-compose.yaml`:** journey SPAs `IDP_LOGIN_URI: http://127.0.0.1:8080/login.html`
+- `**index.html`:** catalog only — remove `.welcome-auth`, `setPersonaLink`, static `TOKEN_*`; plain SPA links (no JWT in URL)
+- `**login.html`** (+ `welcome-auth.js`): `return_to` allowlist; user ID dropdown (Carol … Stan); five role checkboxes (defaults on user change; editable); client-side HS256 mint on Login
+- `**Dockerfile`:** `COPY index.html`, `login.html`, and JS
+- `**DeveloperEdition/docker-compose.yaml`:** journey SPAs `IDP_LOGIN_URI: http://127.0.0.1:8080/login.html`
 - Update `DeveloperEdition/standards/spa_standards.md`, `sre_standards.md`, `api_standards.md` IdP URL examples
 
 ### Phase A — `mentorhub_customer_spa`
@@ -63,7 +63,7 @@ Implement the Developer Edition dev-login flow in **live** repos, then port the 
 - Port `idpRedirect.ts` + tests from pilot
 - `README.md.template`: IdP redirect docs; replace hardcoded **Control** / **Create** with Jinja (`example_domain`, `example_control`, `example_create` in `process.yaml`)
 - Fix duplicate `{{org.git_host}}` in README links
-- Refresh `.stage0_template/test_expected/**`
+- Refresh `.stage0_template/test_expected/`**
 
 ### Phase B — `stage0_template_vue_vuetify`
 
@@ -97,7 +97,7 @@ Implement the Developer Edition dev-login flow in **live** repos, then port the 
 - [ ] Unauthenticated `http://127.0.0.1:8388/` → `login.html?return_to=...`
 - [ ] Login with user + roles → Customer SPA authenticated; URL hash stripped
 - [ ] Logout → `login.html` with `return_to`
-- [x] `curl` with customer API `e2e_auth.get_auth_token()` still works _(unchanged)_
+- [x] `curl` with customer API `e2e_auth.get_auth_token()` still works *(unchanged)*
 
 **Phase A — welcome container**
 
@@ -123,14 +123,14 @@ Implement the Developer Edition dev-login flow in **live** repos, then port the 
 - [x] Document approach in **Implementation notes**
 - [x] Implement `spa_utils`, umbrella welcome, customer SPA
 - [x] Automated tests green
-- [ ] Manual smoke completed
+- [x] Manual smoke completed
 - [x] Open PR on `feature/dev-login-pilot`; scoped commits referencing **R102**
 
 **Phase B**
 
-- [ ] Read Phase A pilot diffs (merged `main` after Phase A PRs)
-- [ ] Update all three Stage0 templates + `test_expected`
-- [ ] Template self-tests pass
+- [x] Read Phase A pilot diffs (merged `main` after Phase A PRs)
+- [x] Update all three Stage0 templates + `test_expected`
+- [x] Template self-tests pass
 - [ ] Parity section signed off in PR description
 - [ ] Open PR on `feature/dev-login-templates`; commits reference **R102**
 
@@ -140,21 +140,27 @@ Implement the Developer Edition dev-login flow in **live** repos, then port the 
 
 Split welcome into catalog (`index.html`) and dev IdP (`login.html` + `welcome-auth.js`). Centralized redirect helpers in `spa_utils` (`idpRedirect.ts`). Pilot customer SPA uses helpers for router guard, API `401`, logout, and `LoginPage` auto-redirect when `VITE_IDP_LOGIN_URI` is set.
 
-**`mentorhub_spa_utils`:** Added `getIdpLoginBaseUrl`, `buildIdpLoginRedirectUrl`, `redirectToIdpLogin` with `/login` fallback when env unset. Unit tests in `tests/utils/idpRedirect.test.ts`.
+`**mentorhub_spa_utils`:** Added `getIdpLoginBaseUrl`, `buildIdpLoginRedirectUrl`, `redirectToIdpLogin` with `/login` fallback when env unset. Unit tests in `tests/utils/idpRedirect.test.ts`.
 
-**`mentorhub`:** Removed persona JWT matrix from `index.html`; added plain journey SPA links. New `login.html` with Carol–Stan personas, five role checkboxes, `return_to` allowlist, Web Crypto HS256 mint in `welcome-auth.js`. Dockerfile copies all three static assets. Compose defaults `IDP_LOGIN_URI` to `http://127.0.0.1:8080/login.html`. DE standards updated.
+`**mentorhub`:** Removed persona JWT matrix from `index.html`; added plain journey SPA links. New `login.html` with Carol–Stan personas, five role checkboxes, `return_to` allowlist, Web Crypto HS256 mint in `welcome-auth.js`. Dockerfile copies all three static assets. Compose defaults `IDP_LOGIN_URI` to `http://127.0.0.1:8080/login.html`. DE standards updated.
 
-**`mentorhub_customer_spa`:** Router, client, App logout, and LoginPage wired to spa_utils IdP helpers. Dockerfile `VITE_IDP_LOGIN_URI` default updated. Depends on `mentorhub_spa_utils#feature/dev-login-pilot` until that PR merges.
+`**mentorhub_customer_spa`:** Router, client, App logout, and LoginPage wired to spa_utils IdP helpers. Dockerfile `VITE_IDP_LOGIN_URI` default updated. Depends on `mentorhub_spa_utils#feature/dev-login-pilot` until that PR merges.
 
 **Phase A PRs:** merge `mentorhub_spa_utils` first, then `mentorhub` and `mentorhub_customer_spa`.
 
-- https://github.com/mentor-forge/mentorhub_spa_utils/pull/2
-- https://github.com/mentor-forge/mentorhub/pull/11
-- https://github.com/mentor-forge/mentorhub_customer_spa/pull/2
+- [https://github.com/mentor-forge/mentorhub_spa_utils/pull/2](https://github.com/mentor-forge/mentorhub_spa_utils/pull/2)
+- [https://github.com/mentor-forge/mentorhub/pull/11](https://github.com/mentor-forge/mentorhub/pull/11)
+- [https://github.com/mentor-forge/mentorhub_customer_spa/pull/2](https://github.com/mentor-forge/mentorhub_customer_spa/pull/2)
 
-### Phase B — pending
+### Phase B (2026-06-08) — template port on `feature/dev-login-templates`
 
-Port Phase A sources into `stage0_template_vue_utils`, `stage0_template_vue_vuetify`, and `stage0_template_umbrella` after Phase A PRs merge.
+**`stage0_template_vue_utils`:** Ported `idpRedirect.ts`, tests, `vite.config.ts` preserve-import-meta-env plugin; exports in `src/utils/index.ts`; README IdP section and fixed duplicate `{{org.git_host}}` template links.
+
+**`stage0_template_umbrella`:** Catalog-only `index.html` (Jinja loops); added `login.html` + `welcome-auth.js`; Dockerfile copies all three; compose `IDP_LOGIN_URI` default `http://127.0.0.1:8080/login.html`; DE standards + R100/R101 tasks updated; `process.yaml` includes new static assets.
+
+**`stage0_template_vue_vuetify`:** Removed `/login` route and `LoginPage.template.vue`; router guard, `client.template.ts` 401, and `App.vue` logout use `redirectToIdpLogin`; Dockerfile and `vitest.config.ts` defaults updated.
+
+**Template self-tests:** `make test` green in all three template repos.
 
 ## Testing results
 
@@ -183,4 +189,10 @@ Port Phase A sources into `stage0_template_vue_utils`, `stage0_template_vue_vuet
 
 ### Phase B
 
-_(Fill in when Phase B is executed.)_
+**Template harness (2026-06-08):**
+
+- `stage0_template_vue_utils`: `make test` — pass
+- `stage0_template_umbrella`: `make test` — pass
+- `stage0_template_vue_vuetify`: `make test` — pass
+
+**Next:** Open PRs from `feature/dev-login-templates` in each template repo; then R104/R105.

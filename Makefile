@@ -1,8 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-
-.PHONY: help install update verify schemas container push build-package publish-package stage0-launch-ui
+.PHONY: help install update verify schemas container push build-package publish-package stage0-launch-ui clone:all
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -12,6 +11,7 @@ help:
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make schemas       - Fetch JSON schemas for all data dictionaries, assumes mongodb_api is running"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
+	@echo "  make clone:all     - git clone all repos (except umbrella) into parent folder via SSH"
 	@echo "  make stage0-launch-ui - Stage0 Launch web UI, detached (export GITHUB_TOKEN; optional DELETE_ENABLED=True)"
 	@echo ""
 	@echo "For more information, see ./CONTRIBUTING.md"
@@ -138,6 +138,30 @@ build-publish: container push
 
 build-package: container
 publish-package: push
+
+clone:all:
+	@echo "Cloning mentor-forge repos (except umbrella) into .."
+	@cd .. && for repo in \
+		mentorhub_mongodb_api \
+		mentorhub_api_utils \
+		mentorhub_spa_utils \
+		mentorhub_customer_api \
+		mentorhub_customer_spa \
+		mentorhub_coordinator_api \
+		mentorhub_coordinator_spa \
+		mentorhub_mentor_api \
+		mentorhub_mentor_spa \
+		mentorhub_mentee_api \
+		mentorhub_mentee_spa \
+		mentorhub_runbook_api; \
+	do \
+		if [ -d "$$repo/.git" ]; then \
+			echo "Skip (exists): $$repo"; \
+		else \
+			git clone "git@github.com:mentor-forge/$$repo.git" "$$repo"; \
+		fi; \
+	done
+	@echo "Clone complete."
 
 stage0-launch-ui:
 	@[ -n "$$GITHUB_TOKEN" ] || (echo "Error: export GITHUB_TOKEN first (never commit tokens)."; exit 1)
