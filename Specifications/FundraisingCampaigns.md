@@ -102,6 +102,3 @@ Learn more and donate: [blog link] #TechForAll #InternshipImpact
 **Hashtags to Use**  
 #LaunchTechCareers #InternshipFund #WorkstationsForDevs #OpsSupport #AgileLearning #MentorHub #Stage0Launch #PersevereNow #TechForGood #DonateNow  
 
----  
-
-*Feel free to adapt any of the above copy for your website, email newsletters, or donor outreach. Let me know if you need graphics suggestions, donation page wording, or thank‑you email templates!*
