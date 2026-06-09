@@ -11,15 +11,15 @@ To sustain and expand this impact, we are launching three targeted fundraising c
 
 ## 1️⃣ Fund a Paid Internship
 **The Need**  
-One of our standout interns, **Daniel Dissler** (primary SPA focus), has been contributing on a volunteer basis while finishing his coursework. A paid stipend would allow him to devote full‑time energy to MentorHub’s frontend architecture and mentorship activities.
+One of our standout interns, **Mary** (primary Data focus), has been contributing on a volunteer basis. A paid stipend would allow her to devote full‑time energy to MentorHub’s data design and mentorship activities.
 
 **Impact of Your Gift**  
-- **$4,500** covers a 3‑month paid internship (stipend + basic benefits).  
-- Enables Daniel to focus on feature development, code reviews, and leading weekly design‑chat exercises.  
-- Directly accelerates delivery of MentorHub’s core services (login flow, SPA utilities, API contracts).  
+- **$9,000** covers a 3‑month paid internship (stipend).  
+- Enables Mary to focus on feature development, code reviews, and contributing to design exercises.  
+- Directly accelerates delivery of MentorHub’s core services (Data Structures, and optimizations).  
 
-**Quote from Daniel**  
-> “Working on MentorHub has shown me what it means to ship real software. A stipend would let me dive deeper into the Vue 3 + Vuetify stack and mentor the newer apprentices without worrying about side‑jobs.”  
+**Quote from Mary**  
+> “Working on MentorHub has shown me what it means to ship real software. A stipend would let me dive deeper into the MongoDB system without worrying about side‑jobs.”  
 
 **How to Help**  
 [Donate to Fund an Internship] – *Select “Paid Internship” in the donation form.*  
@@ -31,12 +31,12 @@ One of our standout interns, **Daniel Dissler** (primary SPA focus), has been co
 Our interns currently rely on a mix of personal laptops and aging workstations. To develop efficiently with containerized microservices, Vue 3, and CI/CD pipelines, they need reliable, modern hardware.
 
 **Impact of Your Gift**  
-- **$1,200** per workstation provides a laptop/desktop with ≥16 GB RAM, SSD storage, and a multi‑core CPU—enough to run Docker, Kubernetes‑kind, and IDEs smoothly.  
-- We aim to equip all four interns (Daniel, Mary, Luther, Lucky) with identical machines to eliminate environment discrepancies and streamline pair‑programming.  
+- **$2,100** per workstation provides a a well equipped MacBook Air with the latest M5 chips, with an external monitor, keyboard, and mouse. A professional workstation configuration equips an intern to make meaningful contributions without having to wait around for resources. 
+- We aim to equip all four interns (Mary, Daniel, Luther, Lucky) with identical machines to eliminate environment discrepancies and streamline pair‑programming.  
 - Faster build/test cycles mean more time spent on feature work and less on troubleshooting.  
 
-**Quote from Mary (Data Lead)**  
-> “When my queries run instantly and my Vue components hot‑reload without lag, I can focus on designing the MongoDB configurator schema instead of fighting the toolchain.”  
+**Quote from Daniel (UI/UX Lead)**  
+> “When my queries run instantly and my Vue components hot‑reload without lag, I can focus on designing the user experience instead of fighting the toolchain.”  
 
 **How to Help**  
 [Donate for Workstations] – *Choose “Developer Workstation” and specify the number you’d like to fund.*  
@@ -49,10 +49,8 @@ Taking on paid interns has increased our operational expenses—stipends, softwa
 
 **Impact of Your Gift**  
 Any amount helps cover:  
-- Cloud services (AWS/GCP) for staging and production environments.  
-- Licenses for JetBrains, Vuetify Pro, and testing frameworks (Cypress, Vitest).  
-- Coordinator stipends for weekly stand‑ups, retrospectives, and mentor matching.  
-- Workshop materials and design‑thinking facilitation supplies.  
+- Cloud services (AWS) for development, staging, and production environments.  
+- Licenses for Cursor Teams, Google Office, GitHub Teams, and others.  
 
 **Quote from Luther (SRE Lead)**  
 > “Our pipelines are only as reliable as the infrastructure that runs them. Steady ops funding means we can maintain monitoring, automated deploys, and quick rollbacks—critical for intern learning.”  
@@ -64,8 +62,8 @@ Any amount helps cover:
 
 ### Why Your Support Matters  
 - **Real‑World Experience:** Interns leave with a shipped product, a portfolio of open‑source contributions, and mentorship hours that employers value.  
-- **Community Impact:** Many of our apprentices come from underserved backgrounds; a paid internship is often the first step toward a stable tech career.  
-- **Scalable Model:** Success with MentorHub proves the Stage0 POC approach—your donation helps us replicate this model for future cohorts.  
+- **Community Impact:** Our partnership with Persevere Now has connected us to a meaningful program where a paid internship is often the first step toward a stable tech career.  
+- **Scalable Model:** Success with MentorHub proves the Stage0 POC approach, and your donation helps us replicate this model for future cohorts.  
 
 ### Get Involved  
 - **Donate Now:** https://agile-learning.institute/donate (choose a campaign or give where needed most).  
@@ -90,15 +88,15 @@ Together, we can turn perseverance into profession. Thank you for believing in t
 
 **Facebook / LinkedIn (short blurb)**  
 We’re launching three fundraising campaigns to support our Agile Learning Institute interns:  
-1️⃣ Fund a paid internship for a volunteer apprentice (Daniel).  
+1️⃣ Fund a paid internship for a volunteer apprentice (Mary).  
 2️⃣ Provide modern developer workstations for all four interns.  
 3️⃣ Sustain our operational funds as we scale.  
 Learn more and donate: [blog link] #TechForAll #InternshipImpact  
 
 **Instagram Story Ideas**  
 - Slide 1: Photo of the team – “Meet the MentorHub interns building the future.”  
-- Slide 2: Stat: “$4,500 = 3‑month paid internship.”  
-- Slide 3: Stat: “$1,200 = modern workstation for one dev.”  
+- Slide 2: Stat: “$9,000 = 3‑month paid internship.”  
+- Slide 3: Stat: “$2,100 = modern workstation for one dev.”  
 - Slide 4: CTA: “Swipe up to donate & launch tech careers.”  
 
 **Hashtags to Use**  
