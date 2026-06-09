@@ -77,10 +77,10 @@ Together, we can turn perseverance into profession. Thank you for believing in t
 ### Social‑Media Source Material (copy‑ready)  
 
 **Twitter / X (≤280 chars)**  
-🚀 Help us pay an internship stipend! $4,500 gives a volunteer apprentice full‑time to build MentorHub’s SPA. Donate & tag #LaunchTechCareers  
+🚀 Help us pay an internship stipend! $9,000 gives a volunteer apprentice full‑time to build MentorHub’s SPA. Donate & tag #LaunchTechCareers  
 [donate link]  
 
-💻 Modern workstations = faster code. $1,200 equips one intern with a dev‑ready machine for Docker, Vue 3, and CI/CD. Fund a workstation today!  
+💻 Modern workstations = faster code. $2,100 equips one intern with a dev‑ready machine for Docker, Vue 3, and CI/CD. Fund a workstation today!  
 [donate link]  
 
 🔧 Keep the lights on. Our ops fund covers cloud, licenses, and coordinator time—essential for running our internship program. Any amount helps.  
