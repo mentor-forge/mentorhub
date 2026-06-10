@@ -3,15 +3,8 @@
 export COMMAND="$1"
 export NEW_PROFILE="$2"
 export INSTALL_PATH=$(dirname "$0")
-export GITHUB_TOKEN=$(cat ~/.mentorhub/GITHUB_TOKEN)
-# AWS platform defaults (region, CodeArtifact names, SSO profile names)
-if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
-  source "$HOME/.mentorhub/aws-platform.env"
-fi
-if [[ -f "$HOME/.mentorhub/aws-platform.local.env" ]]; then
-  source "$HOME/.mentorhub/aws-platform.local.env"
-fi
-# Stable default so welcome-page persona JWTs match API containers (override with JWT_SECRET).
+
+# Compose-only default; shell profile may already export JWT_SECRET.
 if [[ -z "${JWT_SECRET:-}" ]]; then
   if [[ -f "$HOME/.mentorhub/JWT_DEV_SECRET" ]]; then
     export JWT_SECRET=$(<"$HOME/.mentorhub/JWT_DEV_SECRET")
@@ -72,10 +65,9 @@ COMMANDS
     list-services
         List all available services related to Mentor Hub Developers Edition
 
-    codeartifact login
-        Refresh pip and npm credentials for CodeArtifact (Shared-Services).
-        Run after aws sso login when tokens expire (~12 hours), or via make update.
-        Then pipenv install / npm ci work against mentorhub-pypi and mentorhub-npm.
+    (no command)
+        Refresh GHCR and CodeArtifact credentials when needed, then exit.
+        Also runs automatically before mh pull / mh up and during make update.
 
 END
 }
@@ -100,8 +92,9 @@ Commands:
   version        Print the Mentor Hub Developers Edition version
   list-profiles  List all available profiles
   list-services  List all available services
-  codeartifact   CodeArtifact auth (see: mh codeartifact login)
   manual         Show the manual
+
+Run mh with no command to refresh registry logins (GHCR, CodeArtifact).
 END
 }
 
@@ -180,6 +173,8 @@ function downCurrent {
 # docker compose up of current profile
 ################################################################################
 function upProfile {
+    ensureDevServices || return 1
+
     if [[ -z $NEW_PROFILE ]]; then
         echo "Error: No profile specified. Use 'mh up [profile1,profile2,...]'"
         listProfiles
@@ -262,6 +257,8 @@ function tailServiceLogs {
 # Pull latest images
 ################################################################################
 function pull {
+    ensureDevServices || return 1
+
     if [[ -z $NEW_PROFILE ]]; then
         echo "Error: No profile specified. Use 'mh pull [profile1,profile2,...]'"
         listProfiles
@@ -319,9 +316,21 @@ function deleteImages {
 }
 
 ################################################################################
-# CodeArtifact login (pip + npm) for private package installs
+# Silent developer service auth (GHCR + CodeArtifact)
 ################################################################################
-function codeartifactLogin {
+function ensureGhcrLogin {
+    typeset ghcr_org="${MH_GHCR_ORG:-mentor-forge}"
+    if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+        echo "Error: GITHUB_TOKEN is not set. Run make install and source ~/.zshrc" >&2
+        return 1
+    fi
+    echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$ghcr_org" --password-stdin >/dev/null 2>&1 || {
+        echo "Error: GHCR login failed (check GITHUB_TOKEN in ~/.mentorhub/GITHUB_TOKEN)" >&2
+        return 1
+    }
+}
+
+function ensureCodeArtifactAuth {
     typeset profile="${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"
     typeset region="${AWS_REGION:-us-east-1}"
     typeset domain="${CODEARTIFACT_DOMAIN:-mentor-forge}"
@@ -330,49 +339,47 @@ function codeartifactLogin {
     typeset npm_repo="${CODEARTIFACT_NPM_REPO:-mentorhub-npm}"
 
     if ! command -v aws >/dev/null 2>&1; then
-        echo "Error: AWS CLI not found. Install AWS CLI v2 — see mentorhub CONTRIBUTING.md" >&2
+        echo "Error: AWS CLI not found. Install AWS CLI v2 — see CONTRIBUTING.md" >&2
         return 1
     fi
-
     if [[ -z "$domain_owner" ]]; then
         echo "Error: AWS_SHARED_SERVICES_ACCOUNT_ID is not set." >&2
-        echo "Run make update in mentorhub, or set ~/.mentorhub/aws-platform.local.env" >&2
+        echo "Run make update in mentorhub and source ~/.zshrc" >&2
         return 1
     fi
 
     if ! aws sts get-caller-identity --profile "$profile" --region "$region" >/dev/null 2>&1; then
-        echo "AWS SSO session expired or not configured. Opening login for profile: $profile"
-        aws sso login --profile "$profile" || return 1
+        echo "AWS SSO session expired — opening login for profile: $profile"
+        aws sso login --profile "$profile" || {
+            echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
+            return 1
+        }
     fi
 
-    echo "Refreshing pip credentials ($pypi_repo)..."
     aws codeartifact login --tool pip \
         --domain "$domain" \
         --domain-owner "$domain_owner" \
         --repository "$pypi_repo" \
         --profile "$profile" \
-        --region "$region" || return 1
+        --region "$region" >/dev/null 2>&1 || {
+        echo "Error: CodeArtifact pip login failed (profile $profile, repo $pypi_repo)" >&2
+        return 1
+    }
 
-    echo "Refreshing npm credentials ($npm_repo)..."
     aws codeartifact login --tool npm \
         --domain "$domain" \
         --domain-owner "$domain_owner" \
         --repository "$npm_repo" \
         --profile "$profile" \
-        --region "$region" || return 1
-
-    echo "CodeArtifact login complete — pipenv install and npm ci are ready."
+        --region "$region" >/dev/null 2>&1 || {
+        echo "Error: CodeArtifact npm login failed (profile $profile, repo $npm_repo)" >&2
+        return 1
+    }
 }
 
-function codeartifactUsage {
-    cat <<END
-
-Usage: mh codeartifact login
-
-Refreshes pip and npm auth for CodeArtifact (tokens expire ~12 hours).
-Requires AWS SSO profile "${MH_AWS_PROFILE_SHARED:-mentorhub-shared}" (Shared-Services, Developer-Packages).
-
-END
+function ensureDevServices {
+    ensureGhcrLogin || return 1
+    ensureCodeArtifactAuth || return 1
 }
 
 ################################################################################
@@ -398,6 +405,11 @@ case $COMMAND in
 esac
 
 case $COMMAND in
+
+  "")
+
+    ensureDevServices || exit 1
+    ;;
 
   "up")
 
@@ -457,16 +469,6 @@ case $COMMAND in
   "list-services")
     
     listServices
-    ;;
-
-  "codeartifact")
-
-    if [[ "$NEW_PROFILE" == "login" ]]; then
-      codeartifactLogin
-    else
-      codeartifactUsage
-      exit 1
-    fi
     ;;
 
   "manual")

@@ -196,8 +196,8 @@ Do not change Identity Center to `us-east-1` to “match” CodeArtifact. They a
 Local CLI profiles (see Phase -1.6):
 
 ```text
-mentorhub-shared  →  Shared-Services account  (CodeArtifact)
-mentorhub-dev     →  MentorHub-Dev account    (application AWS resources)
+mentorhub-shared  →  Shared-Services account  (CodeArtifact — all developers via make aws-setup)
+mentorhub-dev     →  MentorHub-Dev account    (SRE/platform only — not required for local dev)
 ```
 
 ### Two kinds of automation access (GitHub Actions)
@@ -356,9 +356,9 @@ Sign-in talks to Identity Center in `us-east-2`. After login, CodeArtifact and o
 
 Before testing CodeArtifact, each SRE/developer should be able to use AWS CLI with IAM Identity Center.
 
-**Prerequisites:** AWS CLI v2 installed. Values from [aws-platform.yaml](./aws-platform.yaml) `identity_center` block.
+**Developers:** After `make install`, run `make aws-setup` once ([CONTRIBUTING.md](../CONTRIBUTING.md)). This configures only `mentorhub-shared` (Shared-Services / `Developer-Packages`) for CodeArtifact — not MentorHub-Dev.
 
-**Step-by-step — first profile (`mentorhub-shared`):**
+**SRE:** Also configure `mentorhub-dev` for MentorHub-Dev account access via `aws configure sso --profile mentorhub-dev` (reuse SSO session `mentor-forge`). Values from [aws-platform.yaml](./aws-platform.yaml) `identity_center` block.
 
 ```bash
 aws configure sso --profile mentorhub-shared
@@ -941,37 +941,17 @@ When adding PR workflows per [branch_protection_standards.md](../DeveloperEditio
 
 Repo: `mentorhub`
 
-### 3.1 Local CodeArtifact login
+### 3.1 Local registry auth (`mh`)
 
-Developers authenticate with SSO, then refresh pip/npm credentials:
+`mh` with **no command** silently refreshes GHCR and CodeArtifact credentials (SSO login opens only when the session expired):
 
 ```bash
-aws sso login --profile mentorhub-shared
-aws codeartifact login \
-  --tool pip \
-  --domain mentor-forge \
-  --domain-owner 560167829275 \
-  --repository mentorhub-pypi \
-  --profile mentorhub-shared \
-  --region us-east-1
-aws codeartifact login \
-  --tool npm \
-  --domain mentor-forge \
-  --domain-owner 560167829275 \
-  --repository mentorhub-npm \
-  --profile mentorhub-shared \
-  --region us-east-1
+mh
 ```
 
-Implement `mh codeartifact login` to wrap the above. CodeArtifact tokens expire (~12 hours); refresh on `make update` or before installs.
+Also runs automatically before `mh pull`, `mh up`, and during `make update`. Requires `~/.zshrc` from `make install` (sources `GITHUB_TOKEN` and `aws-platform.env`).
 
-| Item          | Value |
-| ------------- | ----- |
-| AWS profile   | `mentorhub-shared` |
-| SSO target    | Shared-Services, permission set `Developer-Packages` |
-| Prerequisites | Valid SSO session (`aws sso login --profile mentorhub-shared`) |
-
-**Validate:** `pipenv install` and `npm ci` succeed in a utils consumer repo after login.
+**Validate:** `pipenv install` and `npm ci` succeed in a utils consumer repo after `mh`.
 
 **Next step:** 3.2
 
@@ -982,7 +962,7 @@ Implement `mh codeartifact login` to wrap the above. CodeArtifact tokens expire 
 | ------------------------------------------------------------------ | -------------------------------------------------------------------- |
 | `CONTRIBUTING.md`                                                  | Add AWS SSO + CodeArtifact setup alongside GitHub token notes        |
 | `make verify`                                                      | Check `aws` CLI, SSO profile, and optional CodeArtifact reachability |
-| `mh` CLI                                                           | Add `mh codeartifact login` for pip + npm credentials                |
+| `mh` CLI                                                           | Silent registry auth on bare `mh`, `mh pull`, `mh up`, and `make update` |
 | `DeveloperEdition/standards/sre_standards.md`                      | Revise to match as-implemented AWS (after Phase -1 / Phase 0)        |
 | `DeveloperEdition/standards/api_standards.md`                      | Update Dependency Management section                                 |
 | `DeveloperEdition/standards/branch_protection_standards.md`        | Update PR CI dependency prerequisites                                |

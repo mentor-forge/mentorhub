@@ -35,3 +35,6 @@ github_org_variables:
 sso_profiles:
   shared_services: mentorhub-shared   # Shared-Services + Developer-Packages (or SRE)
   dev_workload: mentorhub-dev         # MentorHub-Dev + Developer (or SRE)
+  default_roles:
+    shared_services: Developer-Packages
+    dev_workload: Developer

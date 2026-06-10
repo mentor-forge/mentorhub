@@ -133,8 +133,8 @@ AWS Access Portal
 ```
 
 Recommended local AWS CLI profile names:
-- `mentorhub-shared` — `Shared-Services` (CodeArtifact)
-- `mentorhub-dev` — `MentorHub-Dev` (application infrastructure)
+- `mentorhub-shared` — `Shared-Services` (CodeArtifact). **All developers** — configured by `make aws-setup`.
+- `mentorhub-dev` — `MentorHub-Dev` (application infrastructure). **SRE/platform only** — not required for local Developer Edition.
 
 Do not ask team members to use root-account sign-in or IAM-user sign-in for normal work.
 
@@ -258,19 +258,19 @@ The `mh` Developer Edition CLI is how SRE provides a strong developer experience
 After the dependency registry migration, developers refresh private package credentials with:
 
 ```sh
-mh codeartifact login
+mh
 ```
 
-Behavior (target specification — implement in `mentorhub` Developer Edition):
+Bare `mh` also runs automatically before `mh pull`, `mh up`, and during `make update`. Requires `~/.zshrc` from `make install` (`GITHUB_TOKEN`, `aws-platform.env`).
+
+One-time AWS SSO: `make aws-setup` (writes `~/.aws/config` from platform env; browser login once).
 
 | Item | Standard |
 |------|----------|
-| AWS profile | `mentorhub-shared` (override with `MH_AWS_PROFILE` if needed) |
-| Prerequisites | `aws sso login --profile mentorhub-shared` when SSO session expired |
-| pip | `aws codeartifact login --tool pip --domain mentor-forge --domain-owner <account-id> --repository mentorhub-pypi` |
-| npm | `aws codeartifact login --tool npm --domain mentor-forge --domain-owner <account-id> --repository mentorhub-npm` |
-| Token lifetime | ~12 hours; re-run before `pipenv install`, `npm ci`, or `pipenv run container` / `npm run container` if auth fails |
-| Integration | Hook into `make update` so routine developer refreshes stay current |
+| AWS profile | `mentorhub-shared` (override with `MH_AWS_PROFILE_SHARED` if needed) |
+| SSO | Opens browser only when session expired |
+| Token lifetime | ~12 hours; run `mh` before `pipenv install`, `npm ci`, or container builds if auth fails |
+| Integration | `make update` runs bare `mh` after copying CLI files |
 
 GitHub tokens remain required for git clone/push; they are **not** required for installing `api_utils` or `mentorhub_spa_utils` after migration.
 
