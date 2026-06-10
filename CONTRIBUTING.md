@@ -58,15 +58,34 @@ To create a token, login to GitHub and click your Profile Pic -> Settings -> Dev
 
 ### AWS SSO and CodeArtifact (Shared-Services)
 
-MentorHub uses **`us-east-1`** as the primary AWS region for CodeArtifact, GitHub Actions, and future application infrastructure. See [Specifications/aws-platform.yaml](./Specifications/aws-platform.yaml).
+MentorHub uses **two regions** — do not swap them. See [Specifications/aws-platform.yaml](./Specifications/aws-platform.yaml).
+
+| Purpose | Region |
+|--------|--------|
+| IAM Identity Center sign-in (`sso_region` in `aws configure sso`) | **`us-east-2`** |
+| CodeArtifact, GitHub Actions, workloads (profile `region`, `--region`) | **`us-east-1`** |
 
 1. Install the [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
-2. Configure SSO profiles (one-time):
+2. Configure SSO profiles (one-time). Use the **same SSO session** for both profiles so one login covers Shared-Services and MentorHub-Dev:
+
+| Prompt | Value |
+|--------|--------|
+| SSO session name | `mentor-forge` |
+| SSO start URL | `https://d-906780e571.awsapps.com/start` |
+| SSO region | `us-east-2` (Identity Center home region — **not** `us-east-1`) |
+| SSO registration scopes | `sso:account:access` (accept the default) |
+| CLI default region (per profile) | `us-east-1` |
+
+SREs can confirm start URL and SSO region from the Management account: **IAM Identity Center → Settings**.
+
+Then create each CLI profile:
 
 ```sh
 aws configure sso --profile mentorhub-shared   # account: Shared-Services, role: Developer-Packages or SRE
 aws configure sso --profile mentorhub-dev      # account: MentorHub-Dev, role: Developer or SRE
 ```
+
+When configuring the second profile, reuse SSO session `mentor-forge` (same start URL, SSO region, and scopes). Set each profile's default **CLI region** to `us-east-1`.
 
 3. Before `pipenv install` / `npm ci` against private packages (after CodeArtifact migration):
 

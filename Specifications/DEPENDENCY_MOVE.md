@@ -263,9 +263,42 @@ Recorded in:
 
 Remaining CodeArtifact org variables (`AWS_SHARED_SERVICES_ACCOUNT_ID`, `CODEARTIFACT_`*) are documented in [aws-platform.yaml](./aws-platform.yaml) and set in GitHub when Phase 0 infrastructure exists.
 
+#### Two AWS regions (do not conflate)
+
+MentorHub uses **two different regions** for different purposes. Both are correct; they are not interchangeable.
+
+| Setting | Region | Used for |
+| ------- | ------ | -------- |
+| `sso_region` (in `[sso-session]` in `~/.aws/config`) | **`us-east-2`** | IAM Identity Center sign-in only (`aws sso login`, `aws configure sso`) |
+| `AWS_REGION` / profile `region` / `--region` on CLI commands | **`us-east-1`** | CodeArtifact, GitHub Actions, and future application infrastructure |
+
+**How to find each:**
+
+- **SSO region:** Management account → **IAM Identity Center → Settings** (home region of the Identity Center instance). As-built: `us-east-2`.
+- **Workload region:** Platform decision recorded in Phase -1.5: `us-east-1`.
+
+**Example `~/.aws/config`:**
+
+```ini
+[profile mentorhub-shared]
+sso_session = mentor-forge
+sso_account_id = <shared-services-account-id>
+sso_role_name = Developer-Packages
+region = us-east-1
+
+[sso-session mentor-forge]
+sso_start_url = https://d-906780e571.awsapps.com/start
+sso_region = us-east-2
+sso_registration_scopes = sso:account:access
+```
+
+Sign-in talks to Identity Center in `us-east-2`. After login, CodeArtifact and other service calls use `us-east-1` (from profile `region` or explicit `--region us-east-1`).
+
 ### -1.6 Configure local AWS SSO profiles
 
 Before testing CodeArtifact, each SRE/developer should be able to use AWS CLI with IAM Identity Center.
+
+Use SSO session `mentor-forge` with start URL and `sso_region` from [aws-platform.yaml](./aws-platform.yaml). Set profile `region` to `us-east-1`.
 
 Recommended profile names:
 
@@ -304,7 +337,10 @@ Before any developer or consumer repo migrates off git deps, create and assign t
 
 **Create permission set:** `Developer-Packages`
 
-Attach an inline policy (or customer-managed policy) with at least:
+**Policy (choose one):**
+
+1. **Recommended for now:** attach AWS managed policy `AWSCodeArtifactReadOnlyAccess`. It already includes `GetAuthorizationToken`, `GetRepositoryEndpoint`, `ReadFromRepository`, and `sts:GetServiceBearerToken` (broader than the inline example below — acceptable for this permission set).
+2. **Tighter alternative:** attach an inline policy (or customer-managed policy) scoped to the `mentor-forge` domain and repos only:
 
 ```text
 codeartifact:GetAuthorizationToken
@@ -313,12 +349,12 @@ codeartifact:ReadFromRepository
 sts:GetServiceBearerToken
 ```
 
-Scope resources to the `Shared-Services` account, for example:
+Example resource ARNs (use workload region `us-east-1`):
 
 ```text
-arn:aws:codeartifact:<region>:<shared-services-account-id>:domain/mentor-forge
-arn:aws:codeartifact:<region>:<shared-services-account-id>:repository/mentor-forge/mentorhub-pypi
-arn:aws:codeartifact:<region>:<shared-services-account-id>:repository/mentor-forge/mentorhub-npm
+arn:aws:codeartifact:us-east-1:<shared-services-account-id>:domain/mentor-forge
+arn:aws:codeartifact:us-east-1:<shared-services-account-id>:repository/mentor-forge/mentorhub-pypi
+arn:aws:codeartifact:us-east-1:<shared-services-account-id>:repository/mentor-forge/mentorhub-npm
 ```
 
 **Assign:** `Developer` group → `Shared-Services` account → `Developer-Packages` permission set.
@@ -327,18 +363,35 @@ Do not fold these permissions into the `Developer` permission set unless that se
 
 **Optional — repository resource policy:** For cross-account automation that does not use Identity Center (unusual for human devs), a CodeArtifact repository resource policy can grant read to the `MentorHub-Dev` account or specific IAM roles. GitHub Actions should use OIDC roles in `Shared-Services` (Phase 0.2), not developer permission sets.
 
-Validation (run as a user in the `Developer` group):
+**Validation — step -1.8 only (permission set and SSO, not CodeArtifact yet):**
+
+The `mentor-forge` domain does **not** exist until Phase 0.1. An empty domain list before then is expected and OK.
 
 ```bash
 aws sso login --profile mentorhub-shared
+aws sts get-caller-identity --profile mentorhub-shared
+# Expect Shared-Services account; role Developer-Packages (or SRE while you are setting up)
+```
+
+**Validation — after Phase 0.1 (domain exists):**
+
+```bash
+aws codeartifact list-domains --profile mentorhub-shared --region us-east-1
+# Expect domain mentor-forge (empty [] before Phase 0.1 is normal)
+```
+
+**Validation — after Phase 1.3 (packages published):**
+
+```bash
 aws codeartifact list-packages \
   --domain mentor-forge \
   --domain-owner <shared-services-account-id> \
   --repository mentorhub-pypi \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 ```
 
-Succeeds after utils packages are published (Phase 1.3). Fails with `AccessDenied` if assignment or policy is wrong — fix before migrating consumer repos.
+`AccessDenied` on the Phase 1.3 check means assignment or policy is wrong. `ResourceNotFoundException` for the domain before Phase 0.1 means infrastructure is not created yet — not a -1.8 failure.
 
 Document the as-built permission set name, policy, and assignments in `sre_standards.md` when Phase -1 is complete.
 
@@ -352,31 +405,36 @@ Document the as-built permission set name, policy, and assignments in `sre_stand
 ```bash
 aws codeartifact create-domain \
   --domain mentor-forge \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact create-repository \
   --domain mentor-forge \
   --repository mentorhub-pypi \
   --description "MentorHub internal PyPI + PyPI upstream" \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact create-repository \
   --domain mentor-forge \
   --repository mentorhub-npm \
   --description "MentorHub internal npm + npmjs upstream" \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact associate-external-connection \
   --domain mentor-forge \
   --repository mentorhub-pypi \
   --external-connection public:pypi \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact associate-external-connection \
   --domain mentor-forge \
   --repository mentorhub-npm \
   --external-connection public:npmjs \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 ```
 
 Record for all repos:
