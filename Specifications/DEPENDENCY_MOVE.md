@@ -856,6 +856,24 @@ jobs:
 
 ## Phase 2 — Update consumer repos
 
+### CodeArtifact repository URLs
+
+Repository endpoints use **`{domain}-{account-id}.d.codeartifact.{region}.amazonaws.com`**, not `{account-id}.d.codeartifact...` alone. If the domain prefix is omitted, npm/pip auth tokens will not match the registry URL and installs or publishes fail.
+
+Confirm with:
+
+```bash
+aws codeartifact get-repository-endpoint --domain mentor-forge --domain-owner 560167829275 \
+  --repository mentorhub-npm --format npm --region us-east-1 --profile mentorhub-shared
+```
+
+As-built (Shared-Services, `us-east-1`):
+
+```text
+npm:  https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/
+pypi: https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/pypi/mentorhub-pypi/simple/
+```
+
 ### 2.1 Domain APIs
 
 Repos:
@@ -869,7 +887,7 @@ Pipfile replacement (single CodeArtifact source with PyPI upstream — public de
 
 ```toml
 [[source]]
-url = "https://<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/pypi/mentorhub-pypi/simple/"
+url = "https://<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/pypi/mentorhub-pypi/simple/"
 verify_ssl = true
 name = "codeartifact"
 
@@ -910,12 +928,13 @@ Repos:
 "@mentor-forge/mentorhub_spa_utils": "0.2.0"
 ```
 
-`.npmrc` (committed — registry URL only; auth token injected at build time or by `mh codeartifact login` locally):
+`.npmrc` (committed — registry URL only; auth token injected at build time or by `mh` locally):
 
 ```ini
-@mentor-forge:registry=https://<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
-always-auth=true
+@mentor-forge:registry=https://<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
 ```
+
+Do not use `always-auth` in project `.npmrc` (deprecated in npm 11). Inject `//…/:_authToken=` at Docker build time or rely on `mh` for local installs.
 
 Dockerfile and CI changes: see [Reference implementation — domain SPA](#reference-implementation--domain-spa).
 
@@ -1089,25 +1108,32 @@ RUN pip install --no-cache-dir pipenv
 COPY Pipfile Pipfile.lock ./
 
 ARG PIP_INDEX_URL
-ENV PIP_INDEX_URL=${PIP_INDEX_URL}
-
-RUN pipenv install --deploy --system && \
+RUN pipenv requirements | grep -v '^-i ' > requirements.txt && \
+    pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
 COPY src/ ./src/
 COPY docs/ ./docs/
-RUN pipenv run build
+RUN python -m compileall -b -f -q src/
 ```
+
+Use `pip install` with `pipenv requirements` (not `pipenv install`) so the authenticated `PIP_INDEX_URL` is honored. `pipenv lock` still needs `pipenv lock --pypi-mirror "$AUTH_URL"` locally.
 
 Production stage unchanged — no git, no AWS CLI, no tokens in final image layers.
 
 `**.github/workflows/docker-push.yml**` — use [docker-push-codeartifact.yml](../DeveloperEdition/standards/examples/docker-push-codeartifact.yml) `build_push_api` job. Replace `REPLACE_ME_API` with the repo image name.
 
-**Local container build** (after `mh codeartifact login`):
+**Local container build** (after `mh`):
 
 ```bash
-# Export index URL from active pip credentials, or construct from CodeArtifact login output
-pipenv run container   # container script passes PIP_INDEX_URL instead of GITHUB_TOKEN
+pipenv run container   # scripts/docker-build.sh passes PIP_INDEX_URL
+```
+
+**Local dev install** (after `mh`):
+
+```bash
+sh scripts/pipenv-install.sh   # pipenv install does not pass CodeArtifact auth from the lockfile
+sh scripts/pipenv-lock.sh        # regenerate Pipfile.lock after dependency changes
 ```
 
 ### Reference implementation — domain SPA
@@ -1115,8 +1141,7 @@ pipenv run container   # container script passes PIP_INDEX_URL instead of GITHUB
 `**.npmrc**` (committed):
 
 ```ini
-@mentor-forge:registry=https://<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
-always-auth=true
+@mentor-forge:registry=https://<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
 ```
 
 **Dockerfile** (build stage excerpt):
@@ -1135,7 +1160,7 @@ ENV VITE_IDP_LOGIN_URI=$VITE_IDP_LOGIN_URI
 
 RUN --mount=type=secret,id=codeartifact_token \
     --mount=type=cache,target=/root/.npm \
-    sh -c 'echo "//<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
+    sh -c 'echo "//<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
     if [ -f package-lock.json ]; then npm ci; else npm install; fi'
 
 COPY . .
@@ -1194,6 +1219,7 @@ RUN --mount=type=cache,target=/app/node_modules/.vite \
 | 2026-06-04 | Phase -1.5: primary region `us-east-1` recorded in aws-platform.yaml, CONTRIBUTING, mh defaults                                                        |
 | 2026-06-10 | AWS/GitHub primer; expanded SSO, OIDC, and GitHub variables/secrets walkthroughs; SSO region `us-east-2` vs workload `us-east-1`                       |
 | 2026-06-10 | Single best-practice path: scoped custom policies, console-only OIDC setup, Shared-Services only, org-wide GitHub secrets/variables                     |
+| 2026-06-10 | Phase 2: CodeArtifact URLs use `{domain}-{account-id}` host prefix; drop deprecated npm `always-auth` in consumer `.npmrc` examples                    |
 | 2026-06-10 | One-step-at-a-time structure: Validate + Next step per section; removed forward references from Phase 0                        |
 
 
