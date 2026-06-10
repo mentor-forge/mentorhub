@@ -5,7 +5,16 @@
 aws:
   primary_region: us-east-1
   recorded: 2026-06-04
-  phase: dependency-move-phase-minus-1
+  phase: dependency-move-phase-0
+
+# CodeArtifact in Shared-Services (see DEPENDENCY_MOVE.md Phase 0.1)
+codeartifact:
+  account_id: 560167829275
+  domain: mentor-forge
+  domain_owner: 560167829275   # same as account_id
+  pypi_repo: mentorhub-pypi
+  npm_repo: mentorhub-npm
+  region: us-east-1
 
 # IAM Identity Center (SSO) — separate from primary_region; used only for aws sso login / configure sso
 identity_center:
@@ -17,7 +26,7 @@ identity_center:
 # Set these in GitHub when Phase 0 infrastructure is ready.
 github_org_variables:
   AWS_REGION: us-east-1
-  # AWS_SHARED_SERVICES_ACCOUNT_ID: "<Shared-Services account ID>"
+  AWS_SHARED_SERVICES_ACCOUNT_ID: 560167829275
   CODEARTIFACT_DOMAIN: mentor-forge
   CODEARTIFACT_PYPI_REPO: mentorhub-pypi
   CODEARTIFACT_NPM_REPO: mentorhub-npm
