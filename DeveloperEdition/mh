@@ -72,6 +72,11 @@ COMMANDS
     list-services
         List all available services related to Mentor Hub Developers Edition
 
+    codeartifact login
+        Refresh pip and npm credentials for CodeArtifact (Shared-Services).
+        Run after aws sso login when tokens expire (~12 hours), or via make update.
+        Then pipenv install / npm ci work against mentorhub-pypi and mentorhub-npm.
+
 END
 }
 
@@ -95,6 +100,7 @@ Commands:
   version        Print the Mentor Hub Developers Edition version
   list-profiles  List all available profiles
   list-services  List all available services
+  codeartifact   CodeArtifact auth (see: mh codeartifact login)
   manual         Show the manual
 END
 }
@@ -313,6 +319,63 @@ function deleteImages {
 }
 
 ################################################################################
+# CodeArtifact login (pip + npm) for private package installs
+################################################################################
+function codeartifactLogin {
+    typeset profile="${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"
+    typeset region="${AWS_REGION:-us-east-1}"
+    typeset domain="${CODEARTIFACT_DOMAIN:-mentor-forge}"
+    typeset domain_owner="${AWS_SHARED_SERVICES_ACCOUNT_ID:-${CODEARTIFACT_DOMAIN_OWNER:-}}"
+    typeset pypi_repo="${CODEARTIFACT_PYPI_REPO:-mentorhub-pypi}"
+    typeset npm_repo="${CODEARTIFACT_NPM_REPO:-mentorhub-npm}"
+
+    if ! command -v aws >/dev/null 2>&1; then
+        echo "Error: AWS CLI not found. Install AWS CLI v2 — see mentorhub CONTRIBUTING.md" >&2
+        return 1
+    fi
+
+    if [[ -z "$domain_owner" ]]; then
+        echo "Error: AWS_SHARED_SERVICES_ACCOUNT_ID is not set." >&2
+        echo "Run make update in mentorhub, or set ~/.mentorhub/aws-platform.local.env" >&2
+        return 1
+    fi
+
+    if ! aws sts get-caller-identity --profile "$profile" --region "$region" >/dev/null 2>&1; then
+        echo "AWS SSO session expired or not configured. Opening login for profile: $profile"
+        aws sso login --profile "$profile" || return 1
+    fi
+
+    echo "Refreshing pip credentials ($pypi_repo)..."
+    aws codeartifact login --tool pip \
+        --domain "$domain" \
+        --domain-owner "$domain_owner" \
+        --repository "$pypi_repo" \
+        --profile "$profile" \
+        --region "$region" || return 1
+
+    echo "Refreshing npm credentials ($npm_repo)..."
+    aws codeartifact login --tool npm \
+        --domain "$domain" \
+        --domain-owner "$domain_owner" \
+        --repository "$npm_repo" \
+        --profile "$profile" \
+        --region "$region" || return 1
+
+    echo "CodeArtifact login complete — pipenv install and npm ci are ready."
+}
+
+function codeartifactUsage {
+    cat <<END
+
+Usage: mh codeartifact login
+
+Refreshes pip and npm auth for CodeArtifact (tokens expire ~12 hours).
+Requires AWS SSO profile "${MH_AWS_PROFILE_SHARED:-mentorhub-shared}" (Shared-Services, Developer-Packages).
+
+END
+}
+
+################################################################################
 # Clean up images and containers
 ################################################################################
 function clean {
@@ -327,7 +390,12 @@ function clean {
 ##########################################################################
 # Main 
 echo "$(date) mh start $COMMAND $NEW_PROFILE"
-checkAndStartDocker
+
+case $COMMAND in
+  up|down|start|stop|tail|prune|pull|clean)
+    checkAndStartDocker
+    ;;
+esac
 
 case $COMMAND in
 
@@ -389,6 +457,16 @@ case $COMMAND in
   "list-services")
     
     listServices
+    ;;
+
+  "codeartifact")
+
+    if [[ "$NEW_PROFILE" == "login" ]]; then
+      codeartifactLogin
+    else
+      codeartifactUsage
+      exit 1
+    fi
     ;;
 
   "manual")

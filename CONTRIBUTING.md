@@ -90,9 +90,12 @@ When configuring the second profile, reuse SSO session `mentor-forge` (same star
 3. Before `pipenv install` / `npm ci` against private packages (after CodeArtifact migration):
 
 ```sh
-aws sso login --profile mentorhub-shared
-# future: mh codeartifact login
+mh codeartifact login
 ```
+
+One-time AWS SSO setup: `aws configure sso --profile mentorhub-shared` (see table above). `mh codeartifact login` reuses your SSO session when valid, or opens the browser when it has expired. Tokens last ~12 hours — `make update` runs this automatically when AWS is configured.
+
+Then in any domain API or SPA repo: `pipenv install` or `npm ci`.
 
 Platform defaults (`AWS_REGION=us-east-1`, profile names, CodeArtifact domain/repos) are in `DeveloperEdition/aws-platform.env` and installed to `~/.mentorhub/aws-platform.env` by `make update`. Override account-specific values in `~/.mentorhub/aws-platform.local.env` (not committed).
 

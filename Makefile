@@ -110,6 +110,9 @@ update: verify
 	git config --global --unset-all url."https://@github.com/".insteadOf 2>/dev/null || true && \
 	git config --global url."https://x-access-token:$$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/" && \
 	echo "Git URL configured" && \
+	if command -v aws >/dev/null 2>&1; then \
+		~/.mentorhub/mh codeartifact login || echo "Note: CodeArtifact login skipped (configure AWS SSO — see CONTRIBUTING.md)"; \
+	fi && \
 	echo "Updates completed"
 
 schemas:
