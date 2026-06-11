@@ -112,6 +112,8 @@ update: verify
 	@export GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
 	cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
 	chmod +x ~/.mentorhub/mh && \
+	cp ./DeveloperEdition/scripts/codeartifact-pypi-auth.sh ~/.mentorhub/codeartifact-pypi-auth.sh && \
+	chmod +x ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
 	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \
 	if ! grep -q "aws-platform.env" ~/.zshrc 2>/dev/null; then \

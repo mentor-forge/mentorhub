@@ -4,6 +4,16 @@ export COMMAND="$1"
 export NEW_PROFILE="$2"
 export INSTALL_PATH=$(dirname "$0")
 
+if [[ -z "${GITHUB_TOKEN:-}" && -f "$HOME/.mentorhub/GITHUB_TOKEN" ]]; then
+  export GITHUB_TOKEN=$(<"$HOME/.mentorhub/GITHUB_TOKEN")
+fi
+if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
+  source "$HOME/.mentorhub/aws-platform.env"
+fi
+if [[ -f "$HOME/.mentorhub/aws-platform.local.env" ]]; then
+  source "$HOME/.mentorhub/aws-platform.local.env"
+fi
+
 # Compose-only default; shell profile may already export JWT_SECRET.
 if [[ -z "${JWT_SECRET:-}" ]]; then
   if [[ -f "$HOME/.mentorhub/JWT_DEV_SECRET" ]]; then
@@ -356,6 +366,13 @@ function ensureCodeArtifactAuth {
         }
     fi
 
+    typeset identity_account=$(aws sts get-caller-identity --profile "$profile" --region "$region" --query Account --output text)
+    if [[ "$identity_account" != "$domain_owner" ]]; then
+        echo "Error: profile $profile is AWS account $identity_account, but CodeArtifact is in Shared-Services $domain_owner." >&2
+        echo "Run: make aws-setup   (from mentorhub repo)" >&2
+        return 1
+    fi
+
     aws codeartifact login --tool pip \
         --domain "$domain" \
         --domain-owner "$domain_owner" \
@@ -408,7 +425,8 @@ case $COMMAND in
 
   "")
 
-    ensureDevServices || exit 1
+    ensureCodeArtifactAuth || exit 1
+    echo "CodeArtifact auth refreshed — pipenv run install and npm ci are ready."
     ;;
 
   "up")
