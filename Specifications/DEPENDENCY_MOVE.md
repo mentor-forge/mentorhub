@@ -864,22 +864,22 @@ Prove the pattern on **coordinator** (one API + one SPA), then migrate the remai
 
 | Step | Repo | Section | Status |
 | ---- | ---- | ------- | ------ |
-| 1 | `mentorhub_coordinator_api` | [§2.1](#21-domain-apis) | **Done** — CodeArtifact `api-utils==0.2.1`, local install/lock scripts, OIDC Docker CI |
-| 2 | `mentorhub_coordinator_spa` | [§2.2](#22-domain-spas) | **Next** — SPA pilot; copy patterns from coordinator API + `spa_utils` publish |
-| 3 | `mentorhub_customer_api` | §2.1 | Pending |
-| 4 | `mentorhub_customer_spa` | §2.2 | Pending |
-| 5 | `mentorhub_mentee_api` | §2.1 | Pending |
-| 6 | `mentorhub_mentee_spa` | §2.2 | Pending |
-| 7 | `mentorhub_mentor_api` | §2.1 | Pending |
-| 8 | `mentorhub_mentor_spa` | §2.2 | Pending — **last**; extra care (see below) |
+| 1 | `mentorhub_coordinator_api` | [§2.1](#21-domain-apis) | **Done** — merged; CodeArtifact `api-utils==0.2.1`, install/lock scripts, OIDC Docker CI |
+| 2 | `mentorhub_coordinator_spa` | [§2.2](#22-domain-spas) | **Done** — merged; `spa_utils@0.2.2`, BuildKit npm secret, unit-test setup |
+| 3 | `mentorhub_customer_api` | §2.1 | **Done** — PR merged or ready |
+| 4 | `mentorhub_customer_spa` | §2.2 | **Done** — PR merged or ready |
+| 5 | `mentorhub_mentee_api` | §2.1 | **Done** — PR merged or ready |
+| 6 | `mentorhub_mentee_spa` | §2.2 | **Done** — PR merged or ready |
+| 7 | `mentorhub_mentor_api` | [§2.4](#24-mentor-journey--final-phase-2-repos) | **Next** — Luke; coordinate open branches |
+| 8 | `mentorhub_mentor_spa` | §2.4 | **Last** — Luke; extra conflict review; rebase coordination |
 
-**Why coordinator SPA before the remaining APIs:** Step 1 validated Python/CodeArtifact/OIDC on `coordinator_api`. Step 2 validates the npm/CodeArtifact/BuildKit path on the paired SPA before touching customer, mentee, or mentor repos.
+**Phase 2 gate:** Do **not** start [Phase 3](#phase-3--developer-edition--cli-updates) until steps 7–8 are merged and `docker-push` is green on `main` for both mentor repos.
 
-**Why mentor last:** `mentorhub_mentor_spa` may have in-flight or conflicting work. Defer it until customer and mentee are green; reconcile with `main` immediately before starting mentor SPA migration; prefer a dedicated branch and explicit conflict review.
+**Why mentor last:** `mentorhub_mentor_api` and `mentorhub_mentor_spa` have active feature branches from other engineers. Luke owns the CodeArtifact migration; feature owners re-base onto updated `main` after each mentor repo merges (see [§2.4](#24-mentor-journey--final-phase-2-repos)).
 
 **Per-repo validation (each step):** local install after `mh` → unit tests → Docker build (`npm run container` / `pipenv run container`) → merge to `main` → `docker-push` workflow green (trigger is `push` to `main` only — merge creates that event; see [§2.3](#23-future-pr-ci)).
 
-**Next step:** [§2.2](#22-domain-spas) — `mentorhub_coordinator_spa`
+**Next step:** [§2.4](#24-mentor-journey--final-phase-2-repos) — `mentorhub_mentor_api`, then `mentorhub_mentor_spa`
 
 ### CodeArtifact repository URLs
 
@@ -904,11 +904,11 @@ pypi: https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/p
 Repos (per [architecture.yaml](./architecture.yaml)):
 
 - `mentorhub_coordinator_api` — **pilot complete**
-- `mentorhub_customer_api`
-- `mentorhub_mentee_api`
-- `mentorhub_mentor_api`
+- `mentorhub_customer_api` — **done**
+- `mentorhub_mentee_api` — **done**
+- `mentorhub_mentor_api` — **remaining** ([§2.4](#24-mentor-journey--final-phase-2-repos))
 
-Rollout order for the three remaining APIs: **customer → mentee → mentor** (after [coordinator SPA pilot](#22-domain-spas) in step 2 of the [rollout table](#rollout-order-coordinator-first)).
+Rollout order for remaining API: **mentor only** (customer and mentee complete).
 
 Pipfile replacement (single CodeArtifact source with PyPI upstream — public deps and `api-utils` resolve from one index):
 
@@ -941,18 +941,18 @@ Remove from `docker-push.yml`: `GH_PAT` build-arg. Use OIDC + `PIP_INDEX_URL` bu
 
 Remove from Pipfile `container` script: `--build-arg GITHUB_TOKEN=...` (local Docker builds use `mh codeartifact login` + `PIP_INDEX_URL` or documented equivalent).
 
-**Next step:** [§2.2](#22-domain-spas)
+**Next step:** [§2.4](#24-mentor-journey--final-phase-2-repos) — `mentorhub_mentor_api`
 
 ### 2.2 Domain SPAs
 
 Repos (per [architecture.yaml](./architecture.yaml)):
 
-- `mentorhub_coordinator_spa` — **pilot (next)**
-- `mentorhub_customer_spa`
-- `mentorhub_mentee_spa`
-- `mentorhub_mentor_spa` — **last**; reconcile with `main` and review conflicts before editing
+- `mentorhub_coordinator_spa` — **pilot complete**
+- `mentorhub_customer_spa` — **done**
+- `mentorhub_mentee_spa` — **done**
+- `mentorhub_mentor_spa` — **remaining** ([§2.4](#24-mentor-journey--final-phase-2-repos))
 
-Rollout order: **coordinator (pilot) → customer → mentee → mentor**. Complete [coordinator API pilot](#21-domain-apis) before starting here; complete each SPA before migrating the next journey’s API/SPA pair per the [rollout table](#rollout-order-coordinator-first).
+Rollout order for remaining SPA: **mentor only** (coordinator, customer, and mentee complete).
 
 `package.json`:
 
@@ -980,16 +980,17 @@ Remove `pull_request` trigger from `docker-push.yml` if present — merged PRs a
 
 Regenerate and commit `package-lock.json`. Lockfile entries should resolve to CodeArtifact tarball URLs, not GitHub git URLs.
 
-**Coordinator SPA pilot checklist:**
+**Coordinator SPA pilot checklist** (complete on coordinator; repeat pattern for mentor):
 
-- [ ] `.npmrc` with CodeArtifact registry URL (no `always-auth`)
-- [ ] `package.json` pins `@mentor-forge/mentorhub_spa_utils` SemVer (not `github:…`)
-- [ ] `package-lock.json` regenerated after `mh` + `npm ci`
-- [ ] Dockerfile uses BuildKit secret for `_authToken` (no git clone of `spa_utils`)
-- [ ] `docker-push.yml` OIDC + npm token secret; `push` to `main` only
-- [ ] `npm test` / `npm run build` / local `npm run container` green
+- [x] `.npmrc` with CodeArtifact registry URL (no `always-auth`)
+- [x] `package.json` pins `@mentor-forge/mentorhub_spa_utils` SemVer (not `github:…`)
+- [x] `package-lock.json` regenerated after `mh` + `npm ci`
+- [x] Dockerfile uses BuildKit secret for `_authToken` (no git clone of `spa_utils`)
+- [x] `docker-push.yml` OIDC + npm token secret; `push` to `main` only
+- [x] `tests/setup.ts` for Node 24 `localStorage`; `client.test.ts` mocks `redirectToIdpLogin`
+- [x] `npm test` / `npm run build` / local `npm run container` green
 
-**Next step:** After coordinator SPA merges and CI is green, [§2.1](#21-domain-apis) for `mentorhub_customer_api`.
+**Next step:** [§2.4](#24-mentor-journey--final-phase-2-repos) — `mentorhub_mentor_spa` (after mentor API)
 
 ### 2.3 Future PR CI
 
@@ -1001,7 +1002,125 @@ When adding PR workflows per [branch_protection_standards.md](../DeveloperEditio
 
 ---
 
+### 2.4 Mentor journey — final Phase 2 repos
+
+**Owner:** Luke  
+**Repos:** `mentorhub_mentor_api` (step 7), then `mentorhub_mentor_spa` (step 8)  
+**Blocked until complete:** [Phase 3](#phase-3--developer-edition--cli-updates)
+
+These are the last consumer repos still on git-based `api-utils` / `spa_utils` installs. All other journey APIs and SPAs have been migrated using the coordinator pilots as reference.
+
+#### Reference implementations (copy from `main`)
+
+| Role | API | SPA |
+| ---- | --- | --- |
+| Pilot (canonical) | `mentorhub_coordinator_api` | `mentorhub_coordinator_spa` |
+| Same pattern, recent | `mentorhub_customer_api`, `mentorhub_mentee_api` | `mentorhub_customer_spa`, `mentorhub_mentee_spa` |
+
+**Pinned versions (as of 2026-06-11):**
+
+- PyPI: `api-utils==0.2.1` from CodeArtifact `mentorhub-pypi`
+- npm: `@mentor-forge/mentorhub_spa_utils@0.2.2` from CodeArtifact `mentorhub-npm`
+
+**Mentor-specific constants:**
+
+| Repo | GHCR image | API port (Dockerfile `EXPOSE` / gunicorn) | SPA dev port |
+| ---- | ---------- | ----------------------------------------- | ------------ |
+| `mentorhub_mentor_api` | `ghcr.io/mentor-forge/mentorhub_mentor_api:latest` | `8391` | — |
+| `mentorhub_mentor_spa` | `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` | nginx → `mentorhub_mentor_api:8391` | `8392` |
+
+#### Branch coordination (Luke + feature owners)
+
+Luke should **announce in team chat** before starting each mentor repo migration:
+
+1. **Freeze window:** Ask engineers with open PRs or long-lived branches in that repo to note their branch names.
+2. **Luke merges migration first:** One PR per repo on branch `feature/codeartifact-deps` — dependency migration only; no unrelated feature work.
+3. **Feature owners re-base:** After each migration merges to `main`, owners of open branches **re-base (or merge `main`)** and resolve conflicts before continuing feature work.
+4. **Order matters:** Complete and merge `mentorhub_mentor_api` before starting `mentorhub_mentor_spa`. SPA owners re-base after API merge; SPA migration may touch overlapping CI/Docker paths.
+5. **Conflict hotspots:** `Pipfile`, `Pipfile.lock`, `Dockerfile`, `.github/workflows/docker-push.yml`, `package.json`, `package-lock.json`, `.npmrc`, `scripts/`, `README.md`. Prefer keeping Luke’s CodeArtifact versions and re-applying feature changes on top.
+6. **Do not** fold CodeArtifact migration into feature PRs — keeps review and rollback simple.
+
+**Suggested owner message (copy/adapt):**
+
+```text
+MentorHub CodeArtifact migration landing on mentor_<api|spa> main this week.
+Branch: feature/codeartifact-deps (Luke). After merge, please re-base your open branches onto main.
+Expect conflicts in Pipfile/lock, Dockerfile, docker-push.yml, and (SPA) package.json/lock.
+Questions: DEPENDENCY_MOVE.md §2.4 or Luke.
+```
+
+#### Luke — Cursor chat starter prompt
+
+Open a **new Cursor chat** in the mentor repo workspace (or multi-root with `mentorhub_mentor_api` / `mentorhub_mentor_spa`). Paste the block below; run **API first**, then **SPA** in a separate chat or sequential turns.
+
+```markdown
+Execute Phase 2.1 (API) or 2.2 (SPA) CodeArtifact migration for the mentor journey repo,
+following Specifications/DEPENDENCY_MOVE.md §2.4 and copying the as-built pattern from
+mentorhub_coordinator_api + mentorhub_customer_api (API) or mentorhub_coordinator_spa +
+mentorhub_customer_spa (SPA) on main.
+
+Repo: mentorhub_mentor_api OR mentorhub_mentor_spa (one repo per PR)
+
+API checklist (mentorhub_mentor_api):
+- Pipfile: single CodeArtifact [[source]], api-utils==0.2.1 with index = "codeartifact"
+- scripts/: pipenv-install.sh, pipenv-lock.sh, docker-build.sh (image mentorhub_mentor_api)
+- Pipfile scripts: install, container → scripts; build-publish uses pipenv run install
+- Dockerfile: PIP_INDEX_URL build-arg, no git/GITHUB_TOKEN; EXPOSE/CMD port 8391
+- docker-push.yml: OIDC + PIP_INDEX_URL, push to main only (no pull_request trigger)
+- .gitignore: .pipenv-requirements.txt
+- README: pipenv run install after mh; e2e_auth doc refresh if stale
+- Regenerate Pipfile.lock via scripts/pipenv-lock.sh after mh
+- Validate: pipenv run install, pipenv run test, pipenv run container
+- Branch feature/codeartifact-deps, open PR
+
+SPA checklist (mentorhub_mentor_spa):
+- .npmrc: CodeArtifact registry URL only (no always-auth)
+- package.json: @mentor-forge/mentorhub_spa_utils 0.2.2, container → scripts/docker-build.sh
+- scripts/docker-build.sh (image mentorhub_mentor_spa), BuildKit secret
+- Dockerfile: .npmrc + codeartifact_token secret, no git/GITHUB_TOKEN; API_HOST=mentorhub_mentor_api, API_PORT=8391
+- docker-push.yml: OIDC + npm BuildKit secret, push to main only
+- tests/setup.ts (Node 24 localStorage); client.test.ts mocks redirectToIdpLogin from spa_utils
+- vitest.config.ts: setupFiles ./tests/setup.ts
+- README: mh then npm ci
+- Regenerate package-lock.json after mh + npm install (CodeArtifact tarball URLs, not git)
+- Validate: npm run test, npm run build, npm run container
+- Branch feature/codeartifact-deps, open PR
+
+Do not mix feature changes. After merge, notify engineers with open branches to re-base onto main.
+```
+
+#### Validation checklist (Luke, before merge)
+
+**`mentorhub_mentor_api`**
+
+```bash
+source ~/.zshrc && mh
+cd mentorhub_mentor_api
+pipenv run install
+pipenv run test
+pipenv run container   # optional local Docker
+```
+
+**`mentorhub_mentor_spa`**
+
+```bash
+source ~/.zshrc && mh
+cd mentorhub_mentor_spa
+npm ci                 # or npm install if lockfile regenerated
+npm run test
+npm run build
+npm run container      # optional local Docker
+```
+
+After each merge: confirm GitHub Actions `docker-push` workflow succeeds on `push` to `main`.
+
+**Next step:** When both mentor repos are green, proceed to [Phase 3](#phase-3--developer-edition--cli-updates).
+
+---
+
 ## Phase 3 — Developer Edition / CLI updates
+
+**Prerequisite:** Phase 2 complete — all eight consumer repos (including mentor API + SPA) migrated and CI green.
 
 Repo: `mentorhub`
 
@@ -1015,7 +1134,7 @@ mh
 
 Also runs automatically before `mh pull`, `mh up`, and during `make update`. Requires `~/.zshrc` from `make install` (sources `GITHUB_TOKEN` and `aws-platform.env`).
 
-**Validate:** `pipenv install` and `npm ci` succeed in a utils consumer repo after `mh`.
+**Validate:** `pipenv run install` (API repos) and `npm ci` (SPA repos) succeed in a utils consumer repo after `mh`.
 
 **Next step:** 3.2
 
@@ -1047,16 +1166,16 @@ Also runs automatically before `mh pull`, `mh up`, and during `make update`. Req
 | 1    | Create CodeArtifact domain/repos and upstreams                                                           | `aws codeartifact list-repositories`                    |
 | 2    | Configure GitHub OIDC roles and org variables                                                            | Test `aws sts get-caller-identity` in workflow          |
 | 3    | Publish utils to CodeArtifact (`api-utils`, `@mentor-forge/mentorhub_spa_utils`)                       | Manual pip/npm install test                             |
-| 4    | Migrate `coordinator_api` (§2.1 pilot)                                                                   | **Done** — `pipenv run test`, e2e, Docker CI            |
-| 5    | Migrate `coordinator_spa` (§2.2 pilot)                                                                   | `npm test`, `npm run container`, Docker CI on merge     |
-| 6    | Migrate `customer_api` + `customer_spa`                                                                  | Per-journey validation before mentee                      |
-| 7    | Migrate `mentee_api` + `mentee_spa`                                                                      | Per-journey validation before mentor                    |
-| 8    | Migrate `mentor_api` + `mentor_spa` (SPA last, extra conflict review)                                    | All `docker-push` workflows green                       |
-| 9    | Update docs and onboarding                                                                               | New developer can build without `GH_PAT` for deps       |
-| 10   | Remove obsolete git dependency logic                                                                     | Secret audit confirms dependency `GH_PAT` removed       |
+| 4    | Migrate `coordinator_api` (§2.1 pilot)                                                                   | **Done**                                                |
+| 5    | Migrate `coordinator_spa` (§2.2 pilot)                                                                     | **Done**                                                |
+| 6    | Migrate `customer_api` + `customer_spa`                                                                  | **Done**                                                |
+| 7    | Migrate `mentee_api` + `mentee_spa`                                                                      | **Done**                                                |
+| 8    | Migrate `mentor_api` + `mentor_spa` ([§2.4](#24-mentor-journey--final-phase-2-repos); Luke)               | In progress — last Phase 2 work                         |
+| 9    | Update docs and onboarding (Phase 3)                                                                       | After step 8                                            |
+| 10   | Remove obsolete git dependency logic (Phase 5)                                                             | After step 9                                            |
 
 
-Do not change all repos in one PR. Utility publish must happen first, then the [coordinator-first rollout table](#rollout-order-coordinator-first) — one repo at a time, coordinator SPA before the remaining APIs.
+Do not change all repos in one PR. Utility publish must happen first, then the [coordinator-first rollout table](#rollout-order-coordinator-first). **Phase 3 starts only after step 8.**
 
 ---
 
@@ -1269,5 +1388,6 @@ RUN --mount=type=cache,target=/app/node_modules/.vite \
 | 2026-06-10 | Phase 2: CodeArtifact URLs use `{domain}-{account-id}` host prefix; drop deprecated npm `always-auth` in consumer `.npmrc` examples                    |
 | 2026-06-10 | One-step-at-a-time structure: Validate + Next step per section; removed forward references from Phase 0                        |
 | 2026-06-11 | Phase 2 rollout: coordinator-first (`coordinator_api` done, `coordinator_spa` next); customer → mentee → mentor; fix API/SPA repo lists (`mentee` not `craftsperson`); mentor SPA deferred with conflict note; OIDC trust includes mentee repos; docker-push `push`-only CI note |
+| 2026-06-11 | Phase 2 status: coordinator/customer/mentee APIs+SPAs done; §2.4 mentor handoff for Luke (Cursor prompt, branch re-base coordination); Phase 3 gated on mentor repos |
 
 
