@@ -10,7 +10,8 @@ architecture:
       services:
         - logging: CloudTrail
         - package-management: CodeArtifact
-        - container-registry: ElasticContainerRegistry (ECS)
+        - container-registry: ElasticContainerRegistry (ECR)
+        - infrastructure-automation: AWS CloudFormation
     - name: mentorhub-dev
       description: The mentorhub-dev account is the account for the Mentor Hub development, test, or short-lived environments.
       budget: $100/month
