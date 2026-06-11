@@ -1098,7 +1098,12 @@ source ~/.zshrc && mh
 cd mentorhub_mentor_api
 pipenv run install
 pipenv run test
+pipenv run db # start database
+pipenv run dev # start local dev server
+pipenv run e2e # end to end testing
 pipenv run container   # optional local Docker
+pipenv run api # start containers
+pipenv run e2e # (against container runtime)
 ```
 
 **`mentorhub_mentor_spa`**
@@ -1109,7 +1114,12 @@ cd mentorhub_mentor_spa
 npm ci                 # or npm install if lockfile regenerated
 npm run test
 npm run build
+npm run api # start backing services
+npm run dev # dev server
+npm run cypress:run # e2e tests
 npm run container      # optional local Docker
+npm run service # start all containers
+npm run cypress:run # e2e against container runtime
 ```
 
 After each merge: confirm GitHub Actions `docker-push` workflow succeeds on `push` to `main`.
