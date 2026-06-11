@@ -43,6 +43,18 @@ architecture:
         - MongoDB: DocumentDB
           name: mentorhub-dev-documentdb
           description: The mentorhub-dev-documentdb is the DocumentDB database for the Mentor Hub development, test, or short-lived environments.
+        - identity-provider: Cognito
+          name: mentorhub-dev-cognito
+          description: The mentorhub-dev-cognito is the Cognito identity provider for the Mentor Hub development, test, or short-lived environments.
+        - dns: Route 53
+          name: mentorhub-dev-route53
+          description: The mentorhub-dev-route53 is the Route 53 domain for the Mentor Hub development, test, or short-lived environments.
+        - smtp: Simple Email Service (SES)
+          name: mentorhub-dev-sns
+          description: The mentorhub-dev-sns is the SNS service for the Mentor Hub development, test, or short-lived environments.
+        - simple-storage: Simple Storage Service (S3)
+          name: mentorhub-dev-s3
+          description: The mentorhub-dev-s3 is the S3 storage for the Mentor Hub development, test, or short-lived environments.
     - name: mentorhub-staging
       description: The mentorhub-staging account is the account for the Mentor Hub staging environment, a mirror of production that can be shut down between releases.
       budget: $100/month
@@ -71,6 +83,18 @@ architecture:
         - MongoDB: DocumentDB
           name: mentorhub-staging-documentdb
           description: The mentorhub-staging-documentdb is the DocumentDB database for the Mentor Hub staging environment.
+        - identity-provider: Cognito
+          name: mentorhub-dev-cognito
+          description: The mentorhub-dev-cognito is the Cognito identity provider for the Mentor Hub development, test, or short-lived environments.
+        - dns: Route 53
+          name: mentorhub-dev-route53
+          description: The mentorhub-dev-route53 is the Route 53 domain for the Mentor Hub development, test, or short-lived environments.
+        - smtp: Simple Email Service (SES)
+          name: mentorhub-dev-sns
+          description: The mentorhub-dev-sns is the SNS service for the Mentor Hub development, test, or short-lived environments.
+        - simple-storage: Simple Storage Service (S3)
+          name: mentorhub-dev-s3
+          description: The mentorhub-dev-s3 is the S3 storage for the Mentor Hub development, test, or short-lived environments.
     - name: mentorhub-production
       description: The mentorhub-production account is the account for the LIVE Mentor Hub production environment.
       budget: $100/month
@@ -99,6 +123,18 @@ architecture:
         - MongoDB: DocumentDB
           name: mentorhub-production-documentdb
           description: The mentorhub-production-documentdb is the DocumentDB database for the Mentor Hub production environment.
+        - identity-provider: Cognito
+          name: mentorhub-dev-cognito
+          description: The mentorhub-dev-cognito is the Cognito identity provider for the Mentor Hub development, test, or short-lived environments.
+        - dns: Route 53
+          name: mentorhub-dev-route53
+          description: The mentorhub-dev-route53 is the Route 53 domain for the Mentor Hub development, test, or short-lived environments.
+        - smtp: Simple Email Service (SES)
+          name: mentorhub-dev-sns
+          description: The mentorhub-dev-sns is the SNS service for the Mentor Hub development, test, or short-lived environments.
+        - simple-storage: Simple Storage Service (S3)
+          name: mentorhub-dev-s3
+          description: The mentorhub-dev-s3 is the S3 storage for the Mentor Hub development, test, or short-lived environments.
   journey-domains:
     - name: schema
       description: MongoDB Database Configuration and Management.

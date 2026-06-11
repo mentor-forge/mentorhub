@@ -1132,7 +1132,7 @@ pipenv run container   # scripts/docker-build.sh passes PIP_INDEX_URL
 **Local dev install** (after `mh`):
 
 ```bash
-sh scripts/pipenv-install.sh   # pipenv install does not pass CodeArtifact auth from the lockfile
+sh scripts/pipenv-install.sh   # or: pipenv run install
 sh scripts/pipenv-lock.sh        # regenerate Pipfile.lock after dependency changes
 ```
 
