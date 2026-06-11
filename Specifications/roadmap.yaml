@@ -4,13 +4,18 @@ Hills:
 Roadmap:
 
   Now:
-  - Task
-  - Task
-  
+  - Finish Cloud DEV architecture diagram (see Specifications/ArchitectureDiagram.dev.guide.md)
+  - Shared-Services account + CodeArtifact (Specifications/DEPENDENCY_MOVE.md Phase -1 / 0)
+  - Profile dashboard API + coordinator UI (Specifications/profile_dashboard.yaml)
+
   Next:
-  - Task
-  - Task
+  - MentorHub-Dev runtime: VPC, DocumentDB, ECS, API Gateway, Cognito (Specifications/CloudEnvironmentPlan.md Phase 1)
+  - CD pipeline: GHCR image → ECS deploy on merge to main
+  - Staging architecture diagram + account decision
 
   Later:
-  - Task
-  - Task
+  - Staging and production environments (CloudEnvironmentPlan Phase 2–3)
+  - ECR migration from GHCR
+  - Production IdP and Stripe live mode
+
+See also: Specifications/CloudEnvironmentPlan.md
