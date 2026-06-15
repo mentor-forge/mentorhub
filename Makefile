@@ -1,7 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify schemas container push build-package publish-package stage0-launch-ui clone-all
+.PHONY: help install update verify schemas container push build-package publish-package stage0-launch-ui clone-all aws-setup
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -9,6 +9,7 @@ help:
 	@echo "  make install        - Install mentorhub CLI tools to ~/.mentorhub"
 	@echo "  make verify        - Verify build tools and prerequisites"
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
+	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
 	@echo "  make schemas       - Fetch JSON schemas for all data dictionaries, assumes mongodb_api is running"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
 	@echo "  make clone-all     - git clone all repos (except umbrella) into parent folder via SSH"
@@ -48,6 +49,9 @@ verify:
 	echo "--- GitHub & Git ---"; \
 	[ -n "$${GITHUB_TOKEN:-}" ] && printf "GITHUB_TOKEN: set\n" || { echo "  FAIL: GITHUB_TOKEN (set env var)"; fail=1; }; \
 	command -v git >/dev/null 2>&1 && printf "git:     " && git --version || { echo "  FAIL: git"; fail=1; }; \
+	echo ""; \
+	echo "--- AWS (CodeArtifact packages) ---"; \
+	command -v aws >/dev/null 2>&1 && printf "aws:     " && aws --version 2>&1 | head -1 || { echo "  FAIL: aws (install AWS CLI v2 — see CONTRIBUTING.md Step 1)"; fail=1; }; \
 	echo "Checking git global user.name and user.email (recommended)..."; \
 	git config --global user.name >/dev/null 2>&1 && echo "  user.name: set" || echo "  user.name: not set (recommended for commits)"; \
 	git config --global user.email >/dev/null 2>&1 && echo "  user.email: set" || echo "  user.email: not set (recommended for commits)"; \
@@ -66,6 +70,7 @@ verify:
 install:
 	@echo "Installing mentorhub CLI..."
 	@mkdir -p ~/.mentorhub
+	@cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env
 	@if [ ! -f ../.stage0-launch.yaml ]; then \
 		printf 'umbrella: mentorhub\n' > ../.stage0-launch.yaml && \
 		echo "Created ../.stage0-launch.yaml (launchpad stub for interactive mode)"; \
@@ -74,6 +79,8 @@ install:
 		echo "\n# Added by mentorhub CLI install" >> ~/.zshrc; \
 		echo "export PATH=\$$PATH:~/.mentorhub" >> ~/.zshrc; \
 		echo "export GITHUB_TOKEN=\$$(cat ~/.mentorhub/GITHUB_TOKEN)" >> ~/.zshrc; \
+		echo "source \$$HOME/.mentorhub/aws-platform.env" >> ~/.zshrc; \
+		echo "[ -f \$$HOME/.mentorhub/aws-platform.local.env ] && source \$$HOME/.mentorhub/aws-platform.local.env" >> ~/.zshrc; \
 		echo "Added ~/.mentorhub to PATH in ~/.zshrc"; \
 	else \
 		echo "~/.mentorhub already in PATH"; \
@@ -86,6 +93,8 @@ uninstall:
 		grep -v -e 'Added by mentorhub CLI install' \
 			-e 'export PATH=.*~/.mentorhub' \
 			-e 'export GITHUB_TOKEN=.*mentorhub/GITHUB_TOKEN' \
+			-e 'source.*aws-platform\.env' \
+			-e 'aws-platform\.local\.env.*source' \
 			~/.zshrc > ~/.zshrc.tmp && mv ~/.zshrc.tmp ~/.zshrc && \
 		echo "Removed mentorhub lines from ~/.zshrc"; \
 	else \
@@ -100,17 +109,27 @@ update: verify
 		echo "Error: GITHUB_TOKEN not found! - See ./DeveloperEdition/README.md"; \
 		exit 1; \
 	fi
-	@cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
+	@export GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
+	cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
 	chmod +x ~/.mentorhub/mh && \
+	cp ./DeveloperEdition/scripts/codeartifact-pypi-auth.sh ~/.mentorhub/codeartifact-pypi-auth.sh && \
+	chmod +x ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
 	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \
-	GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
-	echo "$$GITHUB_TOKEN" | docker login ghcr.io -u $(ORG) --password-stdin && \
-	echo "Docker login completed" && \
+	if ! grep -q "aws-platform.env" ~/.zshrc 2>/dev/null; then \
+		echo "source \$$HOME/.mentorhub/aws-platform.env" >> ~/.zshrc; \
+		echo "[ -f \$$HOME/.mentorhub/aws-platform.local.env ] && source \$$HOME/.mentorhub/aws-platform.local.env" >> ~/.zshrc; \
+	fi && \
 	git config --global --unset-all url."https://@github.com/".insteadOf 2>/dev/null || true && \
 	git config --global url."https://x-access-token:$$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/" && \
 	echo "Git URL configured" && \
+	. $$HOME/.mentorhub/aws-platform.env && \
+	[ -f $$HOME/.mentorhub/aws-platform.local.env ] && . $$HOME/.mentorhub/aws-platform.local.env; \
+	MH_GHCR_ORG=$(ORG) ~/.mentorhub/mh && \
 	echo "Updates completed"
+
+aws-setup:
+	@zsh ./DeveloperEdition/aws-sso-setup.sh
 
 schemas:
 	@echo "Fetching JSON schemas for all data dictionaries..."

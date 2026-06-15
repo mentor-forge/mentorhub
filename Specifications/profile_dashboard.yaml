@@ -1,0 +1,194 @@
+# Profile Dashboard — data contract
+# Defines what the coordinator/customer Profile detail page displays
+# using only existing collections. Stats marked "computed" are derived at
+# read time by the API; they are not stored fields.
+
+profile_dashboard:
+  description: >
+    Aggregated view for a single mentee/craftsperson. Primary key is Profile._id.
+    Coordinator and customer domains consume this shape read-only.
+
+  route: "/profiles/:id/dashboard"
+  primary_key:
+    collection: Profile
+    field: _id
+
+  panels:
+
+    header:
+      title: Profile
+      sources:
+        - collection: Profile
+          fields:
+            - full_name
+            - role
+            - state_program
+            - pathway
+            - meeting_style
+            - mentorship_goals
+            - learning_milestones
+            - stack_strengths
+            - stack_growth_areas
+            - status
+        - collection: Identity
+          join: Profile.identity = Identity._id
+          fields:
+            - email
+            - picture
+            - subject
+
+    journey_summary:
+      title: Learning Journey
+      sources:
+        - collection: Journey
+          join: Journey.profile = Profile._id
+          filter: Journey.status = active
+          fields:
+            - _id
+            - name
+            - journey_status
+            - started_at
+            - path
+            - mentor
+        - collection: Path
+          join: Journey.path = Path._id
+          fields:
+            - name
+            - description
+            - pathway
+      computed:
+        - name: days_active
+          expression: days_between(Journey.started_at, now())
+        - name: current_milestone
+          expression: >
+            Compare days_active to Profile.learning_milestones day_30/60/90
+            labels (30-day, 60-day, 90-day target)
+
+    statistics:
+      title: Activity Statistics
+      computed:
+        - name: notes_count
+          from: Note
+          join: Note.journey = Journey._id
+          aggregate: count
+        - name: ratings_count
+          from: Rating
+          join: Rating.journey = Journey._id
+          aggregate: count
+        - name: resources_engaged
+          from: [Note, Rating]
+          join: journey = Journey._id
+          aggregate: count_distinct(resource)
+        - name: average_rating
+          from: Rating
+          join: Rating.journey = Journey._id
+          aggregate: avg(score)
+        - name: encounters_count
+          from: Encounter
+          join: Encounter.journey = Journey._id
+          aggregate: count
+        - name: last_activity_at
+          expression: max(Note.saved.at_time, Rating.saved.at_time, Event.saved.at_time, Encounter.scheduled_at)
+
+    resources:
+      title: Resources
+      description: Resources the mentee has engaged with via notes or ratings
+      sources:
+        - collection: Resource
+          join: Resource._id IN (Note.resource, Rating.resource) WHERE journey = Journey._id
+          fields:
+            - name
+            - description
+            - url
+            - resource_type
+            - pathway
+      computed:
+        - name: last_rating
+          from: Rating
+          join: Rating.resource = Resource._id AND Rating.journey = Journey._id
+          fields: [score, saved]
+        - name: has_note
+          from: Note
+          join: Note.resource = Resource._id AND Note.journey = Journey._id
+          aggregate: exists
+
+    notes:
+      title: Recent Notes
+      sources:
+        - collection: Note
+          join: Note.journey = Journey._id
+          sort: Note.saved.at_time DESC
+          limit: 10
+          fields:
+            - name
+            - body
+            - resource
+            - saved
+        - collection: Resource
+          join: Note.resource = Resource._id
+          fields:
+            - name
+            - url
+
+    activity_feed:
+      title: Recent Activity
+      sources:
+        - collection: Event
+          join: Event.profile = Profile._id
+          sort: Event.saved.at_time DESC
+          limit: 20
+          fields:
+            - name
+            - description
+            - event_type
+            - journey
+            - saved
+
+    encounters:
+      title: Meetings
+      sources:
+        - collection: Encounter
+          join: Encounter.profile = Profile._id
+          sort: Encounter.scheduled_at DESC
+          fields:
+            - name
+            - description
+            - scheduled_at
+            - mentor
+            - journey
+
+  api_contract:
+    endpoint: GET /api/profiles/{profile_id}/dashboard
+    response_shape:
+      profile: object
+      identity: object
+      journey: object | null
+      path: object | null
+      statistics:
+        notes_count: number
+        ratings_count: number
+        resources_engaged: number
+        average_rating: number | null
+        encounters_count: number
+        days_active: number
+        current_milestone: string
+        last_activity_at: date-time | null
+      resources: array
+      notes: array
+      activity_feed: array
+      encounters: array
+
+  collections_used:
+    - Profile
+    - Identity
+    - Journey
+    - Path
+    - Resource
+    - Note
+    - Rating
+    - Encounter
+    - Event
+
+  not_used:
+    - name: Dashboard
+      reason: Customer dashboard configuration documents, not per-profile stats

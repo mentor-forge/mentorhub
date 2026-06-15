@@ -60,14 +60,13 @@ AWS Organization
     └── MentorHub-Dev
 ```
 
-Why this change is recommended now:
+CodeArtifact is hosted in **Shared-Services** only. Do not create CodeArtifact in MentorHub-Dev.
+
+Why Shared-Services:
 
 - CodeArtifact will serve multiple repos and, later, multiple environments.
 - Package registries are shared infrastructure, not MentorHub-Dev application resources.
-- Creating CodeArtifact in `Shared-Services` avoids later migration from `MentorHub-Dev`.
-- GitHub Actions can assume read/publish roles in `Shared-Services` while deployments happen in `MentorHub-Dev`.
-
-If the team chooses not to create `Shared-Services` yet, create CodeArtifact in `MentorHub-Dev` and explicitly mark that as temporary. The rest of this plan assumes the recommended `Shared-Services` account exists.
+- GitHub Actions assume read/publish roles in `Shared-Services` while deployments run in `MentorHub-Dev`.
 
 ## Current state
 
@@ -164,6 +163,59 @@ Keep PyPI distribution name `api_utils` and pip install name `api-utils`. Do not
 
 ---
 
+## AWS and GitHub — concepts (read this first)
+
+This section explains **what** you are configuring and **why**, before the step-by-step tasks. Canonical values live in [aws-platform.yaml](./aws-platform.yaml).
+
+### The three AWS accounts
+
+```text
+Management account     → Organization, IAM Identity Center, billing (no app workloads)
+Shared-Services        → CodeArtifact, GitHub OIDC roles (no app containers/DBs)
+MentorHub-Dev            → Application infrastructure (ECS, VPC, etc.)
+```
+
+**Rule of thumb:** If it is a **shared package registry** or **CI authentication to AWS**, it belongs in **Shared-Services**. If it is a **running MentorHub service**, it belongs in **MentorHub-Dev**.
+
+### Two kinds of “region” (both correct)
+
+| Name | Value | When you use it |
+| ---- | ----- | --------------- |
+| **SSO region** | `us-east-2` | Only for `aws configure sso` and `aws sso login` (IAM Identity Center home region) |
+| **Workload region** | `us-east-1` | CodeArtifact, `--region` on CLI commands, GitHub `AWS_REGION`, future ECS/ECR |
+
+Do not change Identity Center to `us-east-1` to “match” CodeArtifact. They are independent settings.
+
+### Two kinds of human access
+
+| Path | Used for | Avoid for |
+| ---- | -------- | --------- |
+| **IAM Identity Center** (AWS access portal + `aws sso login`) | Daily work, local `pip`/`npm`, SRE CLI | — |
+| **Root user / IAM users** | Emergency only | Normal development |
+
+Local CLI profiles (see Phase -1.6):
+
+```text
+mentorhub-shared  →  Shared-Services account  (CodeArtifact — all developers via make aws-setup)
+mentorhub-dev     →  MentorHub-Dev account    (SRE/platform only — not required for local dev)
+```
+
+### Two kinds of automation access (GitHub Actions)
+
+GitHub Actions use **OIDC** to assume IAM roles in Shared-Services — no long-lived AWS access keys in GitHub.
+
+---
+
+## How to use this plan
+
+1. Do **one step** at a time — only the step labeled with the number you are on.
+2. Run **Validate** at the end of that step.
+3. Follow **Next step** — do not act on later phases until you reach them.
+
+GitHub workflow YAML, consumer repo migrations, and `GH_PAT` removal are documented in later phases. They are not part of the step you are on until that phase begins.
+
+---
+
 ## Phase -1 — Complete AWS prerequisites before CodeArtifact
 
 **Owner:** Platform / SRE  
@@ -189,6 +241,8 @@ Root-user standard:
 - Store credentials in password manager.
 - Sign out and do not use root for daily access.
 
+**Next step:** -1.2
+
 ### -1.2 Assign IAM Identity Center access
 
 Use **one `Developer` group** for all application developers. Do not create a separate group for package access. Use **account assignments and permission sets** to scope what each group can do in each account.
@@ -212,9 +266,9 @@ Principles:
 
 - **All developers** in the `Developer` group receive `Developer-Packages` on `Shared-Services`. This access is not optional and should not be removed when other permissions are tightened.
 - `**Developer`** on `MentorHub-Dev` may be restricted over time; `**Developer-Packages**` stays stable.
-- Developers do not need console admin in `Shared-Services`. They need package read for `mh codeartifact login`, `pipenv install`, and `npm ci`.
+- Developers do not need console admin in `Shared-Services`. They need package read for local `pipenv install` and `npm ci` (Developer Edition tooling in Phase 3).
 
-See Phase -1.8 to create the `Developer-Packages` permission set.
+**Next step:** -1.3
 
 ### -1.3 Create budget for Shared-Services
 
@@ -228,6 +282,8 @@ Alerts: 80%, 100%
 Recipients: Mike and SRE contacts
 ```
 
+**Next step:** -1.4
+
 ### -1.4 Enable CloudTrail in Shared-Services
 
 Create a trail for shared-service audit logging.
@@ -240,6 +296,8 @@ KMS alias:  alias/shared-services-cloudtrail
 Events:     management events, read/write
 Regions:    multi-region when available
 ```
+
+**Next step:** -1.5
 
 ### -1.5 Record primary AWS region
 
@@ -258,245 +316,441 @@ Recorded in:
 | [CONTRIBUTING.md](../CONTRIBUTING.md)                                     | Done — developer onboarding                                                                                |
 | [DeveloperEdition/aws-platform.env](../DeveloperEdition/aws-platform.env) | Done — `mh` defaults via `~/.mentorhub/aws-platform.env`                                                   |
 | [sre_standards.md](../DeveloperEdition/standards/sre_standards.md)        | Done — primary region                                                                                      |
-| GitHub org variable `AWS_REGION`                                          | **Manual** — set to `us-east-1` in `mentor-forge` → Settings → Secrets and variables → Actions → Variables |
+| GitHub org variable `AWS_REGION`                                          | Set in step 0.3                                                                                            |
 
 
-Remaining CodeArtifact org variables (`AWS_SHARED_SERVICES_ACCOUNT_ID`, `CODEARTIFACT_`*) are documented in [aws-platform.yaml](./aws-platform.yaml) and set in GitHub when Phase 0 infrastructure exists.
+#### Two AWS regions (do not conflate)
+
+MentorHub uses **two different regions** for different purposes. Both are correct; they are not interchangeable.
+
+| Setting | Region | Used for |
+| ------- | ------ | -------- |
+| `sso_region` (in `[sso-session]` in `~/.aws/config`) | **`us-east-2`** | IAM Identity Center sign-in only (`aws sso login`, `aws configure sso`) |
+| `AWS_REGION` / profile `region` / `--region` on CLI commands | **`us-east-1`** | CodeArtifact, GitHub Actions, and future application infrastructure |
+
+**How to find each:**
+
+- **SSO region:** Management account → **IAM Identity Center → Settings** (home region of the Identity Center instance). As-built: `us-east-2`.
+- **Workload region:** Platform decision recorded in Phase -1.5: `us-east-1`.
+
+**Example `~/.aws/config`:**
+
+```ini
+[profile mentorhub-shared]
+sso_session = mentor-forge
+sso_account_id = <shared-services-account-id>
+sso_role_name = Developer-Packages
+region = us-east-1
+
+[sso-session mentor-forge]
+sso_start_url = https://d-906780e571.awsapps.com/start
+sso_region = us-east-2
+sso_registration_scopes = sso:account:access
+```
+
+Sign-in talks to Identity Center in `us-east-2`. After login, CodeArtifact and other service calls use `us-east-1` (from profile `region` or explicit `--region us-east-1`).
+
+**Next step:** -1.6
 
 ### -1.6 Configure local AWS SSO profiles
 
 Before testing CodeArtifact, each SRE/developer should be able to use AWS CLI with IAM Identity Center.
 
-Recommended profile names:
+**Developers:** After `make install`, run `make aws-setup` once ([CONTRIBUTING.md](../CONTRIBUTING.md)). This configures only `mentorhub-shared` (Shared-Services / `Developer-Packages`) for CodeArtifact — not MentorHub-Dev.
 
-```text
-mentorhub-shared   # SSO into Shared-Services with Developer-Packages
-mentorhub-dev      # SSO into MentorHub-Dev with Developer
-```
-
-When configuring `mentorhub-shared`, select account **Shared-Services** and permission set **Developer-Packages** at the AWS access portal.
-
-Example setup:
+**SRE:** Also configure `mentorhub-dev` for MentorHub-Dev account access via `aws configure sso --profile mentorhub-dev` (reuse SSO session `mentor-forge`). Values from [aws-platform.yaml](./aws-platform.yaml) `identity_center` block.
 
 ```bash
 aws configure sso --profile mentorhub-shared
-aws sso login --profile mentorhub-shared
+```
+
+Answer the prompts:
+
+| Prompt | Value | Notes |
+| ------ | ----- | ----- |
+| SSO session name | `mentor-forge` | Reuse for both profiles |
+| SSO start URL | From `identity_center.sso_start_url` in aws-platform.yaml | Also in Management account → IAM Identity Center → Settings → **AWS access portal URL** |
+| SSO region | `us-east-2` | Identity Center **home** region — not `us-east-1` |
+| SSO registration scopes | `sso:account:access` | Press Enter for default |
+| CLI profile name | `mentorhub-shared` | Often pre-filled from `--profile` flag |
+| CLI default client Region | `us-east-1` | Workload region for CodeArtifact API calls |
+| CLI default output format | `json` |
+
+The wizard opens a browser. Sign in, then select:
+
+- **Account:** `Shared-Services`
+- **Role:** `Developer-Packages` for developers; `SRE` for platform setup
+
+**Second profile (`mentorhub-dev`):** Run `aws configure sso --profile mentorhub-dev` again. Reuse SSO session `mentor-forge` (same URL, SSO region, scopes). Select account **MentorHub-Dev** and role **Developer** (developers) or **SRE** (platform team).
+
+**Verify:**
+
+```bash
+aws sso login --profile mentorhub-shared   # only needed when session expires
 aws sts get-caller-identity --profile mentorhub-shared
+# "Account" should be Shared-Services (560167829275). "Arn" should show your permission set role.
 ```
 
-### -1.7 GitHub OIDC planning
+`aws configure sso` may perform an initial login; you still run `aws sso login` later when the session expires (typically after several hours).
 
-Before writing package workflows, decide the AWS account and role names for GitHub Actions.
-
-Recommended role placement:
-
-```text
-Shared-Services
-├── GitHubActionsCodeArtifactPublish
-└── GitHubActionsCodeArtifactRead
-```
-
-These roles should use GitHub OIDC, not static AWS access keys.
+**Next step:** -1.8
 
 ### -1.8 Create `Developer-Packages` permission set
 
-Before any developer or consumer repo migrates off git deps, create and assign the `Developer-Packages` permission set in the Management Account (IAM Identity Center).
+Before any developer or consumer repo migrates off git deps, create and assign the `Developer-Packages` permission set in the **Management account** (IAM Identity Center is always administered from there).
+
+**Console path:** Management account → **IAM Identity Center** → **Permission sets** → **Create permission set**
 
 **Create permission set:** `Developer-Packages`
 
-Attach an inline policy (or customer-managed policy) with at least:
+**Permissions:** Attach an **inline policy** on the permission set, scoped to the `mentor-forge` domain and repos:
 
-```text
-codeartifact:GetAuthorizationToken
-codeartifact:GetRepositoryEndpoint
-codeartifact:ReadFromRepository
-sts:GetServiceBearerToken
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codeartifact:GetAuthorizationToken",
+        "codeartifact:GetRepositoryEndpoint",
+        "codeartifact:ReadFromRepository"
+      ],
+      "Resource": [
+        "arn:aws:codeartifact:us-east-1:560167829275:domain/mentor-forge",
+        "arn:aws:codeartifact:us-east-1:560167829275:repository/mentor-forge/mentorhub-pypi",
+        "arn:aws:codeartifact:us-east-1:560167829275:repository/mentor-forge/mentorhub-npm",
+        "arn:aws:codeartifact:us-east-1:560167829275:package/mentor-forge/mentorhub-pypi/*",
+        "arn:aws:codeartifact:us-east-1:560167829275:package/mentor-forge/mentorhub-npm/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sts:GetServiceBearerToken",
+      "Resource": "*"
+    }
+  ]
+}
 ```
 
-Scope resources to the `Shared-Services` account, for example:
+Do not attach the broad `Developer` permission set to Shared-Services. Do not use account-wide managed policies such as `AWSCodeArtifactReadOnlyAccess` for this permission set.
 
-```text
-arn:aws:codeartifact:<region>:<shared-services-account-id>:domain/mentor-forge
-arn:aws:codeartifact:<region>:<shared-services-account-id>:repository/mentor-forge/mentorhub-pypi
-arn:aws:codeartifact:<region>:<shared-services-account-id>:repository/mentor-forge/mentorhub-npm
-```
+**Assign the permission set (console):**
 
-**Assign:** `Developer` group → `Shared-Services` account → `Developer-Packages` permission set.
+1. IAM Identity Center → **AWS accounts**
+2. Select **Shared-Services**
+3. **Assign users or groups**
+4. Group: **Developer**
+5. Permission set: **Developer-Packages**
+6. Confirm
 
-Do not fold these permissions into the `Developer` permission set unless that set is already scoped so narrowly that assigning it to `Shared-Services` would not grant unwanted access there.
+Also ensure **SRE** group has **SRE** permission set on Shared-Services (for domain creation and OIDC setup).
 
-**Optional — repository resource policy:** For cross-account automation that does not use Identity Center (unusual for human devs), a CodeArtifact repository resource policy can grant read to the `MentorHub-Dev` account or specific IAM roles. GitHub Actions should use OIDC roles in `Shared-Services` (Phase 0.2), not developer permission sets.
-
-Validation (run as a user in the `Developer` group):
+**Validate:**
 
 ```bash
 aws sso login --profile mentorhub-shared
-aws codeartifact list-packages \
-  --domain mentor-forge \
-  --domain-owner <shared-services-account-id> \
-  --repository mentorhub-pypi \
-  --profile mentorhub-shared
+aws sts get-caller-identity --profile mentorhub-shared
+# Expect Shared-Services account; role Developer-Packages (or SRE while you are setting up)
 ```
 
-Succeeds after utils packages are published (Phase 1.3). Fails with `AccessDenied` if assignment or policy is wrong — fix before migrating consumer repos.
-
-Document the as-built permission set name, policy, and assignments in `sre_standards.md` when Phase -1 is complete.
+**Next step:** Phase 0.1
 
 ## Phase 0 — CodeArtifact infrastructure
 
 **Owner:** Platform / SRE  
-**Account:** `Shared-Services` recommended
+**Account:** `Shared-Services`
 
 ### 0.1 Create CodeArtifact domain and repositories
+
+**Who:** SRE with **SRE** permission set on Shared-Services (Developer-Packages is read-only — not enough to create domains).
+
+**Before you run commands:**
+
+```bash
+aws sso login --profile mentorhub-shared
+aws sts get-caller-identity --profile mentorhub-shared
+# Confirm Account = 560167829275 (Shared-Services)
+```
+
+**What you are creating:**
+
+| AWS object | Name | Purpose |
+| -------- | ---- | ------- |
+| Domain | `mentor-forge` | Container for all MentorHub package repos |
+| Repository | `mentorhub-pypi` | Private PyPI + upstream to public PyPI |
+| Repository | `mentorhub-npm` | Private npm + upstream to npmjs |
+| External connection | `public:pypi` / `public:npmjs` | Lets pip/npm resolve public packages through CodeArtifact |
+
+**Run (all in `us-east-1`):**
 
 ```bash
 aws codeartifact create-domain \
   --domain mentor-forge \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact create-repository \
   --domain mentor-forge \
   --repository mentorhub-pypi \
   --description "MentorHub internal PyPI + PyPI upstream" \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact create-repository \
   --domain mentor-forge \
   --repository mentorhub-npm \
   --description "MentorHub internal npm + npmjs upstream" \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact associate-external-connection \
   --domain mentor-forge \
   --repository mentorhub-pypi \
   --external-connection public:pypi \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 
 aws codeartifact associate-external-connection \
   --domain mentor-forge \
   --repository mentorhub-npm \
   --external-connection public:npmjs \
-  --profile mentorhub-shared
+  --profile mentorhub-shared \
+  --region us-east-1
 ```
 
-Record for all repos:
+**Validate:**
 
-```text
-AWS_REGION=us-east-1
-AWS_SHARED_SERVICES_ACCOUNT_ID=<shared-services-account-id>
-CODEARTIFACT_DOMAIN=mentor-forge
-CODEARTIFACT_DOMAIN_OWNER=<shared-services-account-id>
-CODEARTIFACT_PYPI_REPO=mentorhub-pypi
-CODEARTIFACT_NPM_REPO=mentorhub-npm
+```bash
+aws codeartifact list-domains --profile mentorhub-shared --region us-east-1
+aws codeartifact list-repositories --profile mentorhub-shared --region us-east-1
+# Expect domain mentor-forge and repos mentorhub-pypi, mentorhub-npm
 ```
 
-See [aws-platform.yaml](./aws-platform.yaml) for the canonical platform record.
+**Record values:**
 
-For cross-account usage, include `--domain-owner <shared-services-account-id>` in login and repository endpoint commands when needed.
+1. Update [aws-platform.yaml](./aws-platform.yaml) `codeartifact` and `github_org_variables`.
+2. Update [DeveloperEdition/aws-platform.env](../DeveloperEdition/aws-platform.env), then run `make update` on each developer machine.
+
+**Next step:** 0.2
 
 ### 0.2 IAM for GitHub Actions via OIDC
 
-Create or verify the IAM OIDC provider for:
+**Account:** Sign into **Shared-Services** as **SRE** (access portal or `mentorhub-shared` profile with SRE role).
+
+Create two IAM roles in this account:
 
 ```text
-token.actions.githubusercontent.com
+GitHubActionsCodeArtifactPublish
+GitHubActionsCodeArtifactRead
 ```
 
-Create roles in `Shared-Services`:
+Do not put these roles in the Management account or MentorHub-Dev. Do not create IAM users with access keys for GitHub.
 
-#### `GitHubActionsCodeArtifactPublish`
+#### Step 0.2.1 — Create the GitHub OIDC identity provider (once per account)
 
-Trust policy scope:
+**Console:** Shared-Services → **IAM** → **Identity providers** → **Add provider**
 
-- `mentor-forge/mentorhub_api_utils`
-- `mentor-forge/mentorhub_spa_utils`
-- `**refs/tags/v***` only for publish workflows (required — do not allow publish from arbitrary branches)
+| Field | Value |
+| ----- | ----- |
+| Provider type | OpenID Connect |
+| Provider URL | `https://token.actions.githubusercontent.com` |
+| Audience | `sts.amazonaws.com` |
 
-Permissions:
+**Next step:** 0.2.2
 
-- `codeartifact:GetAuthorizationToken`
-- `codeartifact:GetRepositoryEndpoint`
-- `codeartifact:PublishPackageVersion`
-- `codeartifact:PutPackageMetadata`
-- `codeartifact:ReadFromRepository`
-- `sts:GetServiceBearerToken`
+#### Step 0.2.2 — Create role `GitHubActionsCodeArtifactPublish`
 
-#### `GitHubActionsCodeArtifactRead`
+**Account:** Shared-Services, signed in as **SRE** (not Developer-Packages).
 
-Trust policy scope:
+The console splits this into a **permissions policy** and a **role**. Trust relationships are edited on the **role**, not on the policy page.
 
-- Consumer repos that build APIs/SPAs
+**A. Create permissions policy** (IAM → **Policies** → **Create policy** → **JSON**):
 
-Permissions:
+Policy name: `CodeArtifactPublish`
 
-- `codeartifact:GetAuthorizationToken`
-- `codeartifact:GetRepositoryEndpoint`
-- `codeartifact:ReadFromRepository`
-- `sts:GetServiceBearerToken`
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codeartifact:GetAuthorizationToken",
+        "codeartifact:GetRepositoryEndpoint",
+        "codeartifact:PublishPackageVersion",
+        "codeartifact:PutPackageMetadata",
+        "codeartifact:ReadFromRepository"
+      ],
+      "Resource": [
+        "arn:aws:codeartifact:us-east-1:560167829275:domain/mentor-forge",
+        "arn:aws:codeartifact:us-east-1:560167829275:repository/mentor-forge/mentorhub-pypi",
+        "arn:aws:codeartifact:us-east-1:560167829275:repository/mentor-forge/mentorhub-npm",
+        "arn:aws:codeartifact:us-east-1:560167829275:package/mentor-forge/mentorhub-pypi/*",
+        "arn:aws:codeartifact:us-east-1:560167829275:package/mentor-forge/mentorhub-npm/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sts:GetServiceBearerToken",
+      "Resource": "*"
+    }
+  ]
+}
+```
 
-Avoid broad `repo:*` trust policies if a narrower organization/repository/ref condition can be used.
+**B. Create role** (IAM → **Roles** → **Create role** → **Web identity** → GitHub OIDC provider):
+
+- Audience: `sts.amazonaws.com`
+- Organization: `mentor-forge` (repo/branch `*` in the wizard is OK temporarily)
+- Role name: `GitHubActionsCodeArtifactPublish`
+- Skip permissions in the wizard (attach policy in step C)
+
+**C. Attach policy:** Role → **Permissions** → **Add permissions** → **Attach policies** → select `CodeArtifactPublish`.
+
+**D. Edit trust policy** (Role → **Trust relationships** → **Edit trust policy** — this is not on the policy create page):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::560167829275:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": [
+            "repo:mentor-forge/mentorhub_api_utils:ref:refs/tags/v*",
+            "repo:mentor-forge/mentorhub_spa_utils:ref:refs/tags/v*"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+**E. Copy the role ARN** from the role summary (e.g. `arn:aws:iam::560167829275:role/GitHubActionsCodeArtifactPublish`). Keep it for step 0.3.
+
+**Next step:** 0.2.3
+
+#### Step 0.2.3 — Create role `GitHubActionsCodeArtifactRead`
+
+**Account:** Shared-Services, signed in as **SRE**.
+
+**A. Create permissions policy** (IAM → **Policies** → **Create policy** → **JSON**):
+
+Policy name: `CodeArtifactRead`
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codeartifact:GetAuthorizationToken",
+        "codeartifact:GetRepositoryEndpoint",
+        "codeartifact:ReadFromRepository"
+      ],
+      "Resource": [
+        "arn:aws:codeartifact:us-east-1:560167829275:domain/mentor-forge",
+        "arn:aws:codeartifact:us-east-1:560167829275:repository/mentor-forge/mentorhub-pypi",
+        "arn:aws:codeartifact:us-east-1:560167829275:repository/mentor-forge/mentorhub-npm",
+        "arn:aws:codeartifact:us-east-1:560167829275:package/mentor-forge/mentorhub-pypi/*",
+        "arn:aws:codeartifact:us-east-1:560167829275:package/mentor-forge/mentorhub-npm/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sts:GetServiceBearerToken",
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+**B. Create role** (IAM → **Roles** → **Create role** → **Web identity** → GitHub OIDC provider):
+
+- Audience: `sts.amazonaws.com`
+- Organization: `mentor-forge` (repo/branch `*` in the wizard is OK temporarily)
+- Role name: `GitHubActionsCodeArtifactRead`
+- Skip permissions in the wizard (attach policy in step C)
+
+**C. Attach policy:** Role → **Permissions** → **Add permissions** → **Attach policies** → select `CodeArtifactRead`.
+
+**D. Edit trust policy** (Role → **Trust relationships** → **Edit trust policy**):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::560167829275:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": [
+            "repo:mentor-forge/mentorhub_coordinator_api:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_customer_api:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_mentee_api:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_mentor_api:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_coordinator_spa:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_customer_spa:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_mentee_spa:ref:refs/heads/main",
+            "repo:mentor-forge/mentorhub_mentor_spa:ref:refs/heads/main"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+**E. Copy the role ARN** from the role summary. Keep both role ARNs for step 0.3.
+
+**Next step:** 0.3
 
 ### 0.3 GitHub organization secrets and variables
 
+Open https://github.com/organizations/mentor-forge/settings/secrets/actions
 
-| Name                             | Scope         | Purpose                                     |
-| -------------------------------- | ------------- | ------------------------------------------- |
-| `AWS_ROLE_ARN_PUBLISH`           | utils repos   | OIDC role for publish                       |
-| `AWS_ROLE_ARN_READ`              | API/SPA repos | OIDC role for dependency read during builds |
-| `AWS_REGION`                     | org variable  | selected AWS region                         |
-| `AWS_SHARED_SERVICES_ACCOUNT_ID` | org variable  | CodeArtifact account owner                  |
-| `CODEARTIFACT_DOMAIN`            | org variable  | `mentor-forge`                              |
-| `CODEARTIFACT_PYPI_REPO`         | org variable  | `mentorhub-pypi`                            |
-| `CODEARTIFACT_NPM_REPO`          | org variable  | `mentorhub-npm`                             |
+#### Organization variables
 
+**Variables** tab — create each row (visibility **All repositories**):
 
-Deprecate `GH_PAT` for dependency installs after migration. It may still be needed for other GitHub operations until separately removed.
+| Name | Value |
+| ---- | ----- |
+| `AWS_REGION` | `us-east-1` |
+| `AWS_SHARED_SERVICES_ACCOUNT_ID` | `560167829275` |
+| `CODEARTIFACT_DOMAIN` | `mentor-forge` |
+| `CODEARTIFACT_PYPI_REPO` | `mentorhub-pypi` |
+| `CODEARTIFACT_NPM_REPO` | `mentorhub-npm` |
 
-### 0.4 Local developer auth
+#### Organization secrets
 
-Extend Developer Edition token setup ([CONTRIBUTING.md](../CONTRIBUTING.md)):
+**Secrets** tab — create each row (visibility **All repositories**):
 
-```bash
-aws sso login --profile mentorhub-shared
-aws codeartifact login \
-  --tool pip \
-  --domain mentor-forge \
-  --domain-owner <shared-services-account-id> \
-  --repository mentorhub-pypi \
-  --profile mentorhub-shared
-aws codeartifact login \
-  --tool npm \
-  --domain mentor-forge \
-  --domain-owner <shared-services-account-id> \
-  --repository mentorhub-npm \
-  --profile mentorhub-shared
-```
+| Name | Value |
+| ---- | ----- |
+| `AWS_ROLE_ARN_PUBLISH` | ARN from step 0.2.2 |
+| `AWS_ROLE_ARN_READ` | ARN from step 0.2.3 |
 
-Add:
+**Validate:** In GitHub org settings, confirm all five variables and both secrets are listed.
 
-```bash
-mh codeartifact login
-```
-
-or hook CodeArtifact refresh into `make update`.
-
-Document that CodeArtifact auth tokens expire (~12 hours) and must be refreshed periodically.
-
-#### `mh codeartifact login` specification
-
-
-| Item          | Value                                                                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| AWS profile   | `mentorhub-shared` (override: `MH_AWS_PROFILE`)                                                                                       |
-| SSO target    | Account `Shared-Services`, permission set `Developer-Packages`                                                                        |
-| pip           | `aws codeartifact login --tool pip --domain mentor-forge --domain-owner <account-id> --repository mentorhub-pypi --profile <profile>` |
-| npm           | `aws codeartifact login --tool npm --domain mentor-forge --domain-owner <account-id> --repository mentorhub-npm --profile <profile>`  |
-| Prerequisites | Valid SSO session (`aws sso login --profile mentorhub-shared`)                                                                        |
-| Failure mode  | Print actionable message if SSO session expired or `Developer-Packages` assignment missing                                            |
-| Integration   | Called from `make update`; document in `CONTRIBUTING.md`                                                                              |
-
-
-GitHub tokens remain required for git operations; they are not used for shared library installs after migration.
+**Next step:** Phase 1
 
 ---
 
@@ -598,24 +852,69 @@ jobs:
 2. Tag and publish `@mentor-forge/mentorhub_spa_utils@0.2.0`.
 3. Verify install from a clean environment using only AWS SSO/CodeArtifact auth.
 
+**Next step:** Phase 2
+
 ---
 
 ## Phase 2 — Update consumer repos
 
+### Rollout order (coordinator-first)
+
+Prove the pattern on **coordinator** (one API + one SPA), then migrate the remaining three journeys in a fixed order. One repo per PR; do not batch.
+
+| Step | Repo | Section | Status |
+| ---- | ---- | ------- | ------ |
+| 1 | `mentorhub_coordinator_api` | [§2.1](#21-domain-apis) | **Done** — merged; CodeArtifact `api-utils==0.2.1`, install/lock scripts, OIDC Docker CI |
+| 2 | `mentorhub_coordinator_spa` | [§2.2](#22-domain-spas) | **Done** — merged; `spa_utils@0.2.2`, BuildKit npm secret, unit-test setup |
+| 3 | `mentorhub_customer_api` | §2.1 | **Done** — PR merged or ready |
+| 4 | `mentorhub_customer_spa` | §2.2 | **Done** — PR merged or ready |
+| 5 | `mentorhub_mentee_api` | §2.1 | **Done** — PR merged or ready |
+| 6 | `mentorhub_mentee_spa` | §2.2 | **Done** — PR merged or ready |
+| 7 | `mentorhub_mentor_api` | [§2.4](#24-mentor-journey--final-phase-2-repos) | **Next** — Luke; coordinate open branches |
+| 8 | `mentorhub_mentor_spa` | §2.4 | **Last** — Luke; extra conflict review; rebase coordination |
+
+**Phase 2 gate:** Do **not** start [Phase 3](#phase-3--developer-edition--cli-updates) until steps 7–8 are merged and `docker-push` is green on `main` for both mentor repos.
+
+**Why mentor last:** `mentorhub_mentor_api` and `mentorhub_mentor_spa` have active feature branches from other engineers. Luke owns the CodeArtifact migration; feature owners re-base onto updated `main` after each mentor repo merges (see [§2.4](#24-mentor-journey--final-phase-2-repos)).
+
+**Per-repo validation (each step):** local install after `mh` → unit tests → Docker build (`npm run container` / `pipenv run container`) → merge to `main` → `docker-push` workflow green (trigger is `push` to `main` only — merge creates that event; see [§2.3](#23-future-pr-ci)).
+
+**Next step:** [§2.4](#24-mentor-journey--final-phase-2-repos) — `mentorhub_mentor_api`, then `mentorhub_mentor_spa`
+
+### CodeArtifact repository URLs
+
+Repository endpoints use **`{domain}-{account-id}.d.codeartifact.{region}.amazonaws.com`**, not `{account-id}.d.codeartifact...` alone. If the domain prefix is omitted, npm/pip auth tokens will not match the registry URL and installs or publishes fail.
+
+Confirm with:
+
+```bash
+aws codeartifact get-repository-endpoint --domain mentor-forge --domain-owner 560167829275 \
+  --repository mentorhub-npm --format npm --region us-east-1 --profile mentorhub-shared
+```
+
+As-built (Shared-Services, `us-east-1`):
+
+```text
+npm:  https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/
+pypi: https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/pypi/mentorhub-pypi/simple/
+```
+
 ### 2.1 Domain APIs
 
-Repos:
+Repos (per [architecture.yaml](./architecture.yaml)):
 
-- `mentorhub_coordinator_api`
-- `mentorhub_craftsperson_api`
-- `mentorhub_customer_api`
-- `mentorhub_mentor_api`
+- `mentorhub_coordinator_api` — **pilot complete**
+- `mentorhub_customer_api` — **done**
+- `mentorhub_mentee_api` — **done**
+- `mentorhub_mentor_api` — **remaining** ([§2.4](#24-mentor-journey--final-phase-2-repos))
+
+Rollout order for remaining API: **mentor only** (customer and mentee complete).
 
 Pipfile replacement (single CodeArtifact source with PyPI upstream — public deps and `api-utils` resolve from one index):
 
 ```toml
 [[source]]
-url = "https://<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/pypi/mentorhub-pypi/simple/"
+url = "https://<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/pypi/mentorhub-pypi/simple/"
 verify_ssl = true
 name = "codeartifact"
 
@@ -624,7 +923,7 @@ flask = "*"
 pymongo = "*"
 pyjwt = "*"
 # Must use codeartifact index: PyPI package "api-utils" is unrelated; wrong index breaks Config/auth.
-api-utils = {version = "==0.2.0", index = "codeartifact"}
+api-utils = {version = "==0.2.1", index = "codeartifact"}
 ```
 
 Important notes:
@@ -632,36 +931,42 @@ Important notes:
 - Use **one** `[[source]]` pointing at `mentorhub-pypi` with PyPI upstream configured (Phase 0.1). Do not maintain separate `pypi.org` and CodeArtifact sources.
 - Pipenv does not reliably expand environment variables in `[[source]]` URLs — commit the account/region URL as an organization constant, or set `PIP_INDEX_URL` before `pipenv lock`.
 - Keep the comment warning that public PyPI `api-utils` is unrelated.
+- **Coordinator pilot as-built:** `scripts/pipenv-install.sh`, `scripts/pipenv-lock.sh`, `scripts/docker-build.sh`, `pipenv run install`; CI assumes `GitHubActionsCodeArtifactRead` on `push` to `main` only (not `pull_request` — OIDC `sub` differs).
 
 Dockerfile and CI changes: see [Reference implementation — domain API](#reference-implementation--domain-api) and [examples/docker-push-codeartifact.yml](../DeveloperEdition/standards/examples/docker-push-codeartifact.yml).
 
 Remove from Dockerfile: `apt-get install git`, git URL rewrites, `GITHUB_TOKEN` build-arg for deps.
 
-Remove from `docker-push.yml`: `GH_PAT` build-arg. Use OIDC + `PIP_INDEX_URL` build-arg (token embedded in URL, short-lived in CI only).
+Remove from `docker-push.yml`: `GH_PAT` build-arg. Use OIDC + `PIP_INDEX_URL` build-arg (token embedded in URL, short-lived in CI only). Trigger on `push` to `main` only.
 
 Remove from Pipfile `container` script: `--build-arg GITHUB_TOKEN=...` (local Docker builds use `mh codeartifact login` + `PIP_INDEX_URL` or documented equivalent).
 
+**Next step:** [§2.4](#24-mentor-journey--final-phase-2-repos) — `mentorhub_mentor_api`
+
 ### 2.2 Domain SPAs
 
-Repos:
+Repos (per [architecture.yaml](./architecture.yaml)):
 
-- `mentorhub_coordinator_spa`
-- `mentorhub_craftsperson_spa`
-- `mentorhub_customer_spa`
-- `mentorhub_mentor_spa`
+- `mentorhub_coordinator_spa` — **pilot complete**
+- `mentorhub_customer_spa` — **done**
+- `mentorhub_mentee_spa` — **done**
+- `mentorhub_mentor_spa` — **remaining** ([§2.4](#24-mentor-journey--final-phase-2-repos))
+
+Rollout order for remaining SPA: **mentor only** (coordinator, customer, and mentee complete).
 
 `package.json`:
 
 ```json
-"@mentor-forge/mentorhub_spa_utils": "0.2.0"
+"@mentor-forge/mentorhub_spa_utils": "0.2.2"
 ```
 
-`.npmrc` (committed — registry URL only; auth token injected at build time or by `mh codeartifact login` locally):
+`.npmrc` (committed — registry URL only; auth token injected at build time or by `mh` locally):
 
 ```ini
-@mentor-forge:registry=https://<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
-always-auth=true
+@mentor-forge:registry=https://<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
 ```
+
+Do not use `always-auth` in project `.npmrc` (deprecated in npm 11). Inject `//…/:_authToken=` at Docker build time or rely on `mh` for local installs.
 
 Dockerfile and CI changes: see [Reference implementation — domain SPA](#reference-implementation--domain-spa).
 
@@ -671,7 +976,21 @@ Remove from `docker-push.yml`: dependency-related `GITHUB_TOKEN` build-arg. Use 
 
 Remove from `package.json` `container` script: `--build-arg GITHUB_TOKEN=...`.
 
+Remove `pull_request` trigger from `docker-push.yml` if present — merged PRs already fire `push` to `main`; `pull_request` OIDC subjects do not match the CodeArtifactRead trust policy.
+
 Regenerate and commit `package-lock.json`. Lockfile entries should resolve to CodeArtifact tarball URLs, not GitHub git URLs.
+
+**Coordinator SPA pilot checklist** (complete on coordinator; repeat pattern for mentor):
+
+- [x] `.npmrc` with CodeArtifact registry URL (no `always-auth`)
+- [x] `package.json` pins `@mentor-forge/mentorhub_spa_utils` SemVer (not `github:…`)
+- [x] `package-lock.json` regenerated after `mh` + `npm ci`
+- [x] Dockerfile uses BuildKit secret for `_authToken` (no git clone of `spa_utils`)
+- [x] `docker-push.yml` OIDC + npm token secret; `push` to `main` only
+- [x] `tests/setup.ts` for Node 24 `localStorage`; `client.test.ts` mocks `redirectToIdpLogin`
+- [x] `npm test` / `npm run build` / local `npm run container` green
+
+**Next step:** [§2.4](#24-mentor-journey--final-phase-2-repos) — `mentorhub_mentor_spa` (after mentor API)
 
 ### 2.3 Future PR CI
 
@@ -683,16 +1002,160 @@ When adding PR workflows per [branch_protection_standards.md](../DeveloperEditio
 
 ---
 
+### 2.4 Mentor journey — final Phase 2 repos
+
+**Owner:** Luke  
+**Repos:** `mentorhub_mentor_api` (step 7), then `mentorhub_mentor_spa` (step 8)  
+**Blocked until complete:** [Phase 3](#phase-3--developer-edition--cli-updates)
+
+These are the last consumer repos still on git-based `api-utils` / `spa_utils` installs. All other journey APIs and SPAs have been migrated using the coordinator pilots as reference.
+
+#### Reference implementations (copy from `main`)
+
+| Role | API | SPA |
+| ---- | --- | --- |
+| Pilot (canonical) | `mentorhub_coordinator_api` | `mentorhub_coordinator_spa` |
+| Same pattern, recent | `mentorhub_customer_api`, `mentorhub_mentee_api` | `mentorhub_customer_spa`, `mentorhub_mentee_spa` |
+
+**Pinned versions (as of 2026-06-11):**
+
+- PyPI: `api-utils==0.2.1` from CodeArtifact `mentorhub-pypi`
+- npm: `@mentor-forge/mentorhub_spa_utils@0.2.2` from CodeArtifact `mentorhub-npm`
+
+**Mentor-specific constants:**
+
+| Repo | GHCR image | API port (Dockerfile `EXPOSE` / gunicorn) | SPA dev port |
+| ---- | ---------- | ----------------------------------------- | ------------ |
+| `mentorhub_mentor_api` | `ghcr.io/mentor-forge/mentorhub_mentor_api:latest` | `8391` | — |
+| `mentorhub_mentor_spa` | `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` | nginx → `mentorhub_mentor_api:8391` | `8392` |
+
+#### Branch coordination (Luke + feature owners)
+
+Luke should **announce in team chat** before starting each mentor repo migration:
+
+1. **Freeze window:** Ask engineers with open PRs or long-lived branches in that repo to note their branch names.
+2. **Luke merges migration first:** One PR per repo on branch `feature/codeartifact-deps` — dependency migration only; no unrelated feature work.
+3. **Feature owners re-base:** After each migration merges to `main`, owners of open branches **re-base (or merge `main`)** and resolve conflicts before continuing feature work.
+4. **Order matters:** Complete and merge `mentorhub_mentor_api` before starting `mentorhub_mentor_spa`. SPA owners re-base after API merge; SPA migration may touch overlapping CI/Docker paths.
+5. **Conflict hotspots:** `Pipfile`, `Pipfile.lock`, `Dockerfile`, `.github/workflows/docker-push.yml`, `package.json`, `package-lock.json`, `.npmrc`, `scripts/`, `README.md`. Prefer keeping Luke’s CodeArtifact versions and re-applying feature changes on top.
+6. **Do not** fold CodeArtifact migration into feature PRs — keeps review and rollback simple.
+
+**Suggested owner message (copy/adapt):**
+
+```text
+MentorHub CodeArtifact migration landing on mentor_<api|spa> main this week.
+Branch: feature/codeartifact-deps (Luke). After merge, please re-base your open branches onto main.
+Expect conflicts in Pipfile/lock, Dockerfile, docker-push.yml, and (SPA) package.json/lock.
+Questions: DEPENDENCY_MOVE.md §2.4 or Luke.
+```
+
+#### Luke — Cursor chat starter prompt
+
+Open a **new Cursor chat** in the mentor repo workspace (or multi-root with `mentorhub_mentor_api` / `mentorhub_mentor_spa`). Paste the block below; run **API first**, then **SPA** in a separate chat or sequential turns.
+
+```markdown
+Execute Phase 2.1 (API) or 2.2 (SPA) CodeArtifact migration for the mentor journey repo,
+following Specifications/DEPENDENCY_MOVE.md §2.4 and copying the as-built pattern from
+mentorhub_coordinator_api + mentorhub_customer_api (API) or mentorhub_coordinator_spa +
+mentorhub_customer_spa (SPA) on main.
+
+Repo: mentorhub_mentor_api OR mentorhub_mentor_spa (one repo per PR)
+
+API checklist (mentorhub_mentor_api):
+- Pipfile: single CodeArtifact [[source]], api-utils==0.2.1 with index = "codeartifact"
+- scripts/: pipenv-install.sh, pipenv-lock.sh, docker-build.sh (image mentorhub_mentor_api)
+- Pipfile scripts: install, container → scripts; build-publish uses pipenv run install
+- Dockerfile: PIP_INDEX_URL build-arg, no git/GITHUB_TOKEN; EXPOSE/CMD port 8391
+- docker-push.yml: OIDC + PIP_INDEX_URL, push to main only (no pull_request trigger)
+- .gitignore: .pipenv-requirements.txt
+- README: pipenv run install after mh; e2e_auth doc refresh if stale
+- Regenerate Pipfile.lock via scripts/pipenv-lock.sh after mh
+- Validate: pipenv run install, pipenv run test, pipenv run container
+- Branch feature/codeartifact-deps, open PR
+
+SPA checklist (mentorhub_mentor_spa):
+- .npmrc: CodeArtifact registry URL only (no always-auth)
+- package.json: @mentor-forge/mentorhub_spa_utils 0.2.2, container → scripts/docker-build.sh
+- scripts/docker-build.sh (image mentorhub_mentor_spa), BuildKit secret
+- Dockerfile: .npmrc + codeartifact_token secret, no git/GITHUB_TOKEN; API_HOST=mentorhub_mentor_api, API_PORT=8391
+- docker-push.yml: OIDC + npm BuildKit secret, push to main only
+- tests/setup.ts (Node 24 localStorage); client.test.ts mocks redirectToIdpLogin from spa_utils
+- vitest.config.ts: setupFiles ./tests/setup.ts
+- README: mh then npm ci
+- Regenerate package-lock.json after mh + npm install (CodeArtifact tarball URLs, not git)
+- Validate: npm run test, npm run build, npm run container
+- Branch feature/codeartifact-deps, open PR
+
+Do not mix feature changes. After merge, notify engineers with open branches to re-base onto main.
+```
+
+#### Validation checklist (Luke, before merge)
+
+**`mentorhub_mentor_api`**
+
+```bash
+source ~/.zshrc && mh
+cd mentorhub_mentor_api
+pipenv run install
+pipenv run test
+pipenv run db # start database
+pipenv run dev # start local dev server
+pipenv run e2e # end to end testing
+pipenv run container   # optional local Docker
+pipenv run api # start containers
+pipenv run e2e # (against container runtime)
+```
+
+**`mentorhub_mentor_spa`**
+
+```bash
+source ~/.zshrc && mh
+cd mentorhub_mentor_spa
+npm ci                 # or npm install if lockfile regenerated
+npm run test
+npm run build
+npm run api # start backing services
+npm run dev # dev server
+npm run cypress:run # e2e tests
+npm run container      # optional local Docker
+npm run service # start all containers
+npm run cypress:run # e2e against container runtime
+```
+
+After each merge: confirm GitHub Actions `docker-push` workflow succeeds on `push` to `main`.
+
+**Next step:** When both mentor repos are green, proceed to [Phase 3](#phase-3--developer-edition--cli-updates).
+
+---
+
 ## Phase 3 — Developer Edition / CLI updates
 
+**Prerequisite:** Phase 2 complete — all eight consumer repos (including mentor API + SPA) migrated and CI green.
+
 Repo: `mentorhub`
+
+### 3.1 Local registry auth (`mh`)
+
+`mh` with **no command** silently refreshes GHCR and CodeArtifact credentials (SSO login opens only when the session expired):
+
+```bash
+mh
+```
+
+Also runs automatically before `mh pull`, `mh up`, and during `make update`. Requires `~/.zshrc` from `make install` (sources `GITHUB_TOKEN` and `aws-platform.env`).
+
+**Validate:** `pipenv run install` (API repos) and `npm ci` (SPA repos) succeed in a utils consumer repo after `mh`.
+
+**Next step:** 3.2
+
+### 3.2 Documentation and tooling
 
 
 | Area                                                               | Change                                                               |
 | ------------------------------------------------------------------ | -------------------------------------------------------------------- |
 | `CONTRIBUTING.md`                                                  | Add AWS SSO + CodeArtifact setup alongside GitHub token notes        |
 | `make verify`                                                      | Check `aws` CLI, SSO profile, and optional CodeArtifact reachability |
-| `mh` CLI                                                           | Add `mh codeartifact login` for pip + npm credentials                |
+| `mh` CLI                                                           | Silent registry auth on bare `mh`, `mh pull`, `mh up`, and `make update` |
 | `DeveloperEdition/standards/sre_standards.md`                      | Revise to match as-implemented AWS (after Phase -1 / Phase 0)        |
 | `DeveloperEdition/standards/api_standards.md`                      | Update Dependency Management section                                 |
 | `DeveloperEdition/standards/branch_protection_standards.md`        | Update PR CI dependency prerequisites                                |
@@ -700,17 +1163,7 @@ Repo: `mentorhub`
 | `README.md` Post-Launch TODO                                       | Check off CodeArtifact items after rollout                           |
 
 
-Local workflow after migration:
-
-```bash
-mh codeartifact login
-cd mentorhub_coordinator_api && pipenv install --dev
-cd mentorhub_coordinator_spa && npm ci
-pipenv run container
-npm run container
-```
-
-No GitHub token should be required for shared utility dependency installation after migration.
+**Next step:** Phase 4
 
 ---
 
@@ -722,15 +1175,17 @@ No GitHub token should be required for shared utility dependency installation af
 | 0    | Create `Shared-Services`, budget, CloudTrail, Identity Center assignments including `Developer-Packages` | SRE and Developer can access Shared-Services via portal |
 | 1    | Create CodeArtifact domain/repos and upstreams                                                           | `aws codeartifact list-repositories`                    |
 | 2    | Configure GitHub OIDC roles and org variables                                                            | Test `aws sts get-caller-identity` in workflow          |
-| 3    | Publish utils `0.2.0` to CodeArtifact                                                                    | Manual pip/npm install test                             |
-| 4    | Migrate one API (`coordinator_api`)                                                                      | `pipenv run test`, Docker build in CI                   |
-| 5    | Migrate one SPA (`coordinator_spa`)                                                                      | `npm test`, Docker build in CI                          |
-| 6    | Roll remaining 3 APIs + 3 SPAs                                                                           | All `docker-push` workflows green                       |
-| 7    | Update docs and onboarding                                                                               | New developer can build without `GH_PAT` for deps       |
-| 8    | Remove obsolete git dependency logic                                                                     | Secret audit confirms dependency `GH_PAT` removed       |
+| 3    | Publish utils to CodeArtifact (`api-utils`, `@mentor-forge/mentorhub_spa_utils`)                       | Manual pip/npm install test                             |
+| 4    | Migrate `coordinator_api` (§2.1 pilot)                                                                   | **Done**                                                |
+| 5    | Migrate `coordinator_spa` (§2.2 pilot)                                                                     | **Done**                                                |
+| 6    | Migrate `customer_api` + `customer_spa`                                                                  | **Done**                                                |
+| 7    | Migrate `mentee_api` + `mentee_spa`                                                                      | **Done**                                                |
+| 8    | Migrate `mentor_api` + `mentor_spa` ([§2.4](#24-mentor-journey--final-phase-2-repos); Luke)               | In progress — last Phase 2 work                         |
+| 9    | Update docs and onboarding (Phase 3)                                                                       | After step 8                                            |
+| 10   | Remove obsolete git dependency logic (Phase 5)                                                             | After step 9                                            |
 
 
-Do not change all repos in one PR. Utility publish must happen first, then one API and one SPA should prove the pattern.
+Do not change all repos in one PR. Utility publish must happen first, then the [coordinator-first rollout table](#rollout-order-coordinator-first). **Phase 3 starts only after step 8.**
 
 ---
 
@@ -752,7 +1207,7 @@ Do not change all repos in one PR. Utility publish must happen first, then one A
 | ------------------------------------------------ | ---------------------------------------------------------------------------- |
 | Wrong PyPI package (`api-utils` on public PyPI)  | Always install from CodeArtifact index; keep Pipfile warning comment         |
 | CodeArtifact token expiry mid-build              | Refresh token in workflow; keep builds short; retry auth on failure          |
-| Shared package registry created in wrong account | Create `Shared-Services` before CodeArtifact or document temporary placement |
+| Shared package registry created in wrong account | Create `Shared-Services` before CodeArtifact |
 | Overbroad GitHub OIDC trust                      | Scope trust to repos and branches/tags where practical                       |
 | Non-reproducible builds during transition        | Pin exact versions; single migration PR per consumer                         |
 | Local dev friction                               | Add `mh codeartifact login`; document AWS SSO profile setup                  |
@@ -809,7 +1264,7 @@ Do not change all repos in one PR. Utility publish must happen first, then one A
 
 ## Reference implementation appendix
 
-Copy patterns from here into the coordinator pilot repos, then replicate to the remaining APIs/SPAs.
+Copy patterns from the **coordinator pilots** (`mentorhub_coordinator_api` — done; `mentorhub_coordinator_spa` — next), then replicate journey-by-journey: customer → mentee → mentor (mentor SPA last).
 
 **Scope reminder:** Container images continue publishing to **GHCR**. Only shared **library** install sources change.
 
@@ -829,25 +1284,32 @@ RUN pip install --no-cache-dir pipenv
 COPY Pipfile Pipfile.lock ./
 
 ARG PIP_INDEX_URL
-ENV PIP_INDEX_URL=${PIP_INDEX_URL}
-
-RUN pipenv install --deploy --system && \
+RUN pipenv requirements | grep -v '^-i ' > requirements.txt && \
+    pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
 COPY src/ ./src/
 COPY docs/ ./docs/
-RUN pipenv run build
+RUN python -m compileall -b -f -q src/
 ```
+
+Use `pip install` with `pipenv requirements` (not `pipenv install`) so the authenticated `PIP_INDEX_URL` is honored. `pipenv lock` still needs `pipenv lock --pypi-mirror "$AUTH_URL"` locally.
 
 Production stage unchanged — no git, no AWS CLI, no tokens in final image layers.
 
 `**.github/workflows/docker-push.yml**` — use [docker-push-codeartifact.yml](../DeveloperEdition/standards/examples/docker-push-codeartifact.yml) `build_push_api` job. Replace `REPLACE_ME_API` with the repo image name.
 
-**Local container build** (after `mh codeartifact login`):
+**Local container build** (after `mh`):
 
 ```bash
-# Export index URL from active pip credentials, or construct from CodeArtifact login output
-pipenv run container   # container script passes PIP_INDEX_URL instead of GITHUB_TOKEN
+pipenv run container   # scripts/docker-build.sh passes PIP_INDEX_URL
+```
+
+**Local dev install** (after `mh`):
+
+```bash
+sh scripts/pipenv-install.sh   # or: pipenv run install
+sh scripts/pipenv-lock.sh        # regenerate Pipfile.lock after dependency changes
 ```
 
 ### Reference implementation — domain SPA
@@ -855,8 +1317,7 @@ pipenv run container   # container script passes PIP_INDEX_URL instead of GITHUB
 `**.npmrc**` (committed):
 
 ```ini
-@mentor-forge:registry=https://<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
-always-auth=true
+@mentor-forge:registry=https://<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/
 ```
 
 **Dockerfile** (build stage excerpt):
@@ -875,7 +1336,7 @@ ENV VITE_IDP_LOGIN_URI=$VITE_IDP_LOGIN_URI
 
 RUN --mount=type=secret,id=codeartifact_token \
     --mount=type=cache,target=/root/.npm \
-    sh -c 'echo "//<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
+    sh -c 'echo "//<codeartifact-domain>-<shared-services-account-id>.d.codeartifact.<region>.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
     if [ -f package-lock.json ]; then npm ci; else npm install; fi'
 
 COPY . .
@@ -908,7 +1369,7 @@ RUN --mount=type=cache,target=/app/node_modules/.vite \
 3. Docker builds succeed in GitHub Actions without `GH_PAT` for dependency access.
 4. Local builds are documented through AWS SSO + `mh codeartifact login`.
 5. Lockfiles are committed and reproducible.
-6. CodeArtifact is hosted in `Shared-Services` or explicitly documented as temporary if hosted elsewhere.
+6. CodeArtifact is hosted in `Shared-Services`.
 7. Every user in the `Developer` group has `Developer-Packages` on `Shared-Services` and can run `mh codeartifact login` successfully.
 
 ---
@@ -932,5 +1393,11 @@ RUN --mount=type=cache,target=/app/node_modules/.vite \
 | 2026-06-04 | Phase -1.8 developer read access; reference implementation appendix; promoted sre_standards; concrete Dockerfile/CI patterns                           |
 | 2026-06-04 | `Developer-Packages` permission set strategy; sre_standards deferred to as-implemented revision                                                        |
 | 2026-06-04 | Phase -1.5: primary region `us-east-1` recorded in aws-platform.yaml, CONTRIBUTING, mh defaults                                                        |
+| 2026-06-10 | AWS/GitHub primer; expanded SSO, OIDC, and GitHub variables/secrets walkthroughs; SSO region `us-east-2` vs workload `us-east-1`                       |
+| 2026-06-10 | Single best-practice path: scoped custom policies, console-only OIDC setup, Shared-Services only, org-wide GitHub secrets/variables                     |
+| 2026-06-10 | Phase 2: CodeArtifact URLs use `{domain}-{account-id}` host prefix; drop deprecated npm `always-auth` in consumer `.npmrc` examples                    |
+| 2026-06-10 | One-step-at-a-time structure: Validate + Next step per section; removed forward references from Phase 0                        |
+| 2026-06-11 | Phase 2 rollout: coordinator-first (`coordinator_api` done, `coordinator_spa` next); customer → mentee → mentor; fix API/SPA repo lists (`mentee` not `craftsperson`); mentor SPA deferred with conflict note; OIDC trust includes mentee repos; docker-push `push`-only CI note |
+| 2026-06-11 | Phase 2 status: coordinator/customer/mentee APIs+SPAs done; §2.4 mentor handoff for Luke (Cursor prompt, branch re-base coordination); Phase 3 gated on mentor repos |
 
 

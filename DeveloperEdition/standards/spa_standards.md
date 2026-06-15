@@ -11,6 +11,8 @@
  - Cypress E2E v15.8
 
 ## Standard Developer Commands
+- npm install (install dependencies)
+- npx cypress install (download Cypress binary after npm install when the package version changes)
 - npm run build (package code for deployment)
 - npm run dev (run dev server)
 - npm run test (run unit tests)

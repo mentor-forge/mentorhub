@@ -1,12 +1,142 @@
 architecture:
   organization: Agile Learning Institute
   product: Mentor Hub
-  environments:
-    - name: local
-    - name: development
-    - name: staging
-    - name: production
-  domains:
+  cloud-accounts:
+    - name: Agile-Learning (Mike Storey)
+      description: The Mike Storey account (to be renamed) is the primary account for the Agile Learning Institute. 
+    - name: Shared-Services
+      description: The Shared-Services account is the account for the Shared-Services used by our dev team or multiple AWS accounts.
+      budget: $100/month
+      services:
+        - logging: CloudTrail
+        - package-management: CodeArtifact
+        - container-registry: ElasticContainerRegistry (ECR)
+        - infrastructure-automation: AWS CloudFormation
+    - name: mentorhub-dev
+      description: The mentorhub-dev account is the account for the Mentor Hub development, test, or short-lived environments.
+      budget: $100/month
+      services:
+        - logging: CloudTrail
+        - network: Virtual Private Cloud (VPC)
+          name: mentorhub-dev-vpc
+          cidr: 10.0.0.0/16
+          subnets:
+            - name: mentorhub-dev-subnet-public1-us-east-2a
+              cidr: 10.0.0.0/20
+            - name: mentorhub-dev-subnet-private1-us-east-2a
+              cidr: 10.0.128.0/20
+            - name: mentorhub-dev-subnet-public2-us-east-2b
+              cidr: 10.0.16.0/20
+            - name: mentorhub-dev-subnet-private2-us-east-2b
+              cidr: 10.0.144.0/20
+        - container-runtime: Elastic Container Service (ECS)
+          name: mentorhub-dev-ecs
+          description: The mentorhub-dev-ecs is the ECS cluster for the Mentor Hub development, test, or short-lived environments.
+          environments
+            - name: dev
+              description: The development environment 
+              tag: latest
+              database_name: mentorhub-dev
+            - name: test
+              description: The test environment is used to test the Mentor Hub system.
+              tag: test
+              database_name: mentorhub-test
+        - MongoDB: DocumentDB
+          name: mentorhub-dev-documentdb
+          description: The mentorhub-dev-documentdb is the DocumentDB database for the Mentor Hub development, test, or short-lived environments.
+        - identity-provider: Cognito
+          name: mentorhub-dev-cognito
+          description: The mentorhub-dev-cognito is the Cognito identity provider for the Mentor Hub development, test, or short-lived environments.
+        - dns: Route 53
+          name: mentorhub-dev-route53
+          description: The mentorhub-dev-route53 is the Route 53 domain for the Mentor Hub development, test, or short-lived environments.
+        - smtp: Simple Email Service (SES)
+          name: mentorhub-dev-sns
+          description: The mentorhub-dev-sns is the SNS service for the Mentor Hub development, test, or short-lived environments.
+        - simple-storage: Simple Storage Service (S3)
+          name: mentorhub-dev-s3
+          description: The mentorhub-dev-s3 is the S3 storage for the Mentor Hub development, test, or short-lived environments.
+    - name: mentorhub-staging
+      description: The mentorhub-staging account is the account for the Mentor Hub staging environment, a mirror of production that can be shut down between releases.
+      budget: $100/month
+      services:
+        - logging: CloudTrail
+        - network: Virtual Private Cloud (VPC)
+          name: mentorhub-staging-vpc
+          cidr: TBD
+          subnets:
+            - name: mentorhub-staging-subnet-public1-us-east-2a
+              cidr: TBD
+            - name: mentorhub-staging-subnet-private1-us-east-2a
+              cidr: TBD
+            - name: mentorhub-staging-subnet-public2-us-east-2b
+              cidr: TBD
+            - name: mentorhub-staging-subnet-private2-us-east-2b
+              cidr: TBD
+        - container-runtime: Elastic Container Service (ECS)
+          name: mentorhub-staging-ecs
+          description: The mentorhub-staging-ecs is the ECS cluster for the Mentor Hub staging environment.
+          environments
+            - name: staging
+              description: A mirror of production that can be shut down between releases.
+              tag: staging
+              database_name: mentorhub-staging
+        - MongoDB: DocumentDB
+          name: mentorhub-staging-documentdb
+          description: The mentorhub-staging-documentdb is the DocumentDB database for the Mentor Hub staging environment.
+        - identity-provider: Cognito
+          name: mentorhub-dev-cognito
+          description: The mentorhub-dev-cognito is the Cognito identity provider for the Mentor Hub development, test, or short-lived environments.
+        - dns: Route 53
+          name: mentorhub-dev-route53
+          description: The mentorhub-dev-route53 is the Route 53 domain for the Mentor Hub development, test, or short-lived environments.
+        - smtp: Simple Email Service (SES)
+          name: mentorhub-dev-sns
+          description: The mentorhub-dev-sns is the SNS service for the Mentor Hub development, test, or short-lived environments.
+        - simple-storage: Simple Storage Service (S3)
+          name: mentorhub-dev-s3
+          description: The mentorhub-dev-s3 is the S3 storage for the Mentor Hub development, test, or short-lived environments.
+    - name: mentorhub-production
+      description: The mentorhub-production account is the account for the LIVE Mentor Hub production environment.
+      budget: $100/month
+      services:
+        - logging: CloudTrail
+        - network: Virtual Private Cloud (VPC)
+          name: mentorhub-production-vpc
+          cidr: TBD
+          subnets:
+            - name: mentorhub-production-subnet-public1-us-east-2a
+              cidr: TBD
+            - name: mentorhub-production-subnet-private1-us-east-2a
+              cidr: TBD
+            - name: mentorhub-production-subnet-public2-us-east-2b
+              cidr: TBD
+            - name: mentorhub-production-subnet-private2-us-east-2b
+              cidr: TBD
+        - container-runtime: Elastic Container Service (ECS)
+          name: mentorhub-production-ecs
+          description: The mentorhub-production-ecs is the ECS cluster for the Mentor Hub production environment.
+          environments
+            - name: production
+              description: A mirror of production that can be shut down between releases.
+              tag: production
+              database_name: mentorhub-production
+        - MongoDB: DocumentDB
+          name: mentorhub-production-documentdb
+          description: The mentorhub-production-documentdb is the DocumentDB database for the Mentor Hub production environment.
+        - identity-provider: Cognito
+          name: mentorhub-dev-cognito
+          description: The mentorhub-dev-cognito is the Cognito identity provider for the Mentor Hub development, test, or short-lived environments.
+        - dns: Route 53
+          name: mentorhub-dev-route53
+          description: The mentorhub-dev-route53 is the Route 53 domain for the Mentor Hub development, test, or short-lived environments.
+        - smtp: Simple Email Service (SES)
+          name: mentorhub-dev-sns
+          description: The mentorhub-dev-sns is the SNS service for the Mentor Hub development, test, or short-lived environments.
+        - simple-storage: Simple Storage Service (S3)
+          name: mentorhub-dev-s3
+          description: The mentorhub-dev-s3 is the S3 storage for the Mentor Hub development, test, or short-lived environments.
+  journey-domains:
     - name: schema
       description: MongoDB Database Configuration and Management.
       repos:
