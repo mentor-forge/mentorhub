@@ -5,11 +5,11 @@ const JWT_AUDIENCE = 'dev-api'
 const TOKEN_TTL_SECONDS = 10 * 365 * 24 * 60 * 60
 
 const PERSONAS = {
-  carol: { label: 'Carol', sub: 'carol', roles: ['coordinator'] },
-  maria: { label: 'Maria', sub: 'maria', roles: ['mentor'] },
-  cat: { label: 'Cat', sub: 'cat', roles: ['customer'] },
-  mark: { label: 'Mark', sub: 'mark', roles: ['mentee'] },
-  stan: { label: 'Stan', sub: 'stan', roles: ['admin'] },
+  marti: { label: 'marti', sub: 'marti', roles: ['mentor'] },
+  carol: { label: 'carol', sub: 'carol', roles: ['coordinator'] },
+  cat: { label: 'cat', sub: 'cat', roles: ['customer'] },
+  mary: { label: 'mary', sub: 'mary', roles: ['mentee'] },
+  luther: { label: 'luther', sub: 'luther', roles: ['admin'] },
 }
 
 const ROLE_IDS = ['coordinator', 'mentor', 'customer', 'mentee', 'admin']
