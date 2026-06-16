@@ -9,7 +9,7 @@ const PERSONAS = {
   carol: { label: 'carol', sub: 'carol', roles: ['coordinator'] },
   cat: { label: 'cat', sub: 'cat', roles: ['customer'] },
   mary: { label: 'mary', sub: 'mary', roles: ['mentee'] },
-  luther: { label: 'luther', sub: 'luther', roles: ['admin'] },
+  luther: { label: 'luther', sub: 'luther', roles: ['mentee', 'admin'] },
 }
 
 const ROLE_IDS = ['coordinator', 'mentor', 'customer', 'mentee', 'admin']
@@ -161,4 +161,12 @@ function initWelcomeLogin() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', initWelcomeLogin)
+function bootWelcomeLogin() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWelcomeLogin)
+  } else {
+    initWelcomeLogin()
+  }
+}
+
+bootWelcomeLogin()
