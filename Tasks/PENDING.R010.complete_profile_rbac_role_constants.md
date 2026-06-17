@@ -62,30 +62,52 @@ Before marking this task as completed:
 - **Blocking note**: the `mentor_api` RBAC commit currently passes only because of an editable install of `api_utils`; it is not mergeable until the published version + Pipfile pin are in place.
 - Related branches/PRs:
   - `api_utils`: `feature/role-constants` (PR #5)
-  - `mentor_api`: `dashboard-refactor` (local commits `24da09e` RBAC, `ca8af87` OpenAPI wording)
+  - `mentor_api`: `dashboard-refactor` (PR #4, draft) — RBAC + Mentee domain + OpenAPI
+  - `mentorhub`: `feature/R010-profile-rbac-task` (PR #16) — tasks R010–R012
+
+## Open questions / handoff (BLOCKED on team)
+
+The implementation is complete, tested, and in review; the remaining steps are
+process/infra steps owned by the team, not coding:
+
+1. **Review + merge** PR #5, PR #4, PR #16.
+2. **Publish `api_utils`** — there is **no manual publish in this repo**: the
+   `publish-package` Pipfile script is a no-op, there is no `.github/workflows/`,
+   and `pyproject.toml` still says `0.1.0` while consumers pin `0.2.1`. Publishing
+   therefore happens in a **centralized/CI pipeline** on merge to `main`.
+3. **OPEN QUESTION for the team**: when PR #5 merges, *what `api_utils` version
+   gets published to CodeArtifact, and how is that number decided* (auto-bump by
+   the pipeline, git tag, or manual)? This is the single blocker for steps below.
+4. Once the published version is known: bump the `mentor_api` `Pipfile` pin off
+   `==0.2.1`, run `pipenv run install`, and take PR #4 out of draft.
 
 ## Change control checklist
 
-- [ ] Reviewed all **Context / Input files**.
-- [ ] Designed and documented the solution approach in this file.
-- [ ] Implemented code changes (role constants + RBAC + OpenAPI wording).
-- [ ] Bumped `api_utils` version and published to CodeArtifact.
-- [ ] Bumped `mentor_api` `Pipfile` pin and reinstalled (no editable install).
-- [ ] Added/updated **unit tests**.
-- [ ] Added/updated **e2e tests**.
-- [ ] Ran unit tests and e2e tests; all passing.
+- [x] Reviewed all **Context / Input files**.
+- [x] Designed and documented the solution approach in this file.
+- [x] Implemented code changes (role constants + RBAC + OpenAPI wording).
+- [ ] Bumped `api_utils` version and published to CodeArtifact. _(BLOCKED — CI/pipeline owned; see Open questions.)_
+- [ ] Bumped `mentor_api` `Pipfile` pin and reinstalled (no editable install). _(BLOCKED on publish.)_
+- [x] Added/updated **unit tests**.
+- [x] Added/updated **e2e tests**.
+- [x] Ran unit tests and e2e tests; all passing (locally, via editable `api_utils`).
 - [ ] Ran packaging/build steps (`pipenv run container` / `make container`); build successful.
-- [ ] Created scoped commits referencing this task ID.
+- [x] Created scoped commits referencing this task ID.
 
 ## Implementation notes (to be updated by the agent)
 
 **Summary of changes**
-- _Role constants added to `api_utils/config/config.py`; `ProfileService` uses `Config.MENTOR_ROLE`/`Config.ADMIN_ROLE`; OpenAPI Profile descriptions updated to "mentor or admin" with `403` responses._
+- Role constants added to `api_utils/config/config.py` (`ADMIN_ROLE`, `MENTOR_ROLE`, `MENTEE_ROLE`, `CUSTOMER_ROLE`, `COORDINATOR_ROLE`, `ALL_ROLES`).
+- `ProfileService` uses `Config.MENTOR_ROLE`/`Config.ADMIN_ROLE`; OpenAPI Profile descriptions updated to "mentor or admin" with `403` responses.
 
 **Testing results**
-- Unit tests: _command(s) run, high-level outcome_
-- E2E tests: _command(s) run, high-level outcome_
-- Packaging/build: _command(s) run, high-level outcome_
+- Unit tests: `pipenv run test` (mentor_api) — 145 passed.
+- E2E tests: `pipenv run e2e` (mentor_api) — 26 passed, 1 skipped (no mentee data for the test persona).
+- Packaging/build: not yet run (blocked on the published `api_utils` version + Pipfile pin).
+
+**Status**: Implemented and in review (PRs #5 / #4 / #16). Not "Shipped" until
+`api_utils` is published, the `mentor_api` pin is bumped, and the PRs merge.
 
 **Follow-up tasks**
-- _e.g., adopt the shared role constants in the other domain APIs (coordinator, customer, mentee) to remove their local role strings._
+- Adopt the shared role constants in the other domain APIs (coordinator, customer, mentee) to remove their local role strings.
+- Replace the `Note`-backed mentee notes with Mary's dedicated Mentee schema when published (see R012).
