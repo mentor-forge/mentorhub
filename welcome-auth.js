@@ -5,11 +5,14 @@ const JWT_AUDIENCE = 'dev-api'
 const TOKEN_TTL_SECONDS = 10 * 365 * 24 * 60 * 60
 
 const PERSONAS = {
-  marti: { label: 'marti', sub: 'marti', roles: ['mentor'] },
-  carol: { label: 'carol', sub: 'carol', roles: ['coordinator'] },
-  cat: { label: 'cat', sub: 'cat', roles: ['customer'] },
+  marti: { label: 'Marty the Mentor', sub: 'marti', roles: ['mentor'] },
+  carol: { label: 'Carol the Coordinator', sub: 'carol', roles: ['coordinator'] },
+  cat: { label: 'Cat the Customer', sub: 'cat', roles: ['customer'] },
+  mike: { label: 'mike', sub: 'mike', roles: ['mentor', 'admin'] },
+  daniel: { label: 'daniel', sub: 'daniel', roles: ['mentee'] },
   mary: { label: 'mary', sub: 'mary', roles: ['mentee'] },
   luther: { label: 'luther', sub: 'luther', roles: ['mentee', 'admin'] },
+  lucky: { label: 'lucky', sub: 'lucky', roles: ['mentee', 'admin'] },
 }
 
 const ROLE_IDS = ['coordinator', 'mentor', 'customer', 'mentee', 'admin']
@@ -75,6 +78,19 @@ function applyPersonaDefaults(sub) {
   })
 }
 
+function populateUserSelect() {
+  const userSelect = document.getElementById('welcome-login-user-id')
+  if (!(userSelect instanceof HTMLSelectElement)) return
+
+  userSelect.replaceChildren()
+  Object.entries(PERSONAS).forEach(([value, persona]) => {
+    const option = document.createElement('option')
+    option.value = value
+    option.textContent = persona.label
+    userSelect.appendChild(option)
+  })
+}
+
 function setLoginEnabled(enabled) {
   const submit = document.getElementById('welcome-login-submit')
   if (submit instanceof HTMLButtonElement) {
@@ -110,6 +126,8 @@ function initWelcomeLogin() {
     showReturnToError('')
     setLoginEnabled(true)
   }
+
+  populateUserSelect()
 
   const userSelect = document.getElementById('welcome-login-user-id')
   if (userSelect instanceof HTMLSelectElement) {
