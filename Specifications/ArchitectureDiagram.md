@@ -1,16 +1,20 @@
 # Solution Architecture
 
-Diagrams are **work in progress**, especially cloud DEV. Tracked plan: [CloudEnvironmentPlan.md](./CloudEnvironmentPlan.md). Box-by-box finish guide: [ArchitectureDiagram.dev.guide.md](./ArchitectureDiagram.dev.guide.md).
+Diagrams are **work in progress**, especially cloud DEV. Tracked plan: [CloudEnvironmentPlan.md](./CloudEnvironmentPlan.md). Box-by-box finish guide: [ArchitectureDiagram.dev.guide.md](./ArchitectureDiagram.dev.guide.md). **CloudFormation checklist:** [CLOUDFORMATION_CHECKLIST.md](./CLOUDFORMATION_CHECKLIST.md).
 
 | Environment | Diagram | Status |
 |---------------|---------|--------|
 | Local | [ArchitectureDiagram.local.svg](./ArchitectureDiagram.local.svg) | Complete |
+| Platform (accounts) | [InfrastructureDiagram.svg](./InfrastructureDiagram.svg) | WIP |
 | Cloud DEV | [ArchitectureDiagram.dev.svg](./ArchitectureDiagram.dev.svg) | WIP |
 | Staging | *Not created* | Planned |
 | Production | *Not created* | Planned |
 
 ## Local Dev Environment
 ![DrawIO Render](./ArchitectureDiagram.local.svg)
+
+## Platform Infrastructure (Shared-Services + environments)
+![DrawIO Render](./InfrastructureDiagram.svg)
 
 ## Cloud Dev Environment
 ![DrawIO Render](./ArchitectureDiagram.dev.svg)
