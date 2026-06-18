@@ -86,7 +86,7 @@ These files must be treated as **inputs** and read before implementation:
 ## Implementation notes (to be updated by the agent)
 
 **Summary of changes**
-- _Work in progress on `dashboard-refactor`: `mentee_service.py`, `mentee_routes.py`, `server.py` registration, `EncounterService.get_encounters_for_mentee`, and `ProfileService.get_profile` composite are written and lint-clean. Tests + test run still pending._
+- _TBD_
 
 **Testing results**
 - Unit tests: _command(s) run, high-level outcome_

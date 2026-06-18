@@ -69,6 +69,11 @@ These files must be treated as **inputs** and read before implementation:
   schema replaces the `Note`-backed approach, update `MenteeNotes` accordingly.
 - Branch: `dashboard-refactor` (mentor_api).
 
+## Open questions for review
+
+1. Should `GET /api/profile/{ProfileId}` change shape to the composite `MenteeDetail`, or should the composite live only behind the new `/api/mentee` endpoints (leaving the Profile endpoint unchanged)?
+2. Mentee notes are currently modeled on the existing `Note` schema. If Mary introduces a dedicated `Mentee` schema, `MenteeNotes` should track that instead — confirm which schema is the source of truth before finalizing.
+
 ## Change control checklist
 
 - [ ] Reviewed all **Context / Input files**.
@@ -81,7 +86,7 @@ These files must be treated as **inputs** and read before implementation:
 ## Implementation notes (to be updated by the agent)
 
 **Summary of changes**
-- _Partially started: `GET /api/profile/{ProfileId}` description + 200 response already point to `MenteeDetail`; the `/api/mentee` paths and the three schemas still need to be added to resolve dangling refs._
+- _TBD_
 
 **Testing results**
 - Spec validation: _command(s) run, high-level outcome_
