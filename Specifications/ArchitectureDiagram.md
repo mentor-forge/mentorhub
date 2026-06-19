@@ -1,6 +1,6 @@
 # Solution Architecture
 
-Diagrams are **work in progress**, especially cloud DEV. Tracked plan: [CloudEnvironmentPlan.md](./CloudEnvironmentPlan.md). Box-by-box finish guide: [ArchitectureDiagram.dev.guide.md](./ArchitectureDiagram.dev.guide.md). **CloudFormation checklist:** [CLOUDFORMATION_CHECKLIST.md](./CLOUDFORMATION_CHECKLIST.md).
+Diagrams are **work in progress**, especially cloud DEV. Tracked plan: [CloudEnvironmentPlan.md](./CloudEnvironmentPlan.md). Box-by-box finish guide: [ArchitectureDiagram.dev.guide.md](./ArchitectureDiagram.dev.guide.md). **CloudFormation checklist:** [CLOUDFORMATION_CHECKLIST.md](./CLOUDFORMATION_CHECKLIST.md). **IaC repo:** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation).
 
 | Environment | Diagram | Status |
 |---------------|---------|--------|
