@@ -35,7 +35,7 @@ Execute in order per [`tasks/README_SRE.md`](https://github.com/mentor-forge/men
 
 | Task | Phase | Focus | Repo file |
 |------|-------|-------|-----------|
-| R010 | 0 | Repo and tooling bootstrap | [PENDING.R010.repo_bootstrap.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R010.repo_bootstrap.md) |
+| R010 | 0 | Repo and tooling bootstrap (shipped) | [SHIPPED.R010.repo_bootstrap.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/SHIPPED.R010.repo_bootstrap.md) |
 | R020 | 1 | CodeArtifact import (from INFO.md) | [PENDING.R020.codeartifact_import.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R020.codeartifact_import.md) |
 | R030 | 2 | Shared-Services OIDC, ECR, CloudTrail | [PENDING.R030.shared_services_oidc_ecr.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R030.shared_services_oidc_ecr.md) |
 | R040 | 3A | Dev governance and network | [PENDING.R040.dev_governance_network.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R040.dev_governance_network.md) |
