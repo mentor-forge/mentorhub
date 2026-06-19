@@ -3,11 +3,19 @@
 ## Big Idea
 A platform to connect mentors with engineers engaged in a life long learning journey.
 
+## Quick Start (for non Contributors)
+- Install [Docker Desktop](https://docs.docker.com/get-started/introduction/get-docker-desktop/)
+- Download [docker-compose.yaml](./DeveloperEdition/docker-compose.yaml)
+- Run the command ``docker compose --profile=all up -d``
+- Visit [http://localhost:8080](http://localhost:8080)
+- To Shutdown (all data lost) ``docker compose --profile=all down``
+NOTE: Uses ports: 8080, 27017, 8383-8394
+
 ## Development Team 
 - Daniel Dissler: Primary SPA Engineering, Secondary SPA Engineering
 - Mary Anderson: Primary Data Engineering, Secondary SPA Engineering
 - Luther (Luke) Still: Primary SRE Engineering, Secondary API Engineering
-- Curtis(Lucky) Minyard: Primary API Engineering, Secondary SRE Engineering
+- Curtis (Lucky) Minyard: Primary API Engineering, Secondary SRE Engineering
 
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 
@@ -25,25 +33,3 @@ A platform to connect mentors with engineers engaged in a life long learning jou
 - [UI Standards](./DeveloperEdition/standards/spa_standards.md)
 - [SRE Standards](./DeveloperEdition/standards/sre_standards.md)
 - [Onboarding Tour](./DeveloperEdition/standards/system_tour.md)
-
-## Post-Launch TODOs
-- Refine data structures using the Schema Configurator
-- Propagate those data structure changes through API and SPA Code
-- Customize SPA's to provide a more desirable user journey
-
-- Implement a cloud container, npm, and pypi package management approach.
-    - Implement Cloud provider specific registry services
-    - Container Registry Service like ECR
-    - Pypi/npm Package managers like CodeArtifact
-    - Update(add) all CI to publish to Cloud registries
-    - Update Developer CLI and docker-compose to use Cloud registries
-    - Update all (package.json, Pipfile, Makefile) to use Cloud registries
-    - Remove legacy CI and GitHub Packages
-    
-- Cloud Deployment
-    - Secure a domain
-    - Provision Identity Provider Services like Cognito
-    - Provision MongoDB Backing Services
-    - Provision Container Runtime
-    - Provision Networking
-    - Provision and Configure API Gateway
