@@ -134,7 +134,7 @@ AWS Organization
 
 | ID | Task |
 |----|------|
-| D1-21 | IaC repo or folder (Terraform/CDK) — none exists today |
+| D1-21 | IaC repo — [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) (CloudFormation); see [CLOUDFORMATION_PLAN.md](./CLOUDFORMATION_PLAN.md) |
 | D1-22 | CD workflow: merge to `main` → build → push image → deploy ECS on MentorHub-Dev |
 | D1-23 | Environment config via task env / Secrets Manager (not rebuilt images) |
 | D1-24 | Smoke test: portal login → one journey SPA → one API round-trip |

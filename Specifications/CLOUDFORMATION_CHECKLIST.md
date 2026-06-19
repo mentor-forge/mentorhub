@@ -1,6 +1,8 @@
 # CloudFormation Implementation Checklist — MentorHub
 
-Index and overview for MentorHub AWS CloudFormation. **Discrete implementation tasks** live in the dedicated repo:
+Tactical index for MentorHub AWS CloudFormation. **Strategic context, milestones, and governance:** [CLOUDFORMATION_PLAN.md](./CLOUDFORMATION_PLAN.md).
+
+**Discrete implementation tasks** live in the dedicated repo:
 
 **[mentor-forge/mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** — CloudFormation templates, parameters, deploy scripts, and SRE task workflow (`tasks/README.md`).
 
@@ -111,3 +113,4 @@ mentorhub_cloudformation/          # dedicated repo (not mentorhub/infrastructur
 |------|--------|
 | 2026-06-17 | Initial checklist from INFO.md, InfrastructureDiagram, aws-platform.yaml |
 | 2026-06-16 | Dedicated `mentorhub_cloudformation` repo; `architecture.yaml` input; discrete SRE tasks |
+| 2026-06-19 | Added [CLOUDFORMATION_PLAN.md](./CLOUDFORMATION_PLAN.md) as strategic companion |
