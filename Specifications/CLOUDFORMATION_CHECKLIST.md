@@ -2,7 +2,7 @@
 
 Index and overview for MentorHub AWS CloudFormation. **Discrete implementation tasks** live in the dedicated repo:
 
-**[mentor-forge/mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** — CloudFormation templates, parameters, deploy scripts, and SRE task workflow (`tasks/README_SRE.md`).
+**[mentor-forge/mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** — CloudFormation templates, parameters, deploy scripts, and SRE task workflow (`tasks/README.md`).
 
 Use with these specification inputs:
 
@@ -31,7 +31,7 @@ Use with these specification inputs:
 
 ## Task index
 
-Execute in order per [`tasks/README_SRE.md`](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/README_SRE.md).
+Execute in order per [`tasks/README.md`](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/README.md).
 
 | Task | Phase | Focus | Repo file |
 |------|-------|-------|-----------|
@@ -84,7 +84,7 @@ mentorhub_cloudformation/          # dedicated repo (not mentorhub/infrastructur
 │       ├── ses.yaml
 │       └── ecs-services-*.yaml
 ├── tasks/
-│   ├── README_SRE.md
+│   ├── README.md
 │   └── PENDING.R*.md
 └── .github/workflows/
     └── cfn-lint.yml
