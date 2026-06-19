@@ -1,8 +1,10 @@
 # CloudFormation Implementation Checklist — MentorHub
 
-Index and overview for MentorHub AWS CloudFormation. **Discrete implementation tasks** live in the dedicated repo:
+Tactical index for MentorHub AWS CloudFormation. **Strategic context, milestones, and governance:** [CLOUDFORMATION_PLAN.md](./CLOUDFORMATION_PLAN.md).
 
-**[mentor-forge/mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** — CloudFormation templates, parameters, deploy scripts, and SRE task workflow (`tasks/README_SRE.md`).
+**Discrete implementation tasks** live in the dedicated repo:
+
+**[mentor-forge/mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** — CloudFormation templates, parameters, deploy scripts, and SRE task workflow (`tasks/README.md`).
 
 Use with these specification inputs:
 
@@ -31,11 +33,11 @@ Use with these specification inputs:
 
 ## Task index
 
-Execute in order per [`tasks/README_SRE.md`](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/README_SRE.md).
+Execute in order per [`tasks/README.md`](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/README.md).
 
 | Task | Phase | Focus | Repo file |
 |------|-------|-------|-----------|
-| R010 | 0 | Repo and tooling bootstrap | [PENDING.R010.repo_bootstrap.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R010.repo_bootstrap.md) |
+| R010 | 0 | Repo and tooling bootstrap (shipped) | [SHIPPED.R010.repo_bootstrap.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/SHIPPED.R010.repo_bootstrap.md) |
 | R020 | 1 | CodeArtifact import (from INFO.md) | [PENDING.R020.codeartifact_import.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R020.codeartifact_import.md) |
 | R030 | 2 | Shared-Services OIDC, ECR, CloudTrail | [PENDING.R030.shared_services_oidc_ecr.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R030.shared_services_oidc_ecr.md) |
 | R040 | 3A | Dev governance and network | [PENDING.R040.dev_governance_network.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/PENDING.R040.dev_governance_network.md) |
@@ -84,7 +86,7 @@ mentorhub_cloudformation/          # dedicated repo (not mentorhub/infrastructur
 │       ├── ses.yaml
 │       └── ecs-services-*.yaml
 ├── tasks/
-│   ├── README_SRE.md
+│   ├── README.md
 │   └── PENDING.R*.md
 └── .github/workflows/
     └── cfn-lint.yml
@@ -111,3 +113,4 @@ mentorhub_cloudformation/          # dedicated repo (not mentorhub/infrastructur
 |------|--------|
 | 2026-06-17 | Initial checklist from INFO.md, InfrastructureDiagram, aws-platform.yaml |
 | 2026-06-16 | Dedicated `mentorhub_cloudformation` repo; `architecture.yaml` input; discrete SRE tasks |
+| 2026-06-19 | Added [CLOUDFORMATION_PLAN.md](./CLOUDFORMATION_PLAN.md) as strategic companion |
