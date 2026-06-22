@@ -10,7 +10,7 @@ Before executing tasks, you should make sure the backing services are running wi
 - [x] Profiles List page (the dashboard), Medium, Depends on profile API features
 - [x] Profile detail page, Medium, Depends on profile and mentee API features
 - [ ] Update navigation, Small, depends on nothing 
-	- 🤖Prompt: Please review @spa_standards, @README tasks@README, and create a task to refactor the Navigation drawer as follows:
+	- 🤖Prompt: Review Context and create a task to refactor the Navigation drawer as follows:
 		- Dashboard (link to list profiles page)
 		- Resources (link to list resources page)
 		- Learning Paths (link to list paths page)
