@@ -1,7 +1,7 @@
 # Mentor journey
 
 ## SPA Features 
-Before executing tasks, you should make sure the backing services are running with ``npm run api``. Each feature prompt should start with @mentions of the following context files
+Before executing tasks, you should make sure the backing services are running with ``npm run api``. Each feature prompt should start with @mentions of the following context files, and identification of the API Endpoints used in the feature. 
 - spa_standards.md
 - repo README.md
 - repo/tasks/README.md
@@ -17,8 +17,8 @@ Before executing tasks, you should make sure the backing services are running wi
 		- Encounter Plans (link to list plans page)
 		- Admin (link to admin when role contains "admin")
 		- Logout (redirect to idp login)
-- [ ] Encounter detail page, Large, Depends on encounter API features
-	- 🤖 Prompt: Review @Context and create tasks that build a new Encounter detail page. This is a rough outline of the page. Headings are show, `>` indicates a show/hide section
+- [ ] Encounter detail page, Large, Depends on Encounter and Plan API features
+	- 🤖 Prompt: Review @Context and create tasks that build a new Encounter detail page, and wire it to the "New" encounter button on the Profile Detail page. The new Encounter needs the mentor_id, mentee_id from the Profile detail page, and should prompt for the Plan to use. This is a rough outline of the page. Headings are show, `>` indicates a show/hide section
 	```md
 	# {Mentee} - {Date}
 	> ## Profile
