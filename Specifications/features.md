@@ -159,21 +159,13 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 - [ ] Path, Small, depends on nothing
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
-- [ ] Resources, Large, depends on Path
+- [ ] Resource, Large, depends on Path
 	- [x] 👤 Updates to resource schema (cost, level, .....) 
 	- [x] 👤 Index audit
 	- [ ] 🤖 Prompt: Create tasks to delete existing Path and Resource data, and then import Paths/Topics from Mikes Obsidian vault.
 	- [ ] 👤 Create Course and Membership resources (Real Python, VueMastery, Cantrill, MTC (More than Certified) and a Path for "Practioneer SRE" with these resources
 	- [x] 👤 Audit Enums -types, cost - add meaningful skills, technology, interests
-- [ ] Events, Small, depends on Journey
-	- [x] 👤 Schema audit
-	- [x] 👤 Index audit
-	- [ ] 🤖 Prompt: Create a series of events related to resource aggregation, driven by journey test data
-- [ ] Aggregations, Medium, depends on Resources and Events
-	- [x] 👤 Schema audit
-	- [x] 👤 Index audit
-	- [ ] 🤖 Prompt: Create tasks to Create aggregation data based on existing events. Resource
-- [ ] Journey, Medium, depends on Path
+- [ ] Journey, Medium, depends on Path, Resource
 	- [x] 👤 Schema audit 
 	- [x] 👤 Index Audit
 	- [ ] 🤖 Prompt: Create tasks to Update existing test data based on Path and Journey schema changes and to Create a Template for a new Journey -
@@ -185,4 +177,39 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 		- Later
 			- Odin
 			- EK
-
+- [ ] Event, Small, depends on Journey
+	- [x] 👤 Schema audit
+	- [x] 👤 Index audit
+	- [ ] 🤖 Prompt: Create a series of events related to resource aggregation, driven by journey test data
+- [ ] Rating, Small, depends on Journey, Resource, Profile
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create a series of Ratings based on Journey Completed tasks.
+- [ ] Note, Small, depends on Resource, Journey, Resource, Profile
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create a series of Notes related to Journey test data, library resources
+- [ ] Aggregation, Medium, depends on Resources, NOtes, Ratings, and Events
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create tasks to build test data
+- [ ] Customer
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create tasks to build test data
+- [ ] Subscription
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create tasks to build test data
+- [ ] Dashboard
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create tasks to build test data
+- [ ] Card
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create tasks to build test data
+- [ ] Identity
+	- [ ] 👤 Schema audit
+	- [ ] 👤 Index audit
+	- [ ] 🤖 Prompt: Create tasks to build test data
