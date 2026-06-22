@@ -37,15 +37,15 @@ Before executing tasks, you should make sure the backing services are running wi
 	- Large Markdown Editor
 	```	
 - [ ] Plan List page, Small, Depends on Plan API features
-	- 🤖 Prompt: Review @Context and one task that builds a new Plan list page. Change to a card interface, show Plan Name and Description on the card, along with a count of steps in the plan.
+	- 🤖 Prompt: Review @Context and one task that builds a new Plan list page. Change to a card interface, show Plan Name and Description on the card, along with a count of steps in the plan. Add a "New" PLan button that prompts for a plan name and creates the plan and opens it in the Plan Detail page.
 - [ ] Plan Detail page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and a set of tasks that build a simple Plan editor. A Plan is just a list of steps. There should be buttons to add a new item to the list and to delete an item from the list.
 - [ ] Resource List page, Medium, Depends on Resource API features
-	- 🤖 Prompt: Review @Context and create a list of tasks that adds advanced search options to the search feature that allow the user to search by full name, interests, technology, description key words
+	- 🤖 Prompt: Review @Context and create a list of tasks that adds advanced search options to the search feature that allow the user to search by full name, interests, technology, description key words. There should also be a "New" Resource button that prompts for the URL and creates the resource and opens the resource detail page.
 - [ ] Resource Details page, Medium, Depends on Resource API features
 	- 🤖 Prompt: Review @Context and create a list of tasks that update the Resource Detail page. The page should allow the mentor to update the resource. All of the resource data should be show, with a read only resource Aggregations section. There should be an Add To Path button on the resource.
 - [ ] Path List page, Small, Depends on Path API features
-	- 🤖 Prompt: Review @Context and a task that updates the Path List page to cards interface that shows name and description on the card.
+	- 🤖 Prompt: Review @Context and a task that updates the Path List page to cards interface that shows name and description on the card. There should be a "New Path" button that prompts for a path name and opens the Path Detail page
 - [ ] Path Detail Page, Large, Depends on Path, Resource, Aggregation API features
 	- 🤖 Prompt: Review @Context and a set of tasks that build the Path Detail (edit) page. It should have show/hide toggles on Module and Topic sections (name, description). There should be add-delete buttons at all levels. The Resource Chooser dialog should be similar to the Resource List page. 
 
