@@ -148,22 +148,21 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
 	- [x] 🤖 Test Data
-- [ ] Encounter, Small, depends on Profile
+- [ ] Encounter, Small, depends on Plan and Profile
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
-	- [ ] 🤖 Prompt: Create a task to replace the existing Encounter test data from the Obsidian markdown files from Mikes Encounter collection
-- [ ] Plan, Small, depends on nothing
+	- [ ] 🤖 Prompt: Create a task to replace the existing Encounter test data from the Obsidian markdown files from Mikes Encounter collection for the team.
+- [/] Plan, Small, depends on nothing
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
-	- [ ] 👤 Create test data for two Plan's - Mikes normal plan, and a first encounter plan.
+	- [x] 👤 Create test data for two Plan's - Mikes normal plan, and a first encounter plan.
 - [ ] Path, Small, depends on nothing
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
 - [ ] Resource, Large, depends on Path
 	- [x] 👤 Updates to resource schema (cost, level, .....) 
 	- [x] 👤 Index audit
-	- [ ] 🤖 Prompt: Create tasks to delete existing Path and Resource data, and then import Paths/Topics from Mikes Obsidian vault.
-	- [ ] 👤 Create Course and Membership resources (Real Python, VueMastery, Cantrill, MTC (More than Certified) and a Path for "Practioneer SRE" with these resources
+	- [ ] 🤖 Prompt: Create tasks to delete existing Path and Resource data, and then import Paths/Topics from Mikes Obsidian vault. Then add some Course and Membership resources for Real Python, Cantrill.io, MTC (More than Certified) - and a Path for "Practitioner SRE" with these resources. Also create a "Practitioner UI/UX Engineer" path with Vue Master and other appropriate links.
 	- [x] 👤 Audit Enums -types, cost - add meaningful skills, technology, interests
 - [ ] Journey, Medium, depends on Path, Resource
 	- [x] 👤 Schema audit 
