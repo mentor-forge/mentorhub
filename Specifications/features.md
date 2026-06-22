@@ -148,26 +148,26 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
 	- [x] 🤖 Test Data
-- [ ] Encounter, Small, depends on Plan and Profile
+- [x] Encounter, Small, depends on Plan and Profile
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
-	- [ ] 🤖 Prompt: Create a task to replace the existing Encounter test data from the Obsidian markdown files from Mikes Encounter collection for the team.
-- [/] Plan, Small, depends on nothing
+	- [x] 🤖 Prompt: Create a task to replace the existing Encounter test data from the Obsidian markdown files from Mikes Encounter collection for the team.
+- [X] Plan, Small, depends on nothing
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
 	- [x] 👤 Create test data for two Plan's - Mikes normal plan, and a first encounter plan.
-- [/] Path, Small, depends on nothing
+- [X] Path, Small, depends on nothing
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
-- [ ] Resource, Large, depends on Path
+- [X] Resource, Large, depends on Path
 	- [x] 👤 Updates to resource schema (cost, level, .....) 
 	- [x] 👤 Index audit
-	- [ ] 🤖 Prompt: Create tasks to delete existing Path and Resource test data, and then import Paths/Topics from Mikes Obsidian vault. Then add some Course and Membership resources for Real Python, Cantrill.io, MTC (More than Certified) - and a Path for "Practitioner SRE" with these resources. Also create a "Practitioner UI/UX Engineer" path with Vue Mastery and other appropriate resources.
+	- [X] 🤖 Prompt: Create tasks to delete existing Path and Resource test data, and then import Paths/Topics from Mikes Obsidian vault. Then add some Course and Membership resources for Real Python, Cantrill.io, MTC (More than Certified) - and a Path for "Practitioner SRE" with these resources. Also create a "Practitioner UI/UX Engineer" path with Vue Mastery and other appropriate resources.
 	- [x] 👤 Audit Enums -types, cost - add meaningful skills, technology, interests
 - [ ] Journey, Medium, depends on Path, Resource
 	- [x] 👤 Schema audit 
 	- [x] 👤 Index Audit
-	- [ ] 🤖 Prompt: Create tasks to Update existing test data based on Path and Journey schema changes and to Create a Template for a new Journey -
+	- [ ] 🤖 Prompt: Create tasks to Update existing test data based on new Path, Resource test data and Journey schema changes and to Create a Template for a new Journey -
 		- oid of "000000000000000000000001" with no profile_id
 		- Now - Agile Home
 		- Next 
