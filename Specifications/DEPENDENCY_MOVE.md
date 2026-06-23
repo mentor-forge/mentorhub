@@ -109,6 +109,8 @@ Problems:
 
 ### Docker / CI impact today
 
+**Journey repos (Phase 2 complete):** All four domain APIs and four domain SPAs install utils from CodeArtifact in local dev and Docker CI. The table below describes the **pre-migration** baseline retained only in Stage0 templates and historical docs.
+
 
 | Layer          | APIs                                                                                    | SPAs                                                   |
 | -------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -1147,24 +1149,32 @@ Also runs automatically before `mh pull`, `mh up`, and during `make update`. Req
 
 **Validate:** `pipenv run install` (API repos) and `npm ci` (SPA repos) succeed in a utils consumer repo after `mh`.
 
+**Validated (2026-06-23):** `mentorhub_customer_api` `pipenv run install` → `api-utils==0.2.1`; `mentorhub_customer_spa` `npm ci` → `@mentor-forge/mentorhub_spa_utils@0.2.2`.
+
 **Next step:** 3.2
 
 ### 3.2 Documentation and tooling
 
-
-| Area                                                               | Change                                                               |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| `CONTRIBUTING.md`                                                  | Add AWS SSO + CodeArtifact setup alongside GitHub token notes        |
-| `make verify`                                                      | Check `aws` CLI, SSO profile, and optional CodeArtifact reachability |
-| `mh` CLI                                                           | Silent registry auth on bare `mh`, `mh pull`, `mh up`, and `make update` |
-| `DeveloperEdition/standards/sre_standards.md`                      | Revise to match as-implemented AWS (after Phase -1 / Phase 0)        |
-| `DeveloperEdition/standards/api_standards.md`                      | Update Dependency Management section                                 |
-| `DeveloperEdition/standards/branch_protection_standards.md`        | Update PR CI dependency prerequisites                                |
-| `DeveloperEdition/standards/examples/docker-push-codeartifact.yml` | Canonical post-migration workflow                                    |
-| `README.md` Post-Launch TODO                                       | Check off CodeArtifact items after rollout                           |
+**Status:** Complete (R106, branch `feature/codeartifact-phase3`).
 
 
-**Next step:** Phase 4
+| Area                                                               | Change                                                               | Status |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------- | ------ |
+| `CONTRIBUTING.md`                                                  | Add AWS SSO + CodeArtifact setup alongside GitHub token notes        | Done |
+| `make verify`                                                      | Check `aws` CLI, SSO profile, and optional CodeArtifact reachability | Done |
+| `mh` CLI                                                           | Silent registry auth on bare `mh`, `mh pull`, `mh up`, and `make update` | Done |
+| `DeveloperEdition/standards/sre_standards.md`                      | Revise to match as-implemented AWS (after Phase -1 / Phase 0)        | Done |
+| `DeveloperEdition/standards/api_standards.md`                      | Update Dependency Management section                                 | Done |
+| `DeveloperEdition/standards/spa_standards.md`                      | Update Dependency Management section                                 | Done |
+| `DeveloperEdition/standards/branch_protection_standards.md`        | Update PR CI dependency prerequisites                                | Done |
+| `DeveloperEdition/standards/system_tour.md`                        | `mh` + CodeArtifact install commands for utils repos                 | Done |
+| `DeveloperEdition/standards/examples/docker-push-codeartifact.yml` | Canonical post-migration workflow                                    | Done |
+| `README.md`                                                        | Onboarding link references CodeArtifact (`CONTRIBUTING.md`)          | Done |
+
+
+**Remaining scope (not Phase 3):** Stage0 templates (`stage0_template_*`) and the umbrella `mentorhub` welcome Dockerfile may still install `spa_utils` from GitHub — tracked in [Phase 5](#phase-5--cleanup).
+
+**Next step:** Phase 4 step 10 / [Phase 5](#phase-5--cleanup)
 
 ---
 
@@ -1182,11 +1192,11 @@ Also runs automatically before `mh pull`, `mh up`, and during `make update`. Req
 | 6    | Migrate `customer_api` + `customer_spa`                                                                  | **Done**                                                |
 | 7    | Migrate `mentee_api` + `mentee_spa`                                                                      | **Done**                                                |
 | 8    | Migrate `mentor_api` + `mentor_spa` ([§2.4](#24-mentor-journey--final-phase-2-repos); Luke)               | **Done**                                                |
-| 9    | Update docs and onboarding (Phase 3)                                                                       | **Next**                                                |
-| 10   | Remove obsolete git dependency logic (Phase 5)                                                             | After step 9                                            |
+| 9    | Update docs and onboarding (Phase 3)                                                                       | **Done** ([R106](../Tasks/AS_NEEDED.R106.codeartifact_phase3_de_onboarding.md)) |
+| 10   | Remove obsolete git dependency logic (Phase 5)                                                             | **Next** — Stage0 templates, umbrella Dockerfile |
 
 
-Do not change all repos in one PR. Utility publish must happen first, then the [coordinator-first rollout table](#rollout-order-coordinator-first). **Phase 2 complete — proceed with Phase 3 (step 9).**
+Do not change all repos in one PR. Utility publish must happen first, then the [coordinator-first rollout table](#rollout-order-coordinator-first). **Phase 3 complete — proceed with Phase 5 cleanup (step 10).**
 
 ---
 
