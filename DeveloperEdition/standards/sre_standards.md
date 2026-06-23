@@ -1,12 +1,14 @@
 # SRE Standards
 
+Platform provisioning, CloudFormation tasks, and migration runbooks: **[mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** (`docs/specifications/`). This document covers org-wide standards and what **application developers** need for CI, DE auth, and production alignment.
+
 ## Tech Stack
 - Source Control: GitHub
 - CI Automation: GitHub Actions
 - Private Container Registry: GitHub Container Registry today; AWS ECR is the preferred AWS-native target for cloud deployment (separate from dependency registry migration)
-- Private PyPI Registry: AWS CodeArtifact (see [Dependency Registry Migration](../../Specifications/DEPENDENCY_MOVE.md))
-- Private NPM Registry: AWS CodeArtifact (see [Dependency Registry Migration](../../Specifications/DEPENDENCY_MOVE.md))
-- Infrastructure Automation: Docker Compose for local dev environment; AWS infrastructure automation TBD
+- Private PyPI Registry: AWS CodeArtifact (see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md))
+- Private NPM Registry: AWS CodeArtifact (see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md))
+- Infrastructure Automation: Docker Compose for local dev; AWS IaC in [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) (`templates/`, `tasks/`)
 - Container Runtime Hosting: AWS, first target account `MentorHub-Dev`
 - Container Orchestration: TBD; ECS/Fargate is the preferred first AWS runtime unless/until EKS is justified
 - Monitoring: Prometheus, Grafana, ELK for application observability; AWS CloudTrail for AWS API audit logging; CloudWatch for AWS-native logs/metrics
@@ -27,7 +29,7 @@ AWS Organization
         └── Development workload account
 ```
 
-Target model before CodeArtifact (see [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) Phase -1):
+Target model before CodeArtifact (see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) Phase -1):
 
 ```text
 AWS Organization
@@ -204,7 +206,7 @@ Recipients: Mike and appropriate SRE contacts.
 
 ### Regions
 
-**Primary region (decided):** `us-east-1` (N. Virginia), recorded 2026-06-04 per [DEPENDENCY_MOVE.md Phase -1.5](../../Specifications/DEPENDENCY_MOVE.md#-15-record-primary-aws-region).
+**Primary region (decided):** `us-east-1` (N. Virginia), recorded 2026-06-04 per [DEPENDENCY_MOVE.md Phase -1.5](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md#-15-record-primary-aws-region).
 
 Canonical values: [Specifications/aws-platform.yaml](../../Specifications/aws-platform.yaml). Local shell defaults: [DeveloperEdition/aws-platform.env](../aws-platform.env) (installed to `~/.mentorhub/aws-platform.env` by `make update`).
 
@@ -228,7 +230,7 @@ If CodeArtifact is created before a `Shared-Services` account exists, treat that
 
 ### CodeArtifact layout
 
-Implementation details and rollout steps: [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md).
+Implementation details and rollout steps: [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md).
 
 ```text
 AWS Account:     Shared-Services
@@ -302,7 +304,7 @@ The developer workflow follows the feature branch pattern. A developer creates a
 - Merging a PR to `main` produces a single `push` event; that triggers one publish run.
 - Peer review and branch protection (soft phase) gate merges; automated test gates on PRs are not enabled yet.
 - Existing container workflows publish to GitHub Container Registry until the ECR migration is explicitly planned.
-- Shared library installs still use git + `GH_PAT`/`GITHUB_TOKEN` today; migrate to CodeArtifact per [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md).
+- Journey API and SPA **container builds** install shared libraries from **CodeArtifact** via GitHub Actions OIDC — see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) Phase 2.
 
 Canonical workflow references:
 - Pre-migration (git deps): [examples/docker-push.yml](./examples/docker-push.yml)

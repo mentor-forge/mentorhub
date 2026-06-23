@@ -1,6 +1,7 @@
 # MentorHub AWS platform configuration
-# Source of truth for region and CodeArtifact identifiers.
-# See Specifications/DEPENDENCY_MOVE.md Phase -1.5 and Phase 0.
+# Convenience copy for Developer Edition docs. CANONICAL (SRE edits):
+#   https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/aws-platform.yaml
+# See DEPENDENCY_MOVE.md in mentorhub_cloudformation docs/specifications/.
 
 aws:
   primary_region: us-east-1

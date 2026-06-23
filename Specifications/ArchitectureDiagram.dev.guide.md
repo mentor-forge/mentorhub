@@ -2,7 +2,7 @@
 
 Finish [ArchitectureDiagram.dev.drawio](./ArchitectureDiagram.dev.drawio) in draw.io (VS Code Draw.io Integration extension). Export [ArchitectureDiagram.dev.svg](./ArchitectureDiagram.dev.svg) when done.
 
-**Reference:** [CloudEnvironmentPlan.md](./CloudEnvironmentPlan.md) · [architecture.yaml](./architecture.yaml) · Local diagram for parity: [ArchitectureDiagram.local.drawio](./ArchitectureDiagram.local.drawio)
+**Reference:** [CloudEnvironmentPlan](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CloudEnvironmentPlan.md) · [architecture.yaml](./architecture.yaml) · Local diagram for parity: [ArchitectureDiagram.local.drawio](./ArchitectureDiagram.local.drawio)
 
 ---
 
