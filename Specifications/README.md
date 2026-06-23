@@ -1,5 +1,7 @@
 # Specifications
 
-This folder contains the system specifications that can be used to provide context to AI code assistants or template merge utilities. See [Stage0 Specification Schema's](https://github.com/agile-learning-institute/stage0/tree/main/Schemas) for information on yaml data structure to be used for each file.
+Product and application specifications for Mentor Hub. YAML files here provide context for AI assistants and Stage0 merge utilities. See [Stage0 Specification Schemas](https://github.com/agile-learning-institute/stage0/tree/main/Schemas).
+
+**SRE / platform infrastructure docs** (CloudFormation plans, DEPENDENCY_MOVE, CodeArtifact as-built, platform diagrams) live in **[mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications)**. Stubs and [Archive/README.md](./Archive/README.md) map former paths.
 
 How authoritative `*.yaml` files get here after a merge is described in the [root README](../README.md#specifications-yaml-after-merge).

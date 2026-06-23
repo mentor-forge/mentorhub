@@ -13,13 +13,13 @@
 
 ## Dependency Management
 - All dependencies are managed by `pipenv` via `Pipfile` and `Pipfile.lock`
-- The `api_utils` shared library is published to AWS CodeArtifact (PyPI name `api-utils`, distribution `api_utils`) — see [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md)
+- The `api_utils` shared library is published to AWS CodeArtifact (PyPI name `api-utils`, distribution `api_utils`) — see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md)
 - Domain API Pipfiles use a **single** CodeArtifact `[[source]]` with PyPI upstream so public packages (Flask, pymongo, etc.) and `api-utils` resolve from one index
 - Pin exact semver for `api-utils` (for example `==0.2.1`); do not track `main` or use bare `*` (public PyPI package `api-utils` is unrelated and breaks Config/auth)
 - Local development: run `mh` before `pipenv run install` / `pipenv install --dev` (see [SRE Standards](./sre_standards.md#codeartifact-local-authentication))
 - Docker builds: GitHub Actions obtains a short-lived CodeArtifact token and passes `PIP_INDEX_URL` as a build arg — no git or `GH_PAT` for dependency install (see [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml))
 
-All journey domain APIs use CodeArtifact as of [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) Phase 2. Stage0 templates and utility publish workflows are tracked separately in that document.
+All journey domain APIs use CodeArtifact as of [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) Phase 2. Stage0 templates and utility publish workflows are tracked separately in that document.
 
 ## Standard Developer Commands
 - pipenv run build (package code for deployment)

@@ -27,6 +27,7 @@ NOTE: Uses ports: 8080, 27017, 8383-8394
 
 ## Contributing Guides
 - [Developer Onboarding](./CONTRIBUTING.md) On-Boarding Process and CLI install (GitHub token + **CodeArtifact** via `make aws-setup`)
+- **AWS infrastructure (SRE):** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — CloudFormation, platform specs, IaC tasks
 - [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
 - [Data Standards](./DeveloperEdition/standards/data_standards.md)
 - [API Standards](./DeveloperEdition/standards/api_standards.md)

@@ -97,7 +97,7 @@ Before enabling required checks, each repo needs a **separate** `.github/workflo
 
 **Dependencies:**
 
-- PR CI and container builds use org secret `AWS_ROLE_ARN_READ` and CodeArtifact org variables — not `GH_PAT` for shared library installs. See [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) and [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml).
+- PR CI and container builds use org secret `AWS_ROLE_ARN_READ` and CodeArtifact org variables — not `GH_PAT` for shared library installs. See [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) and [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml).
 - **`mentorhub_api_utils`** integration tests need a MongoDB service container in CI; locally use `pipenv run db` and `MONGO_CONNECTION_STRING=mongodb://127.0.0.1:27017` on WSL if `mongodb` does not resolve.
 
 ## Configuration options
