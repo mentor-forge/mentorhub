@@ -64,6 +64,15 @@ verify:
 	else \
 		echo "  WARN: ~/.mentorhub/aws-platform.env missing — run make install && make aws-setup"; \
 	fi; \
+	if command -v aws >/dev/null 2>&1 && [ -f "$$HOME/.mentorhub/aws-platform.env" ]; then \
+		. "$$HOME/.mentorhub/aws-platform.env"; \
+		[ -f "$$HOME/.mentorhub/aws-platform.local.env" ] && . "$$HOME/.mentorhub/aws-platform.local.env"; \
+		if aws codeartifact list-repositories --region "$${AWS_REGION:-us-east-1}" --profile "$${MH_AWS_PROFILE_SHARED:-mentorhub-shared}" --max-results 1 >/dev/null 2>&1; then \
+			echo "  CodeArtifact: reachable ($${CODEARTIFACT_PYPI_REPO:-mentorhub-pypi}, $${CODEARTIFACT_NPM_REPO:-mentorhub-npm})"; \
+		else \
+			echo "  WARN: CodeArtifact not reachable — run mh or make aws-setup"; \
+		fi; \
+	fi; \
 	echo "Checking git global user.name and user.email (recommended)..."; \
 	git config --global user.name >/dev/null 2>&1 && echo "  user.name: set" || echo "  user.name: not set (recommended for commits)"; \
 	git config --global user.email >/dev/null 2>&1 && echo "  user.email: set" || echo "  user.email: not set (recommended for commits)"; \

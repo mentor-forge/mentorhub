@@ -79,7 +79,7 @@ For a complete example of a well‑formed `Run as needed` task (including contex
 High-level plan: [Specifications/DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md). Run in order (each is **Run as needed**, but dependencies apply):
 
 1. `AS_NEEDED.R102.dev_login_pilot.md` (Phase A live pilot + Phase B Stage0 templates)
-2. `AS_NEEDED.R106.codeartifact_phase3_de_onboarding.md` (DEPENDENCY_MOVE Phase 3 — DE docs/tooling)
+2. `AS_NEEDED.R106.codeartifact_phase3_de_onboarding.md` (DEPENDENCY_MOVE Phase 3 — **shipped**, pending PR merge)
 3. `AS_NEEDED.R104.stage0_delete_journey_repos.md`
 4. `AS_NEEDED.R105.architecture_rename_and_relaunch.md`
 

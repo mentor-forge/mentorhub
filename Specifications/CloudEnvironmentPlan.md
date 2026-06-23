@@ -69,7 +69,7 @@ AWS Organization
 | P0-8 | Migrate consumer APIs/SPAs off git deps; implement `mh codeartifact login` | [x] journey repos; Stage0 templates still git (Phase 5) |
 | P0-9 | Revise [sre_standards.md](../DeveloperEdition/standards/sre_standards.md) to match as-built | [x] CI/deps section (R106); full cloud P0-1–7 still open |
 
-**Exit criteria:** Developer runs `pipenv install` / `npm ci` using CodeArtifact only; no `GH_PAT` for utils in Docker builds.
+**Exit criteria:** Journey developers run `pipenv run install` / `npm ci` using CodeArtifact only; no `GH_PAT` for utils in journey Docker builds. Stage0 template repos remain on git-based `spa_utils` until [DEPENDENCY_MOVE.md](./DEPENDENCY_MOVE.md) Phase 5.
 
 ---
 

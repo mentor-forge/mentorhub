@@ -1,5 +1,5 @@
-# Post-migration container publish workflow — CodeArtifact dependency auth.
-# Copy to .github/workflows/docker-push.yml after consumer repo migrates off git deps.
+# Post-migration container publish workflow — CodeArtifact dependency auth (canonical for journey repos).
+# Copy to .github/workflows/docker-push.yml when creating a new consumer repo.
 #
 # Prerequisites (org-level):
 #   secrets.AWS_ROLE_ARN_READ
