@@ -9,7 +9,7 @@ Before executing tasks, you should make sure the backing services are running wi
 
 - [x] Profiles List page (the dashboard), Medium, Depends on profile API features
 - [x] Profile detail page, Medium, Depends on profile and mentee API features
-- [ ] Update navigation, Small, depends on nothing 
+- [x] Update navigation, Small, depends on nothing 
 	- 🤖Prompt: Review Context and create a task to refactor the Navigation drawer as follows:
 		- Dashboard (link to list profiles page)
 		- Resources (link to list resources page)
@@ -36,7 +36,7 @@ Before executing tasks, you should make sure the backing services are running wi
 	- ## Transcript
 	- Large Markdown Editor
 	```	
-- [ ] Plan List page, Small, Depends on Plan API features
+- [X] Plan List page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and one task that builds a new Plan list page. Change to a card interface, show Plan Name and Description on the card, along with a count of steps in the plan. Add a "New" PLan button that prompts for a plan name and creates the plan and opens it in the Plan Detail page.
 - [ ] Plan Detail page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and a set of tasks that build a simple Plan editor. A Plan is just a list of steps. There should be buttons to add a new item to the list and to delete an item from the list.
