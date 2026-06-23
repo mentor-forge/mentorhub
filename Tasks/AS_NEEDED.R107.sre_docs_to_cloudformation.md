@@ -35,4 +35,4 @@ Relocate SRE and platform infrastructure specifications from `mentorhub/Specific
 ## PRs
 
 - [x] `mentorhub`: [#19](https://github.com/mentor-forge/mentorhub/pull/19) — merged 2026-06-23
-- [ ] `mentorhub_cloudformation`: [#3](https://github.com/mentor-forge/mentorhub_cloudformation/pull/3) — open (canonical spec home)
+- [x] `mentorhub_cloudformation`: [#3](https://github.com/mentor-forge/mentorhub_cloudformation/pull/3) — merged 2026-06-23

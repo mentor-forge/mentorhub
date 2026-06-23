@@ -80,7 +80,7 @@ High-level plan: [Specifications/DevLoginLaunchPlan.md](../Specifications/DevLog
 
 1. `AS_NEEDED.R102.dev_login_pilot.md` (Phase A live pilot + Phase B Stage0 templates)
 2. `AS_NEEDED.R106.codeartifact_phase3_de_onboarding.md` (DEPENDENCY_MOVE Phase 3 — **shipped**)
-3. `AS_NEEDED.R107.sre_docs_to_cloudformation.md` (SRE specs → cloudformation — **shipped** on mentorhub; cloudformation PR #3 pending)
+3. `AS_NEEDED.R107.sre_docs_to_cloudformation.md` (SRE specs → cloudformation — **shipped**)
 4. `AS_NEEDED.R108.codeartifact_phase5_stage0_spa.md` (DEPENDENCY_MOVE Phase 5 — Stage0 SPA template)
 5. `AS_NEEDED.R104.stage0_delete_journey_repos.md`
 6. `AS_NEEDED.R105.architecture_rename_and_relaunch.md`
