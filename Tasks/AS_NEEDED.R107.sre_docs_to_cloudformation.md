@@ -1,6 +1,6 @@
 # R107 – Move SRE documentation to mentorhub_cloudformation
 
-**Status:** Shipped (pending PR merge)  
+**Status:** Shipped  
 **Task Type:** Documentation / SRE  
 **Run Mode:** Run as needed
 
@@ -34,5 +34,5 @@ Relocate SRE and platform infrastructure specifications from `mentorhub/Specific
 
 ## PRs
 
-- `mentorhub`: `feature/sre-docs-to-cloudformation` → `main`
-- `mentorhub_cloudformation`: `feature/sre-docs-home` → `main`
+- [x] `mentorhub`: [#19](https://github.com/mentor-forge/mentorhub/pull/19) — merged 2026-06-23
+- [ ] `mentorhub_cloudformation`: [#3](https://github.com/mentor-forge/mentorhub_cloudformation/pull/3) — open (canonical spec home)

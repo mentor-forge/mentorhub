@@ -32,4 +32,9 @@ Close [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformat
 
 ## Branch
 
-`stage0_template_vue_vuetify`: `feature/codeartifact-phase5`
+`stage0_template_vue_vuetify`: `feature/codeartifact-phase5` (local commit ready; push requires `agile-learning-institute` write access — origin remote cleaned to SSH, no embedded PAT)
+
+## Implementation notes
+
+- Remote URLs repaired on all three Stage0 template repos (`stage0_template_vue_vuetify`, `stage0_template_vue_utils`, `stage0_template_umbrella`): removed expired embedded PATs; `origin` is now `git@github.com:agile-learning-institute/…`.
+- `make test` not run here: `ghcr.io/agile-learning-institute/stage0_runbook_merge:latest` pull denied in this environment.

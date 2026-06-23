@@ -1,6 +1,6 @@
 # R106 – CodeArtifact Phase 3 (DE docs and tooling)
 
-**Status:** Shipped (pending PR merge)  
+**Status:** Shipped  
 **Task Type:** Documentation / SRE  
 **Run Mode:** Run as needed
 
