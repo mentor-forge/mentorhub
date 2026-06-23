@@ -40,10 +40,10 @@ Now open your browser to [localhost:8080](http://localhost:8080/) and click the 
 With the Backend for Frontend pattern, all of our services consist of a single API that supports a single SPA. Common code that is used by multiple API's or SPA's is shared in utility repo's. Review these repo's to see the overall patterns used.
 
 ### mentorhub_api_utils
-Review the README - and then try these developer commands. 
+Review the README - and then try these developer commands. Run `mh` first if you have not refreshed CodeArtifact credentials recently.
 ```sh
-# to install dependencies
-pipenv install --dev
+# to install dependencies (CodeArtifact — run mh first)
+pipenv run install
 
 # to run unit testing     
 pipenv run test
@@ -60,10 +60,10 @@ pipenv run e2e
 Leave the dev server running while we move on to the SPA
 
 ### mentorhub_spa_utils
-Review the README - and then try these developer commands
+Review the README - and then try these developer commands. Run `mh` first if you have not refreshed CodeArtifact credentials recently.
 ```sh
-# to install dependencies
-npm install --include=dev
+# to install dependencies (CodeArtifact — run mh first)
+npm ci
 
 # to run unit testing
 npm run test

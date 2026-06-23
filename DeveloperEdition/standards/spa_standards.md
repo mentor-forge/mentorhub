@@ -10,6 +10,16 @@
  - TanStack Query (Vue Query) v5
  - Cypress E2E v15.8
 
+## Dependency Management
+- All dependencies are managed via `package.json` and `package-lock.json`
+- The `@mentor-forge/mentorhub_spa_utils` shared library is published to AWS CodeArtifact — see [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md)
+- Pin exact semver (for example `"0.2.2"`); do not track `github:...#main`
+- Repo `.npmrc` scopes `@mentor-forge` to the CodeArtifact registry URL (no `always-auth`)
+- Local development: run `mh` before `npm ci` or `npm install` (see [SRE Standards](./sre_standards.md#codeartifact-local-authentication))
+- Docker builds: GitHub Actions runs CodeArtifact npm login before `npm ci` — no git or `GITHUB_TOKEN` for dependency install (see [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml))
+
+All journey domain SPAs use CodeArtifact as of [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) Phase 2. Stage0 templates still use git-based `spa_utils` until Phase 5 cleanup.
+
 ## Standard Developer Commands
 - npm install (install dependencies)
 - npx cypress install (download Cypress binary after npm install when the package version changes)

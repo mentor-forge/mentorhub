@@ -1,6 +1,0 @@
-# Infrastructure and platform specifications — require review by Mike Storey (@FlatBallFlyer)
-# SRE specs canonical in mentorhub_cloudformation/docs/specifications/
-/Specifications/Archive/ @FlatBallFlyer
-/Specifications/ArchitectureDiagram.md @FlatBallFlyer
-/Specifications/architecture.yaml @FlatBallFlyer
-/Specifications/aws-platform.yaml @FlatBallFlyer
