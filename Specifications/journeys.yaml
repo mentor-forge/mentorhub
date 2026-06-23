@@ -1,14 +1,13 @@
 journeys:
-  - name: User Journey Name
-    description: User Journey Description
-    actor: Stakeholder Name
-    events:
-      - name: Event Name
-        description: 
-          - Event description text
-        intent:
-          - Intent Description
-        inputs: 
-          - Input Dictionary
-        outputs:
-          - Output Dictionary
+  - name: Mentor Journey 
+    description: The Mentor Journey is the journey of a mentor as they help a mentee's learn.
+    actor: Marti the Mentor
+  - name: Mentee Journey
+    description: The Mentee Journey is the journey of a mentee as they learn from a mentor.
+    actor: Mary the Mentee
+  - name: Customer Journey
+    description: The Customer Journey is the journey of a customer as they learn from a mentor.
+    actor: Carol the Customer
+  - name: Coordinator Journey
+    description: The Coordinator Journey is the journey of a coordinator as they match mentors with mentees.
+    actor: Cat the Coordinator
