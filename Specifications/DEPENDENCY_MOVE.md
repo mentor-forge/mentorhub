@@ -1182,7 +1182,7 @@ Also runs automatically before `mh pull`, `mh up`, and during `make update`. Req
 | 6    | Migrate `customer_api` + `customer_spa`                                                                  | **Done**                                                |
 | 7    | Migrate `mentee_api` + `mentee_spa`                                                                      | **Done**                                                |
 | 8    | Migrate `mentor_api` + `mentor_spa` ([§2.4](#24-mentor-journey--final-phase-2-repos); Luke)               | **Done**                                                |
-| 9    | Update docs and onboarding (Phase 3)                                                                       | **Next**                                                |
+| 9    | Update docs and onboarding (Phase 3)                                                                       | **In progress** ([R106](../Tasks/AS_NEEDED.R106.codeartifact_phase3_de_onboarding.md)) |
 | 10   | Remove obsolete git dependency logic (Phase 5)                                                             | After step 9                                            |
 
 

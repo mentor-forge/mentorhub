@@ -26,7 +26,7 @@ NOTE: Uses ports: 8080, 27017, 8383-8394
 - [Architecture Data](./Specifications/architecture.yaml)
 
 ## Contributing Guides
-- [Developer Onboarding](./CONTRIBUTING.md) On-Boarding Process and CLI install
+- [Developer Onboarding](./CONTRIBUTING.md) On-Boarding Process and CLI install (GitHub token + **CodeArtifact** via `make aws-setup`)
 - [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
 - [Data Standards](./DeveloperEdition/standards/data_standards.md)
 - [API Standards](./DeveloperEdition/standards/api_standards.md)

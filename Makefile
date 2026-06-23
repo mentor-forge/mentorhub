@@ -52,6 +52,18 @@ verify:
 	echo ""; \
 	echo "--- AWS (CodeArtifact packages) ---"; \
 	command -v aws >/dev/null 2>&1 && printf "aws:     " && aws --version 2>&1 | head -1 || { echo "  FAIL: aws (install AWS CLI v2 — see CONTRIBUTING.md Step 1)"; fail=1; }; \
+	if [ -f "$$HOME/.mentorhub/aws-platform.env" ]; then \
+		. "$$HOME/.mentorhub/aws-platform.env"; \
+		[ -f "$$HOME/.mentorhub/aws-platform.local.env" ] && . "$$HOME/.mentorhub/aws-platform.local.env"; \
+		printf "aws-platform.env: installed (profile %s)\n" "$${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"; \
+		if aws configure list-profiles 2>/dev/null | grep -qx "$${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"; then \
+			echo "  SSO profile: configured (run make aws-setup if package installs fail)"; \
+		else \
+			echo "  WARN: SSO profile not in ~/.aws/config — run make aws-setup"; \
+		fi; \
+	else \
+		echo "  WARN: ~/.mentorhub/aws-platform.env missing — run make install && make aws-setup"; \
+	fi; \
 	echo "Checking git global user.name and user.email (recommended)..."; \
 	git config --global user.name >/dev/null 2>&1 && echo "  user.name: set" || echo "  user.name: not set (recommended for commits)"; \
 	git config --global user.email >/dev/null 2>&1 && echo "  user.email: set" || echo "  user.email: not set (recommended for commits)"; \

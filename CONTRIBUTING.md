@@ -68,7 +68,7 @@ When local environment values are required (GitHub access tokens, etc.) they are
 
 ### GITHUB_TOKEN
 
-We are using GitHub to publish the api_utils pypi package, the spa_utils npm package, and GitHub Container Registry to publish containers. Create a GitHub classic access token with `repo` `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the `~/.mentorhub/` folder.
+We publish **`api-utils`** (PyPI) and **`@mentor-forge/mentorhub_spa_utils`** (npm) to **AWS CodeArtifact**, and container images to **GitHub Container Registry**. Create a GitHub classic access token with `repo`, `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the `~/.mentorhub/` folder.
 
 To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 
@@ -80,7 +80,7 @@ After [Step 2](#step-2-of-4---install-the-cli), run **once** to configure packag
 make aws-setup
 ```
 
-This opens a browser login and configures `~/.mentorhub/aws-platform.env`, with your account information. You can use `mh` to login to GHCR and AWS as needed (before `pipenv install` or `npm install`)
+This opens a browser login and configures `~/.mentorhub/aws-platform.env` and `~/.aws/config` for profile `mentorhub-shared`. Run bare `mh` (or `make update`) before `pipenv run install` or `npm ci` in journey API/SPA repos so CodeArtifact tokens are fresh (~12 hour lifetime).
 
 ## Step 4 of 4 - Finally
 

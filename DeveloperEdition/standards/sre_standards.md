@@ -302,11 +302,12 @@ The developer workflow follows the feature branch pattern. A developer creates a
 - Merging a PR to `main` produces a single `push` event; that triggers one publish run.
 - Peer review and branch protection (soft phase) gate merges; automated test gates on PRs are not enabled yet.
 - Existing container workflows publish to GitHub Container Registry until the ECR migration is explicitly planned.
-- Shared library installs still use git + `GH_PAT`/`GITHUB_TOKEN` today; migrate to CodeArtifact per [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md).
+- Journey API and SPA **container builds** install shared libraries from **CodeArtifact** (`api-utils`, `@mentor-forge/mentorhub_spa_utils`) via GitHub Actions OIDC — not git clones or `GH_PAT` for dependencies. See [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) Phase 2.
 
-Canonical workflow references:
-- Pre-migration (git deps): [examples/docker-push.yml](./examples/docker-push.yml)
-- Post-migration (CodeArtifact): [examples/docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml)
+Canonical workflow reference for journey repos:
+- [examples/docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml)
+
+Legacy reference (pre-migration only): [examples/docker-push.yml](./examples/docker-push.yml)
 
 Apply the same `on:` pattern in every mentor-forge repo that publishes images.
 

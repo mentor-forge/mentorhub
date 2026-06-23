@@ -66,8 +66,8 @@ AWS Organization
 | P0-5 | Create CodeArtifact domain `mentor-forge` + repos `mentorhub-pypi`, `mentorhub-npm` | [ ] |
 | P0-6 | GitHub OIDC roles: `GitHubActionsCodeArtifactPublish`, `GitHubActionsCodeArtifactRead` | [ ] |
 | P0-7 | Publish pipelines for `mentorhub_api_utils` and `mentorhub_spa_utils` | [ ] |
-| P0-8 | Migrate consumer APIs/SPAs off git deps; implement `mh codeartifact login` | [ ] |
-| P0-9 | Revise [sre_standards.md](../DeveloperEdition/standards/sre_standards.md) to match as-built | [ ] |
+| P0-8 | Migrate consumer APIs/SPAs off git deps; implement `mh codeartifact login` | [x] journey repos; Stage0 templates still git (Phase 5) |
+| P0-9 | Revise [sre_standards.md](../DeveloperEdition/standards/sre_standards.md) to match as-built | [x] CI/deps section (R106); full cloud P0-1–7 still open |
 
 **Exit criteria:** Developer runs `pipenv install` / `npm ci` using CodeArtifact only; no `GH_PAT` for utils in Docker builds.
 
