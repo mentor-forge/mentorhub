@@ -27,7 +27,7 @@ Close [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformat
 - [x] `.npmrc` + BuildKit secret pattern (match journey SPAs)
 - [x] `docker-push.yml`: OIDC + CodeArtifact npm token
 - [x] `test_expected` synced; test `product.yaml` uses `mentor-forge` org for CodeArtifact scope
-- [ ] `make test` in template repo (Docker)
+- [x] `make test` in template repo (Docker) — 2026-06-24; built `stage0_runbook_merge` locally (GHCR pull denied)
 - [x] PR opened — [agile-learning-institute/stage0_template_vue_vuetify #3](https://github.com/agile-learning-institute/stage0_template_vue_vuetify/pull/3)
 - [ ] PR merged; re-launch smoke optional
 
