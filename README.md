@@ -1,3 +1,19 @@
+## Current State 
+
+This repository is currently in a pre-release phase. During this stage, backward compatibility is not a requirement and existing features, APIs, schemas, and components may be modified, deprecated, or removed as part of rapid iteration and discovery.
+
+Version management should be limited to maintaining internal dependencies such as api_utils and spa_utils. Future release versioning strategies will be defined when the project approaches production readiness.
+
+## Test Local, Harvest Global
+
+This project follows a "Test Local, Harvest Global" strategy. New features should be developed and validated within this repository first. Once a feature demonstrates value, stability, and reusability, it should be considered for extraction into a shared utilities library where it can benefit multiple repositories.
+
+For API development, reusable dictionary-aligned services and business logic should be candidates for harvesting into shared API utilities.
+
+For SPA development, reusable controls and components aligned with data dictionary types should be developed locally, tested independently, and harvested into shared SPA utilities when appropriate.
+
+This approach enables rapid development while encouraging the creation of reusable, well-tested shared resources across the platform.
+
 # Mentor Forge Mentor Hub
 
 ## Big Idea
