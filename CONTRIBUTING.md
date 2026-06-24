@@ -104,7 +104,7 @@ make update
 
 ## Developer Workflow
 
-We utilize an Issue–Feature–Branch pattern for the developer workflow. Developers should focus on a one feature at a time, and should complete the following workflow for the full feature before moving on to the next:
+We utilize an Feature–Branch pattern for the developer workflow. Developers should focus on a one feature at a time, and should complete the following workflow for the full feature before moving on to the next:
 
 1. Create a feature branch for your work, give the branch a descriptive name
 2. Review Mike's suggested prompt for the feature in [Features.md](./Specifications/features.md)
