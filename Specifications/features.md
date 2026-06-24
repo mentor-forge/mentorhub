@@ -36,7 +36,7 @@ Before executing tasks, you should make sure the backing services are running wi
 	- ## Transcript
 	- Large Markdown Editor
 	```	
-- [X] Plan List page, Small, Depends on Plan API features
+- [ ] Plan List page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and one task that builds a new Plan list page. Change to a card interface, show Plan Name and Description on the card, along with a count of steps in the plan. Add a "New" PLan button that prompts for a plan name and creates the plan and opens it in the Plan Detail page.
 - [ ] Plan Detail page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and a set of tasks that build a simple Plan editor. A Plan is just a list of steps. There should be buttons to add a new item to the list and to delete an item from the list.
@@ -164,7 +164,7 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 	- [x] 👤 Index audit
 	- [X] 🤖 Prompt: Create tasks to delete existing Path and Resource test data, and then import Paths/Topics from Mikes Obsidian vault. Then add some Course and Membership resources for Real Python, Cantrill.io, MTC (More than Certified) - and a Path for "Practitioner SRE" with these resources. Also create a "Practitioner UI/UX Engineer" path with Vue Mastery and other appropriate resources.
 	- [x] 👤 Audit Enums -types, cost - add meaningful skills, technology, interests
-- [ ] Journey, Medium, depends on Path, Resource
+- [X] Journey, Medium, depends on Path, Resource
 	- [x] 👤 Schema audit 
 	- [x] 👤 Index Audit
 	- [ ] 🤖 Prompt: Create tasks to Update existing test data based on new Path, Resource test data and Journey schema changes and to Create a Template for a new Journey -
@@ -176,7 +176,7 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 		- Later
 			- Odin
 			- EK
-- [ ] Event, Small, depends on Journey
+- [X] Event, Small, depends on Journey
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
 	- [ ] 🤖 Prompt: Create a series of events related to resource aggregation, driven by journey test data
