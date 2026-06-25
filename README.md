@@ -1,5 +1,13 @@
 # Mentor Forge Mentor Hub
 
+## Current State
+
+**Pre-release.** Backward compatibility is not required. Limit version changes to internal `api_utils` and `spa_utils` dependencies — features may be added, changed, or removed without notice.
+
+**Test local, harvest global:** develop and validate here first; promote reusable API services and SPA components into shared utils when they are stable.
+
+**Platform / cloud Dev:** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — roadmap and IaC tasks live there, not in this repo.
+
 ## Big Idea
 A platform to connect mentors with engineers engaged in a life long learning journey.
 
