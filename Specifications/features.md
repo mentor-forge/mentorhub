@@ -58,7 +58,7 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 
 - [x] Profile, Large, depend depends on Profile, Mentee, and Encounter data features
 - [x] Mentee, Small, Depends on Mentee data features
-- [ ] Plan, Small, Depends on Plan data features
+- [X] Plan, Small, Depends on Plan data features
 	- 🤖 Prompt: Review @Context and create a task to update Plan endpoints to latest schema.
 - [ ] Encounter, Small, depends on Encounter data features
 	- 🤖 Prompt: Review @Context and create tasks to update Encounter end points. Get Encounters should Be deprecated, get profile addresses that need. POST Encounter should require Mentor/Mentee ID's and Plan ID and should populate the checklist from the plan. GET Encounter should require Mentor or Admin role. PATCH Encounter should require Admin, or Token User -> Profile_ID should match Mentor_ID
@@ -180,11 +180,11 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 	- [x] 👤 Schema audit
 	- [x] 👤 Index audit
 	- [ ] 🤖 Prompt: Create a series of events related to resource aggregation, driven by journey test data
-- [ ] Rating, Small, depends on Journey, Resource, Profile
+- [X] Rating, Small, depends on Journey, Resource, Profile
 	- [ ] 👤 Schema audit
 	- [ ] 👤 Index audit
 	- [ ] 🤖 Prompt: Create a series of Ratings based on Journey Completed tasks.
-- [ ] Note, Small, depends on Journey, Resource, Profile
+- [X] Note, Small, depends on Journey, Resource, Profile
 	- [ ] 👤 Schema audit
 	- [ ] 👤 Index audit
 	- [ ] 🤖 Prompt: Create a series of Notes related to Journey test data, library resources
