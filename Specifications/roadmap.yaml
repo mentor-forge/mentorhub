@@ -4,6 +4,7 @@ Hills:
 Roadmap:
 
   Now:
+  - Cloud Dev roadmap: Specifications/CloudDevRoadmap.md — **Now:** R030 ECR + GHCR dual-push
   - Finish Cloud DEV architecture diagram (see Specifications/ArchitectureDiagram.dev.guide.md)
   - Shared-Services account + CodeArtifact (mentorhub_cloudformation docs/specifications/DEPENDENCY_MOVE.md Phase -1 / 0)
   - Profile dashboard API + coordinator UI (Specifications/profile_dashboard.yaml)

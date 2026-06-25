@@ -74,6 +74,14 @@ For a complete example of a well‑formed `Run as needed` task (including contex
 
 - `AS_NEEDED.R900.example_add_healthcheck.md`
 
+### Cloud Dev roadmap (Now / Next / Later)
+
+Platform path to a live **MentorHub-Dev** environment: [Specifications/CloudDevRoadmap.md](../Specifications/CloudDevRoadmap.md).
+
+**Now:** [R030 ECR + GHCR connection](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/RUNNING.R030.ecr_ghcr_connection.md) — provision ECR and dual-push on merge to `main`.
+
+SRE / IaC tasks (R010–R130): [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform specs: [mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications).
+
 ### Dev login & Stage0 re-launch sequence
 
 High-level plan: [Specifications/DevLoginLaunchPlan.md](../Specifications/DevLoginLaunchPlan.md). Run in order (each is **Run as needed**, but dependencies apply):
@@ -88,8 +96,6 @@ High-level plan: [Specifications/DevLoginLaunchPlan.md](../Specifications/DevLog
 Superseded: `AS_NEEDED.R103.dev_login_stage0_templates.md` (merged into R102 Phase B).
 
 Supporting: `AS_NEEDED.R101.welcome_personas_from_architecture.md`, `AS_NEEDED.R100.after_specs_update.md` (within R105).
-
-**SRE / IaC tasks (R010–R130):** [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform specs: [mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications). See `AS_NEEDED.R107.sre_docs_to_cloudformation.md`.
 
 ### Marking a task as completed or "Run as needed"
 
