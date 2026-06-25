@@ -20,7 +20,7 @@ NOTE: Uses ports: 8080, 27017, 8383-8394
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 
 - [Stakeholders](./Specifications/stakeholders.yaml)
-- [Product Roadmap](./Specifications/roadmap.yaml)
+- [Product Roadmap](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/roadmap.yaml)
 - [Data Catalog](./Specifications/catalog.yaml)
 - [Architecture Diagram](./Specifications/architecture_diagram.md)
 - [Architecture Data](./Specifications/architecture.yaml)

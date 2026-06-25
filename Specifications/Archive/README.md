@@ -1,17 +1,20 @@
 # Specifications archive
 
-SRE and platform infrastructure documentation **moved to [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** (`docs/specifications/`). Stubs at the original paths below preserve links from older docs and tasks.
+SRE and platform infrastructure documentation lives in **[mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** (`docs/specifications/` and `tasks/`). Former stub paths under `Specifications/` have been removed.
 
-## Moved to `mentorhub_cloudformation/docs/specifications/`
+## In `mentorhub_cloudformation`
 
-| Former path (stub in `Specifications/`) | Canonical document |
-|----------------------------------------|-------------------|
-| `CLOUDFORMATION_PLAN.md` | [CLOUDFORMATION_PLAN.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CLOUDFORMATION_PLAN.md) |
-| `CLOUDFORMATION_CHECKLIST.md` | [CLOUDFORMATION_CHECKLIST.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CLOUDFORMATION_CHECKLIST.md) |
-| `CloudEnvironmentPlan.md` | [CloudEnvironmentPlan.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CloudEnvironmentPlan.md) |
-| `DEPENDENCY_MOVE.md` | [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) |
-| `INFO.md` | [INFO.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/INFO.md) |
-| `InfrastructureDiagram.drawio` / `.svg` | [InfrastructureDiagram](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications) |
+| Document | Location |
+|----------|----------|
+| `CLOUDFORMATION_PLAN.md` | [docs/specifications/CLOUDFORMATION_PLAN.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CLOUDFORMATION_PLAN.md) |
+| `CLOUDFORMATION_CHECKLIST.md` | [docs/specifications/CLOUDFORMATION_CHECKLIST.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CLOUDFORMATION_CHECKLIST.md) |
+| `CloudEnvironmentPlan.md` | [docs/specifications/CloudEnvironmentPlan.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CloudEnvironmentPlan.md) |
+| `CloudDevRoadmap.md` | [docs/specifications/CloudDevRoadmap.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CloudDevRoadmap.md) |
+| `DEPENDENCY_MOVE.md` | [docs/specifications/DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) |
+| `INFO.md` | [docs/specifications/INFO.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/INFO.md) |
+| `roadmap.yaml` | [docs/specifications/roadmap.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/roadmap.yaml) |
+| `InfrastructureDiagram.*` | [docs/specifications/](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications) |
+| SRE tasks R107, R108, R010–R130 | [tasks/](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks) |
 
 ## Still in `mentorhub/Specifications/` (product / DE)
 
@@ -24,7 +27,7 @@ SRE and platform infrastructure documentation **moved to [mentorhub_cloudformati
 
 ## Tasks
 
-- **SRE IaC tasks (R010–R130):** `mentorhub_cloudformation/tasks/`
-- **App / DE tasks (R10x):** `mentorhub/Tasks/` — kept as organized AI change history
+- **SRE IaC tasks (R010–R130, R107, R108):** `mentorhub_cloudformation/tasks/`
+- **App / DE tasks (R10x dev login, etc.):** `mentorhub/Tasks/`
 
-Tracked by [R107](../Tasks/AS_NEEDED.R107.sre_docs_to_cloudformation.md).
+Tracked by [SHIPPED.R107.sre_docs_to_cloudformation.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/SHIPPED.R107.sre_docs_to_cloudformation.md).

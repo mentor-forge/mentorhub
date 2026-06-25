@@ -80,16 +80,16 @@ High-level plan: [Specifications/DevLoginLaunchPlan.md](../Specifications/DevLog
 
 1. `AS_NEEDED.R102.dev_login_pilot.md` (Phase A live pilot + Phase B Stage0 templates)
 2. `AS_NEEDED.R106.codeartifact_phase3_de_onboarding.md` (DEPENDENCY_MOVE Phase 3 — **shipped**)
-3. `AS_NEEDED.R107.sre_docs_to_cloudformation.md` (SRE specs → cloudformation — **shipped**)
-4. `AS_NEEDED.R108.codeartifact_phase5_stage0_spa.md` (DEPENDENCY_MOVE Phase 5 — Stage0 SPA template)
-5. `AS_NEEDED.R104.stage0_delete_journey_repos.md`
-6. `AS_NEEDED.R105.architecture_rename_and_relaunch.md`
+3. `AS_NEEDED.R104.stage0_delete_journey_repos.md`
+4. `AS_NEEDED.R105.architecture_rename_and_relaunch.md`
+
+SRE tasks moved to cloudformation: [R107](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/SHIPPED.R107.sre_docs_to_cloudformation.md) (shipped), [R108](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/RUNNING.R108.codeartifact_phase5_stage0_spa.md) (running).
 
 Superseded: `AS_NEEDED.R103.dev_login_stage0_templates.md` (merged into R102 Phase B).
 
 Supporting: `AS_NEEDED.R101.welcome_personas_from_architecture.md`, `AS_NEEDED.R100.after_specs_update.md` (within R105).
 
-**SRE / IaC tasks (R010–R130):** [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform specs: [mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications). See `AS_NEEDED.R107.sre_docs_to_cloudformation.md`.
+**SRE / IaC tasks (R010–R130, R107, R108):** [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform specs: [mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications).
 
 ### Marking a task as completed or "Run as needed"
 
