@@ -76,9 +76,13 @@ For a complete example of a well‑formed `Run as needed` task (including contex
 
 ### Cloud Dev roadmap (Now / Next / Later)
 
-Platform path to a live **MentorHub-Dev** environment: [Specifications/CloudDevRoadmap.md](../Specifications/CloudDevRoadmap.md).
+Full map from **current state → live MentorHub-Dev**: [Specifications/CloudDevRoadmap.md](../Specifications/CloudDevRoadmap.md) (also summarized in the [root README](../README.md#roadmap--cloud-dev-now--next--later)).
 
-**Now:** [R030 ECR + GHCR connection](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/RUNNING.R030.ecr_ghcr_connection.md) — provision ECR and dual-push on merge to `main`.
+| | |
+|---|---|
+| **Now** | [R030 ECR + GHCR](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/RUNNING.R030.ecr_ghcr_connection.md) — one feature; execute via task file before promoting Next |
+| **Next** | R031 governance → R040–R070 Dev infra → R080 coordinator pilot → R100/R090 full Dev |
+| **Later** | Test envs · staging · production |
 
 SRE / IaC tasks (R010–R130): [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform specs: [mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications).
 

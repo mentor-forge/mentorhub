@@ -17,6 +17,20 @@ NOTE: Uses ports: 8080, 27017, 8383-8394
 - Luther (Luke) Still: Primary SRE Engineering, Secondary API Engineering
 - Curtis (Lucky) Minyard: Primary API Engineering, Secondary SRE Engineering
 
+## Roadmap — Cloud Dev (Now / Next / Later)
+
+**Goal:** MentorHub deployed and reachable in **AWS MentorHub-Dev** (sign-in + at least one journey end-to-end).
+
+We use a lightweight **Now → Next → Later** rhythm — one feature at a time, promoted when shipped. **Now** is automated via task files in [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks) and [Tasks](./Tasks/README.md).
+
+| | Feature |
+|---|---------|
+| **Now** | ECR provisioning + GHCR ↔ ECR dual-push ([R030](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/tasks/RUNNING.R030.ecr_ghcr_connection.md)) |
+| **Next** | Dev infrastructure (VPC, DocumentDB, ECS, edge) → coordinator pilot → CI/CD → all journeys |
+| **Later** | Test envs in Dev account · staging · production |
+
+Full map (current state → live Dev): **[Specifications/CloudDevRoadmap.md](./Specifications/CloudDevRoadmap.md)**
+
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 
 - [Stakeholders](./Specifications/stakeholders.yaml)

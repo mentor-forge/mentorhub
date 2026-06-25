@@ -1,22 +1,25 @@
 Hills:
 - Who does What and then WOW!
 
+# Product feature roadmap (application). Platform path to cloud Dev: CloudDevRoadmap.md
+
 Roadmap:
 
   Now:
-  - Cloud Dev roadmap: Specifications/CloudDevRoadmap.md — **Now:** R030 ECR + GHCR dual-push
-  - Finish Cloud DEV architecture diagram (see Specifications/ArchitectureDiagram.dev.guide.md)
-  - Shared-Services account + CodeArtifact (mentorhub_cloudformation docs/specifications/DEPENDENCY_MOVE.md Phase -1 / 0)
+  - Cloud Dev platform — ECR + GHCR dual-push (mentorhub_cloudformation R030)
   - Profile dashboard API + coordinator UI (Specifications/profile_dashboard.yaml)
 
   Next:
-  - MentorHub-Dev runtime: VPC, DocumentDB, ECS, API Gateway, Cognito (mentorhub_cloudformation docs/specifications/CloudEnvironmentPlan.md Phase 1)
-  - CD pipeline: GHCR image → ECS deploy on merge to main
-  - Staging architecture diagram + account decision
+  - MentorHub-Dev infrastructure: VPC, DocumentDB, ECS, edge (R040–R070)
+  - Coordinator pilot in cloud (R080)
+  - CD pipeline: merge to main → ECR → ECS (R100)
+  - Finish Cloud DEV architecture diagram (ArchitectureDiagram.dev.guide.md)
 
   Later:
-  - Staging and production environments (CloudEnvironmentPlan Phase 2–3)
-  - ECR migration from GHCR
+  - Test environments in Dev account
+  - Staging and production (CloudEnvironmentPlan Phase 2–3)
+  - GHCR retirement after ECR path proven
   - Production IdP and Stripe live mode
 
-See also: mentorhub_cloudformation docs/specifications/CloudEnvironmentPlan.md
+See: Specifications/CloudDevRoadmap.md
+CloudEnvironmentPlan: mentorhub_cloudformation/docs/specifications/CloudEnvironmentPlan.md
