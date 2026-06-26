@@ -120,7 +120,7 @@ We utilize an Feature–Branch pattern for the developer workflow. Developers sh
 The Step 2 prompt that you share on Discord should be something like
 
 ```
-Please review @standards, @README and @README for context, and create new tasks starting with X999 to *Implement Feature*
+Please review @standards, @README and @README for context, and create new tasks starting with X999 to *Implement Feature*. Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
 ```
 
 This is not a huge prompt, and we should be able to easily work on DIscord to finalize that. That should cause Cursor to create Task Files - that YOU review, commit and push. Then Mike will review the Tasks that you have created and work with you on any revisions that are needed. Then your next Cursor prompt should be "Please Orchestrate all PENDING tasks using the @README task framework"
