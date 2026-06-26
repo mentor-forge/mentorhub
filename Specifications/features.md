@@ -36,7 +36,7 @@ Before executing tasks, you should make sure the backing services are running wi
 	- ## Transcript
 	- Large Markdown Editor
 	```	
-- [ ] Plan List page, Small, Depends on Plan API features
+- [X] Plan List page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and one task that builds a new Plan list page. Change to a card interface, show Plan Name and Description on the card, along with a count of steps in the plan. Add a "New" PLan button that prompts for a plan name and creates the plan and opens it in the Plan Detail page.
 - [ ] Plan Detail page, Small, Depends on Plan API features
 	- 🤖 Prompt: Review @Context and a set of tasks that build a simple Plan editor. A Plan is just a list of steps. There should be buttons to add a new item to the list and to delete an item from the list.
@@ -60,7 +60,7 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 - [x] Mentee, Small, Depends on Mentee data features
 - [X] Plan, Small, Depends on Plan data features
 	- 🤖 Prompt: Review @Context and create a task to update Plan endpoints to latest schema.
-- [ ] Encounter, Small, depends on Encounter data features
+- [X] Encounter, Small, depends on Encounter data features
 	- 🤖 Prompt: Review @Context and create tasks to update Encounter end points. Get Encounters should Be deprecated, get profile addresses that need. POST Encounter should require Mentor/Mentee ID's and Plan ID and should populate the checklist from the plan. GET Encounter should require Mentor or Admin role. PATCH Encounter should require Admin, or Token User -> Profile_ID should match Mentor_ID
 - [ ] Path, Small, Depends on path, Resource, and aggregation data features
 	- 🤖 Prompt: Review @Context and create tasks to update Path endpoints. Get Paths should always return all paths, remove pagination and scroll support. GET Path should be just an openapi change. PATCH Path should require Mentor or Admin role
