@@ -167,7 +167,7 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 - [X] Journey, Medium, depends on Path, Resource
 	- [x] 👤 Schema audit 
 	- [x] 👤 Index Audit
-	- [ ] 🤖 Prompt: Create tasks to Update existing test data based on new Path, Resource test data and Journey schema changes and to Create a Template for a new Journey -
+	- [x] 🤖 Prompt: Create tasks to Update existing test data based on new Path, Resource test data and Journey schema changes and to Create a Template for a new Journey -
 		- oid of "000000000000000000000001" with no profile_id
 		- Now - Agile Home
 		- Next 
@@ -181,17 +181,17 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 	- [x] 👤 Index audit
 	- [ ] 🤖 Prompt: Create a series of events related to resource aggregation, driven by journey test data
 - [X] Rating, Small, depends on Journey, Resource, Profile
-	- [ ] 👤 Schema audit
-	- [ ] 👤 Index audit
-	- [ ] 🤖 Prompt: Create a series of Ratings based on Journey Completed tasks.
+	- [x] 👤 Schema audit
+	- [x] 👤 Index audit
+	- [x] 🤖 Prompt: Create a series of Ratings based on Journey Completed tasks.
 - [X] Note, Small, depends on Journey, Resource, Profile
-	- [ ] 👤 Schema audit
-	- [ ] 👤 Index audit
-	- [ ] 🤖 Prompt: Create a series of Notes related to Journey test data, library resources
-- [ ] Aggregation, Medium, depends on Resources, Notes, Ratings, and Events
-	- [ ] 👤 Schema audit
-	- [ ] 👤 Index audit
-	- [ ] 🤖 Prompt: Create tasks to build test data
+	- [x] 👤 Schema audit
+	- [x] 👤 Index audit
+	- [x] 🤖 Prompt: Create a series of Notes related to Journey test data, library resources
+- [x] Aggregation, Medium, depends on Resources, Notes, Ratings, and Events
+	- [x] 👤 Schema audit
+	- [x] 👤 Index audit
+	- [x] 🤖 Prompt: Create tasks to build test data
 - [ ] Customer
 	- [ ] 👤 Schema audit
 	- [ ] 👤 Index audit
