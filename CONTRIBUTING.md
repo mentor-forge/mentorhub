@@ -110,7 +110,7 @@ We utilize an Feature–Branch pattern for the developer workflow. Developers sh
 2. Review Mike's suggested prompt for the feature in [Features.md](./Specifications/features.md)
 3. Create a Prompt (based on Mikes suggestions) that asks Cursor to create Tasks to complete the feature.
 4. Share that Prompt with Mike on Discord - together reflect and update till you agree on the scope
-5. Submit the "Create Tasks" prompt to Cursor and let them create the task files
+5. Submit the "Create Tasks" prompt to Cursor, in a **new** chat, and let them create the task files
 6. Review and adjust tasks as needed. You should fully understand everything in the tasks. This is how we control Cursor to make sure it doesn't get carried away.
 7. When you are ready for mike to review the Tasks, commit and push changes to GitHub and ask Mike to review the tasks on Discord.
 8. After adjustments and back and forth prompt cursor with "Orchestrate all pending tasks using the process outlined in tasks/README.md"
