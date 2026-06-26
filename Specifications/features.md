@@ -122,7 +122,7 @@ Before executing tasks, you should make sure the backing database services are r
 Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/api/configurations/json_schema/{Collection}.yaml/latest/" -H "accept: application/json"``
 
 - [ ] utils, Small, depends on events schema update
-	- 🤖 Prompt: Review @Context and create two tasks that Update the config to include new Resource_Aggregations collection name with the default value of "Resource_Aggregation", and then add more constants to the config object to represent the Event Type values from the event_types from @enumerations.0.yaml. 
+	- 🤖 Prompt: Review @Context and create one task that Updates the config to include new Resource_Aggregations collection name with the default value of "Resource_Aggregation", and then add one more task to create config values to represent the Event Type values from the event_types from @enumerations.0.yaml. 
 - [ ] Aggregation, Medium, depends on utils and aggregation data
 	- 🤖 Prompt: Review @Context and create a task to add a GET aggregation/{resource_id} endpoint with an aggregation service that invokes a Notes service to get related notes that are added to the return value.
 - [ ] Events, Small, depend depends on utils and event data
