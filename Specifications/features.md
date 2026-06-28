@@ -61,7 +61,6 @@ Tasks can get the latest JSON Schema with ``curl -X GET "http://localhost:8383/a
 - [X] Plan, Small, Depends on Plan data features
 	- 🤖 Prompt: Review @Context and create a task to update Plan endpoints to latest schema.
 - [X] Encounter, Small, depends on Encounter data features
-	- 🤖 Prompt: Review @Context and create tasks to update Encounter end points. Get Encounters should Be deprecated, get profile addresses that need. POST Encounter should require Mentor/Mentee ID's and Plan ID and should populate the checklist from the plan. GET Encounter should require Mentor or Admin role. PATCH Encounter should require Admin, or Token User -> Profile_ID should match Mentor_ID
 - [ ] Path, Small, Depends on path, Resource, and aggregation data features
 	- 🤖 Prompt: Review @Context and create tasks to update Path endpoints. Get Paths should always return all paths, remove pagination and scroll support. GET Path should be just an openapi change. PATCH Path should require Mentor or Admin role
 - [ ] Resource, Medium, Depends on Resource and aggregation data features
