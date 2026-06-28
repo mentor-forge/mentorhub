@@ -1,5 +1,11 @@
 # API Standards
 
+## Current State
+This repository functions as a **versioned asset** managing core API utilities and standards. 
+- **Lifecycle Stage:** Pre-release alpha development.
+- **Breaking Changes Policy:** Because the architecture is pre-release, maintaining strict backward compatibility is **not** a primary constraint. Breaking changes are acceptable when aligning to core architectural goals, though they remain undesirable and should be communicated clearly across the team.
+- **Upcoming Evolution Considerations:** The architecture is currently evaluating a potential transition from a purely "model-less" pass-through pattern toward a centralized Object Document Mapper (ODM) implemented directly into `api_utils` to simplify service layer implementations.
+
 ## Technology Stack
 - Python v3.12^
 - pipenv v2026.0.2
@@ -32,7 +38,8 @@ All journey domain APIs use CodeArtifact as of [DEPENDENCY_MOVE.md](https://gith
 ## API Design
 - Create, Retrieve, Patch design pattern
 - API's work with a model-less document management approach
-- Open API Specification (swagger) is a Design Specification, NOT a code build artifact
+- **Data Quality Delegation:** In our model-less API architecture, data quality constraints are fully delegated to the database layer (via MongoDB Schema Validation), *not* implemented in application code. No duplicate validation logic should exist in the API layer.
+- **Specification Source of Truth:** The OpenAPI Specification Schema is strictly grounded in the Database Validation Schema. It remains a Design Specification, NOT a code build artifact.
 - Route blueprints use factory functions (e.g., `create_*_routes()`) that return Flask Blueprints
 - Route registration should be grouped together in `server.py` for clarity
 
@@ -40,7 +47,17 @@ All journey domain APIs use CodeArtifact as of [DEPENDENCY_MOVE.md](https://gith
 - `server.py` is the standard API entry point
 - `command.py` is the standard CLI entry point
 - `/routes/*domain*_routes.py` handle HTTP request/response logic
+  - **HTTP Scope Only:** This is a single-purpose layer responsible for HTTP-related code: request/reply access, token verification, tracking breadcrumb creation, handling HTTP exceptions, and extracting payloads or parameters. It must **not** validate, process, or alter payloads in any way.
 - `/services/*domain*_service.py` handles business logic/RBAC for domain
+  - **Stateless & Aligned:** Services are a single-purpose layer strictly aligned to a single Database Collection. Responsible for Business Logic, RBAC enforcement, and system-managed guardrails. If a service file exceeds a few hundred lines, it must be audited for architectural leakage.
+  - **Service-to-Service Calls:** Service layers are static and completely stateless. Service-to-service calls are the preferred reuse pattern for cross-collection dependencies (e.g., calling `ProfileService.getProfileByToken(...)` instead of duplicating raw MongoDB queries locally).
+  - **Dependency Isolation:** In scenarios where circular service dependencies arise, a special "Aggregation" service layer must be introduced to isolate orchestration logic.
+  - **RBAC & Ownership:** RBAC enforcement happens strictly at the Service layer. "Ownership" verification is an RBAC function (frequently utilizing `profile_service.getByToken` to verify if the User ID matches the target Resource Owner ID). RBAC functions can retrieve current state from the database to enforce these rules, but this fetch of state must *never* be used to modify incoming updates being authorized.
+
+### 📊 Dependency & Relationship Mapping
+For system entity relationships and collection dependencies, reference the system ERD directly:
+- **Source Diagram:** `../mentorhub_mongodb_api/erd.drawio`
+- **Vector Alternative:** `../mentorhub_mongodb_api/erd.svg`
 
 ## Authentication
 - **API responsibility:** Domain APIs **validate** Bearer JWTs only. They must **not** register HTTP routes that mint credentials, exchange user passwords for tokens, or otherwise act as an identity provider.
@@ -101,4 +118,4 @@ All API servers should follow the organizational pattern established in api_util
       token = create_flask_token()  # Full JWT validation; raises HTTPUnauthorized if invalid
       breadcrumb = create_flask_breadcrumb(token)
       # ... route logic
-  ```
+      
