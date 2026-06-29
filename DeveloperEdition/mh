@@ -360,20 +360,17 @@ function ensureCodeArtifactAuth {
     fi
 
     if ! aws sts get-caller-identity --profile "$profile" --region "$region" >/dev/null 2>&1; then
-        echo "AWS SSO session expired — login required for profile: $profile"
+        echo "AWS SSO session expired — opening login for profile: $profile"
 
         if grep -qi microsoft /proc/version 2>/dev/null; then
-            echo "WSL detected — using AWS device-code login to avoid localhost browser callback issues."
-            aws sso login --profile "$profile" --no-browser --use-device-code || {
-                echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
-                return 1
-            }
-        else
-            aws sso login --profile "$profile" || {
-                echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
-                return 1
-            }
+            export BROWSER="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
         fi
+
+        aws sso login --profile "$profile" || {
+            echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
+            echo "Fallback option: aws sso login --profile $profile --no-browser --use-device-code" >&2
+            return 1
+        }
     fi
 
     typeset identity_account
