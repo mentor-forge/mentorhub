@@ -14,14 +14,20 @@ Run `make verify` to check that all prerequisites are installed. If any fail, in
 - **cypress** (v)
 - **Vite** - `npm install -g vite` or use via `npx vite`. [https://vitejs.dev/guide/](https://vitejs.dev/guide/)
 
+
+
 ### Python tools
 
 - **Python 3.12+** - [https://www.python.org/downloads/](https://www.python.org/downloads/)
 - **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/) (`pip install pipenv`)
 
+
+
 ### Container tools
 
 - **Docker Desktop** - [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
+
+
 
 ### GitHub & Git
 
@@ -35,9 +41,13 @@ git config --global user.name "Your Name"
 git config --global user.email yourname@example.com
 ```
 
+
+
 ### AWS CLI (CodeArtifact packages)
 
 - **AWS CLI v2** - [https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) (macOS: `brew install awscli`)
+
+
 
 ### Utilities
 
@@ -45,11 +55,15 @@ git config --global user.email yourname@example.com
 - **yq** - [https://mikefarah.gitbook.io/yq](https://mikefarah.gitbook.io/yq) (macOS: `brew install yq`)
 - **curl** - Usually pre-installed. [https://curl.se/download.html](https://curl.se/download.html)
 
+
+
 ### Other
 
 - **zsh shell** - Default on macOS. Linux: [https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
 - **Mongo Compass** - [https://www.mongodb.com/docs/compass/install/](https://www.mongodb.com/docs/compass/install/)
 - **WSL** - For Windows users: [https://learn.microsoft.com/en-us/windows/wsl/install](https://learn.microsoft.com/en-us/windows/wsl/install)
+
+
 
 ## Step 2 of 4 - Install the CLI
 
@@ -104,28 +118,36 @@ make update
 
 ## Developer Workflow
 
-We utilize an Feature–Branch pattern for the developer workflow. Developers should focus on a one feature at a time, and should complete the following workflow for the full feature before moving on to the next:
+We utilize an Issue-Feature–Branch pattern for the developer workflow. Our issue names have a prefix to help with organization in the form of Type-UserLayerNumber where:
 
-1. Create a feature branch for your work, give the branch a descriptive name
-2. Review Mike's suggested prompt for the feature in [Features.md](./Specifications/features.md)
-3. Create a Prompt (based on Mikes suggestions) that asks Cursor to create Tasks to complete the feature.
-4. Share that Prompt with Mike on Discord - together reflect and update till you agree on the scope
-5. Submit the "Create Tasks" prompt to Cursor, in a **new** chat, and let them create the task files
-6. Review and adjust tasks as needed. You should fully understand everything in the tasks. This is how we control Cursor to make sure it doesn't get carried away.
-7. When you are ready for mike to review the Tasks, commit and push changes to GitHub and ask Mike to review the tasks on Discord.
-8. After adjustments and back and forth prompt cursor with "Orchestrate all pending tasks using the process outlined in tasks/README.md"
-9. Review cursors work, run unit and end-to-end testing, fix any problems you find. When you are ready for the feature to be made available to the rest of the team, commit and push and open a PR - ask Mike to review the PR.
-10. After approval, merge the PR, delete the branch, go back to Cursor and change back to the main branch and sync before starting the next feature.
+- Type is *F*eature or *D*efect
+- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator
+- Layer is *D*ata, *A*pi, *S*pa
+- Number is a 2-digit number for the issue.
 
-The Step 2 prompt that you share on Discord should be something like
+So F-RS05 would be the 5th Feature for the Mentor SPA, and F-EA04 would be the 4th feature of the Mentee API. 
+
+Developers should focus on a one feature at a time, and should complete the following workflow for the full feature before moving on to the next:
+
+1. Pick an issue from the "On Deck" cards on the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2).
+2. Review the issue description, and create a feature branch that references the issue number
+3. Create a LLM Prompt to create a set of tasks for automation. See below for advice on how to do this.
+4. If you want Mike's review of your prompt, DM him with it on Discord.
+5. Open a **new** Cursor Chat and submit your Create Tasks prompt. 
+6. Review tasks to fully understand the proposed changes, adjust as needed.
+7. If you want Mike to review your tasks, open a Draft PR and request the review.
+8. Ask Cursor to "Orchestrate all pending tasks using the process outlined in tasks/README.md"
+9. Review cursors work, run unit and end-to-end testing, fix any problems you find. 
+10. Open a Pull Request (or mark your PR as no longer a draft) - request a review.
+11. After approval, merge the PR, delete the branch, locally change back to the main branch and sync.
+
+The Step 2 prompt is critical. It's not a book, but should contain clear instructions about what the intended outcome of the changes is. Most prompts will look something like:
 
 ```
-Please review @standards, @README and @README for context, and create new tasks starting with X999 to *Implement Feature*. Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
+Please review @standards, @README and @README for context, and create new tasks starting with <number> to <Implement Feature>. 
+...details of what you expect...
+Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
 ```
-
-This is not a huge prompt, and we should be able to easily work on DIscord to finalize that. That should cause Cursor to create Task Files - that YOU review, commit and push. Then Mike will review the Tasks that you have created and work with you on any revisions that are needed. Then your next Cursor prompt should be "Please Orchestrate all PENDING tasks using the @README task framework"
-
-Steps 4 and 7 will go away someday, but step 4 is important to avoid excessive edits to Tasks, and step 7 is needed to avoid lots of revisions on the PR. 
 
 ## Umbrella Repo Developer Commands
 
