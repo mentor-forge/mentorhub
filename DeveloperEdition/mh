@@ -352,6 +352,7 @@ function ensureCodeArtifactAuth {
         echo "Error: AWS CLI not found. Install AWS CLI v2 — see CONTRIBUTING.md" >&2
         return 1
     fi
+
     if [[ -z "$domain_owner" ]]; then
         echo "Error: AWS_SHARED_SERVICES_ACCOUNT_ID is not set." >&2
         echo "Run make update in mentorhub and source ~/.zshrc" >&2
@@ -359,14 +360,29 @@ function ensureCodeArtifactAuth {
     fi
 
     if ! aws sts get-caller-identity --profile "$profile" --region "$region" >/dev/null 2>&1; then
-        echo "AWS SSO session expired — opening login for profile: $profile"
-        aws sso login --profile "$profile" || {
-            echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
-            return 1
-        }
+        echo "AWS SSO session expired — login required for profile: $profile"
+
+        if grep -qi microsoft /proc/version 2>/dev/null; then
+            echo "WSL detected — using AWS device-code login to avoid localhost browser callback issues."
+            aws sso login --profile "$profile" --no-browser --use-device-code || {
+                echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
+                return 1
+            }
+        else
+            aws sso login --profile "$profile" || {
+                echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
+                return 1
+            }
+        fi
     fi
 
-    typeset identity_account=$(aws sts get-caller-identity --profile "$profile" --region "$region" --query Account --output text)
+    typeset identity_account
+    identity_account=$(aws sts get-caller-identity \
+        --profile "$profile" \
+        --region "$region" \
+        --query Account \
+        --output text)
+
     if [[ "$identity_account" != "$domain_owner" ]]; then
         echo "Error: profile $profile is AWS account $identity_account, but CodeArtifact is in Shared-Services $domain_owner." >&2
         echo "Run: make aws-setup   (from mentorhub repo)" >&2
