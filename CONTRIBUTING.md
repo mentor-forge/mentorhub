@@ -118,8 +118,9 @@ make update
 
 ## Developer Workflow
 
-We utilize an Issue-Feature–Branch pattern for the developer workflow. Our issue names have a prefix to help with organization in the form of Type-UserLayerNumber where:
+We utilize an Issue-Feature–Branch pattern for the developer workflow. Our issue names have a prefix to help with organization in the form of 
 
+Type-UserLayerNumber where:
 - Type is *F*eature or *D*efect
 - User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator
 - Layer is *D*ata, *A*pi, *S*pa
@@ -127,7 +128,7 @@ We utilize an Issue-Feature–Branch pattern for the developer workflow. Our iss
 
 So F-RS05 would be the 5th Feature for the Mentor SPA, and F-EA04 would be the 4th feature of the Mentee API. 
 
-Developers should focus on a one feature at a time, and should complete the following workflow for the full feature before moving on to the next:
+Developers should focus on one feature at a time, and should complete the following workflow for the full feature before moving on to the next:
 
 1. Pick an issue from the "On Deck" cards on the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2).
 2. Review the issue description, and create a feature branch that references the issue number
