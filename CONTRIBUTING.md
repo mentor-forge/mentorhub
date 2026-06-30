@@ -171,7 +171,9 @@ Developers should focus on one issue at a time, and should complete the followin
 The Step 2 prompt is critical. It's not a book, but should contain clear instructions about what the intended outcome of the changes is. Most prompts will look something like:
 
 ```
-Please review @standards, utils/@README repo/@README and repo/tasks/@README for context, and create new tasks starting with <number> to <Implement Feature>. ...provide the details of what you expect the LLM to do...
+Please review @standards, utils/@README repo/@README and repo/tasks/@README for context
+then create new tasks starting with <number> to <Implement Feature>. 
+...provide the details of what you expect the LLM to do to implement the feature...
 
 Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
 ```
