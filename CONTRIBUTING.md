@@ -189,6 +189,9 @@ make verify
 # Install the developer CLI in your search path
 make install
 
+# Configure your AWS account for access to code artifact
+make aws-setup
+
 # Update the developer CLI with the latest compose file
 make update
 
