@@ -1,4 +1,4 @@
-# Using a LLM Code Assistants
+# Using LLM Code Assistants
 
 ## Pitfalls
 
