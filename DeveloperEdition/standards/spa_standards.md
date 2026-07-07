@@ -12,13 +12,13 @@
 
 ## Dependency Management
 - All dependencies are managed via `package.json` and `package-lock.json`
-- The `@mentor-forge/mentorhub_spa_utils` shared library is published to AWS CodeArtifact — see [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md)
+- The `@mentor-forge/mentorhub_spa_utils` shared library is published to AWS CodeArtifact — see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml)
 - Pin exact semver (for example `"0.2.2"`); do not track `github:...#main`
 - Repo `.npmrc` scopes `@mentor-forge` to the CodeArtifact registry URL (no `always-auth`)
 - Local development: run `mh` before `npm ci` or `npm install` (see [SRE Standards](./sre_standards.md#codeartifact-local-authentication))
 - Docker builds: GitHub Actions runs CodeArtifact npm login before `npm ci` — no git or `GITHUB_TOKEN` for dependency install (see [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml))
 
-All journey domain SPAs use CodeArtifact as of [DEPENDENCY_MOVE.md](../../Specifications/DEPENDENCY_MOVE.md) Phase 2. Stage0 templates still use git-based `spa_utils` until Phase 5 cleanup.
+All journey domain SPAs use CodeArtifact. Canonical package names and registry values live in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml). Stage0 templates may still require cleanup until their SRE task ships.
 
 ## Standard Developer Commands
 - npm install (install dependencies)

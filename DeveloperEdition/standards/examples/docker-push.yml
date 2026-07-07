@@ -2,7 +2,7 @@
 # Copy to .github/workflows/docker-push.yml and adjust image tags per repository.
 #
 # After CodeArtifact migration, use docker-push-codeartifact.yml instead.
-# See SRE Standards § Continuous Integration and mentorhub_cloudformation docs/specifications/DEPENDENCY_MOVE.md.
+# See SRE Standards § Continuous Integration and mentorhub_cloudformation/config/aws-platform.yaml.
 
 name: Build and Push Docker Image
 run-name: ${{ github.actor }} ran Build and Push

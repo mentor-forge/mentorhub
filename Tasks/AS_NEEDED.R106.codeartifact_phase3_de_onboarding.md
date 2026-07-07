@@ -6,7 +6,7 @@
 
 ## Goal
 
-Close [DEPENDENCY_MOVE.md](../Specifications/DEPENDENCY_MOVE.md) **Phase 3** in `mentorhub`: developer onboarding and standards reflect the as-built CodeArtifact model (Phase 2 complete for all eight journey API+SPA consumers).
+Close CodeArtifact Phase 3 in `mentorhub`: developer onboarding and standards reflect the as-built CodeArtifact model (all eight journey API+SPA consumers use CodeArtifact). Canonical as-built values now live in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
 
 ## Context
 
@@ -35,8 +35,8 @@ Close [DEPENDENCY_MOVE.md](../Specifications/DEPENDENCY_MOVE.md) **Phase 3** in 
 | `branch_protection_standards.md` | PR CI deps: CodeArtifact OIDC only | Done |
 | `system_tour.md` | `mh` + CodeArtifact install commands | Done |
 | `README.md` | Onboarding link mentions CodeArtifact | Done |
-| `CloudEnvironmentPlan.md` | P0-8/P0-9 + exit criteria | Done |
-| `DEPENDENCY_MOVE.md` | Phase 3 marked complete; Stage0 → Phase 5 note | Done |
+| Platform docs | P0-8/P0-9 + exit criteria | Done |
+| CodeArtifact migration notes | Phase 3 marked complete; Stage0 → Phase 5 note | Done |
 
 ## Implementation notes
 

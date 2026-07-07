@@ -1,13 +1,13 @@
 # SRE Standards
 
-Platform provisioning, CloudFormation tasks, and migration runbooks: **[mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)** (`docs/specifications/`). This document covers org-wide standards and what **application developers** need for CI, DE auth, and production alignment.
+Platform provisioning, CloudFormation tasks, platform config, and AWS architecture: **[mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)**. This document covers org-wide standards and what **application developers** need for CI, DE auth, and production alignment.
 
 ## Tech Stack
 - Source Control: GitHub
 - CI Automation: GitHub Actions
 - Private Container Registry: GitHub Container Registry today; AWS ECR is the preferred AWS-native target for cloud deployment (separate from dependency registry migration)
-- Private PyPI Registry: AWS CodeArtifact (see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md))
-- Private NPM Registry: AWS CodeArtifact (see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md))
+- Private PyPI Registry: AWS CodeArtifact (see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml))
+- Private NPM Registry: AWS CodeArtifact (see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml))
 - Infrastructure Automation: Docker Compose for local dev; AWS IaC in [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) (`templates/`, `tasks/`)
 - Container Runtime Hosting: AWS, first target account `MentorHub-Dev`
 - Container Orchestration: TBD; ECS/Fargate is the preferred first AWS runtime unless/until EKS is justified
@@ -29,7 +29,7 @@ AWS Organization
         └── Development workload account
 ```
 
-Target model before CodeArtifact (see [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) Phase -1):
+Target account model (see [mentorhub_cloudformation README](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/README.md) and [ARCHITECTURE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)):
 
 ```text
 AWS Organization
@@ -206,9 +206,9 @@ Recipients: Mike and appropriate SRE contacts.
 
 ### Regions
 
-**Primary region (decided):** `us-east-1` (N. Virginia), recorded 2026-06-04 per [DEPENDENCY_MOVE.md Phase -1.5](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md#-15-record-primary-aws-region).
+**Primary region (decided):** `us-east-1` (N. Virginia), recorded in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
 
-Canonical values: [Specifications/aws-platform.yaml](../../Specifications/aws-platform.yaml). Local shell defaults: [DeveloperEdition/aws-platform.env](../aws-platform.env) (installed to `~/.mentorhub/aws-platform.env` by `make update`).
+Canonical values: [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml). Local shell defaults: [DeveloperEdition/aws-platform.env](../aws-platform.env) (installed to `~/.mentorhub/aws-platform.env` by `make update`).
 
 All GitHub Actions, CodeArtifact repositories, ECR repositories, and developer setup instructions must use **`us-east-1`** unless a future platform decision documents otherwise.
 
@@ -230,7 +230,7 @@ If CodeArtifact is created before a `Shared-Services` account exists, treat that
 
 ### CodeArtifact layout
 
-Implementation details and rollout steps: [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md).
+Canonical registry values: [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
 
 ```text
 AWS Account:     Shared-Services
@@ -304,7 +304,7 @@ The developer workflow follows the feature branch pattern. A developer creates a
 - Merging a PR to `main` produces a single `push` event; that triggers one publish run.
 - Peer review and branch protection (soft phase) gate merges; automated test gates on PRs are not enabled yet.
 - Existing container workflows publish to GitHub Container Registry until the ECR migration is explicitly planned.
-- Journey API and SPA **container builds** install shared libraries from **CodeArtifact** (`api-utils`, `@mentor-forge/mentorhub_spa_utils`) via GitHub Actions OIDC — not git clones or `GH_PAT` for dependencies. See [DEPENDENCY_MOVE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/DEPENDENCY_MOVE.md) Phase 2.
+- Journey API and SPA **container builds** install shared libraries from **CodeArtifact** (`api-utils`, `@mentor-forge/mentorhub_spa_utils`) via GitHub Actions OIDC — not git clones or `GH_PAT` for dependencies. Canonical package and registry values live in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
 
 Canonical workflow reference for journey repos:
 - [examples/docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml)

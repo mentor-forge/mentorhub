@@ -89,7 +89,7 @@ Superseded: `AS_NEEDED.R103.dev_login_stage0_templates.md` (merged into R102 Pha
 
 Supporting: `AS_NEEDED.R101.welcome_personas_from_architecture.md`, `AS_NEEDED.R100.after_specs_update.md` (within R105).
 
-**SRE / IaC tasks (R010–R130, R107, R108):** [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform specs: [mentorhub_cloudformation/docs/specifications](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/docs/specifications).
+**SRE / IaC tasks (R010–R130, R107, R108):** [mentorhub_cloudformation/tasks](https://github.com/mentor-forge/mentorhub_cloudformation/tree/main/tasks). Platform overview and config: [mentorhub_cloudformation README](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/README.md), [ARCHITECTURE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md), and [config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
 
 ### Marking a task as completed or "Run as needed"
 

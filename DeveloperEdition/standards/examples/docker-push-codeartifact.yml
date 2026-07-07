@@ -6,7 +6,7 @@
 #   vars.AWS_REGION, vars.AWS_SHARED_SERVICES_ACCOUNT_ID
 #   vars.CODEARTIFACT_DOMAIN, vars.CODEARTIFACT_PYPI_REPO or CODEARTIFACT_NPM_REPO
 #
-# See mentorhub_cloudformation docs/specifications/DEPENDENCY_MOVE.md (Reference implementation appendix).
+# See mentorhub_cloudformation/config/aws-platform.yaml for CodeArtifact org variables and account values.
 # Pre-migration (git deps): docker-push.yml in this directory.
 
 name: Build and Push Docker Image

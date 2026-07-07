@@ -1,11 +1,13 @@
 # Solution Architecture
 
-Diagrams are **work in progress**, especially cloud DEV. Tracked plan: [CloudEnvironmentPlan](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CloudEnvironmentPlan.md) (SRE). Box-by-box finish guide: [ArchitectureDiagram.dev.guide.md](./ArchitectureDiagram.dev.guide.md). **CloudFormation:** [CLOUDFORMATION_PLAN](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CLOUDFORMATION_PLAN.md) · [CLOUDFORMATION_CHECKLIST](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/CLOUDFORMATION_CHECKLIST.md). **IaC repo:** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation).
+Product and local/cloud DEV diagrams live here. AWS platform architecture, CloudFormation templates, platform config, and deployment planning live in [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation).
+
+Cloud DEV diagrams are **work in progress**. Use [ArchitectureDiagram.dev.guide.md](./ArchitectureDiagram.dev.guide.md) for the box-by-box finish guide. For AWS platform context, see the cloudformation [platform overview](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/README.md), [architecture review](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md), and [platform config](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
 
 | Environment | Diagram | Status |
 |---------------|---------|--------|
 | Local | [ArchitectureDiagram.local.svg](./ArchitectureDiagram.local.svg) | Complete |
-| Platform (accounts) | [InfrastructureDiagram.svg](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/InfrastructureDiagram.svg) | WIP |
+| Platform (accounts) | [InfrastructureDiagram.svg](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/InfrastructureDiagram.svg) | WIP |
 | Cloud DEV | [ArchitectureDiagram.dev.svg](./ArchitectureDiagram.dev.svg) | WIP |
 | Staging | *Not created* | Planned |
 | Production | *Not created* | Planned |
@@ -14,7 +16,7 @@ Diagrams are **work in progress**, especially cloud DEV. Tracked plan: [CloudEnv
 ![DrawIO Render](./ArchitectureDiagram.local.svg)
 
 ## Platform Infrastructure (Shared-Services + environments)
-![DrawIO Render](https://github.com/mentor-forge/mentorhub_cloudformation/raw/main/docs/specifications/InfrastructureDiagram.svg)
+![DrawIO Render](https://github.com/mentor-forge/mentorhub_cloudformation/raw/main/docs/InfrastructureDiagram.svg)
 
 ## Cloud Dev Environment
 ![DrawIO Render](./ArchitectureDiagram.dev.svg)

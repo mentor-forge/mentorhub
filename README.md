@@ -6,7 +6,7 @@
 
 **Test local, harvest global:** develop and validate here first; promote reusable API services and SPA components into shared utils when they are stable.
 
-**Platform / cloud Dev:** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — roadmap and IaC tasks live there, not in this repo.
+**Platform / cloud Dev:** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — AWS architecture, CloudFormation templates, platform config, and IaC tasks live there, not in this repo.
 
 ## Big Idea
 A platform to connect mentors with engineers engaged in a life long learning journey.
@@ -28,14 +28,14 @@ NOTE: Uses ports: 8080, 27017, 8383-8394
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 
 - [Stakeholders](./Specifications/stakeholders.yaml)
-- [Product Roadmap](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/docs/specifications/roadmap.yaml)
 - [Data Catalog](./Specifications/catalog.yaml)
-- [Architecture Diagram](./Specifications/architecture_diagram.md)
-- [Architecture Data](./Specifications/architecture.yaml)
+- [Architecture Diagram](./Specifications/ArchitectureDiagram.md)
+- [Product Architecture Data](./Specifications/architecture.yaml)
+- [AWS Platform Architecture](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)
 
 ## Contributing Guides
 - [Developer Onboarding](./CONTRIBUTING.md) On-Boarding Process and CLI install (GitHub token + **CodeArtifact** via `make aws-setup`)
-- **AWS infrastructure (SRE):** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — CloudFormation, platform specs, IaC tasks
+- **AWS infrastructure (SRE):** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — platform overview, architecture rationale, CloudFormation, platform config, IaC tasks
 - [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
 - [Data Standards](./DeveloperEdition/standards/data_standards.md)
 - [API Standards](./DeveloperEdition/standards/api_standards.md)
