@@ -132,7 +132,7 @@ Type-UserLayerNumber where:
 
 - Type is *F*eature or *D*efect
 - Layer is *D*ata, *A*pi, *U*iUx, *S*re 
-- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's)
+- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's) or *U*tils 
 - Number is a 2-digit number for the issue.
 
 For Example:
