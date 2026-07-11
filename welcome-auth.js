@@ -4,18 +4,99 @@ const JWT_ISSUER = 'dev-idp'
 const JWT_AUDIENCE = 'dev-api'
 const TOKEN_TTL_SECONDS = 10 * 365 * 24 * 60 * 60
 
-const PERSONAS = {
-  marti: { label: 'Marty the Mentor', sub: 'marti', roles: ['mentor'] },
-  carol: { label: 'Carol the Coordinator', sub: 'carol', roles: ['coordinator'] },
-  cat: { label: 'Cat the Customer', sub: 'cat', roles: ['customer'] },
-  mike: { label: 'mike', sub: 'mike', roles: ['mentor', 'admin'] },
-  daniel: { label: 'daniel', sub: 'daniel', roles: ['mentee'] },
-  mary: { label: 'mary', sub: 'mary', roles: ['mentee'] },
-  luther: { label: 'luther', sub: 'luther', roles: ['mentee', 'admin'] },
-  lucky: { label: 'lucky', sub: 'lucky', roles: ['mentee', 'admin'] },
+/** Static profiles from mentorhub_mongodb_api/configurator/test_data/Profile.0.1.0.0.json */
+const PROFILES = {
+  mike: {
+    label: 'Mike Storey',
+    sub: 'mike',
+    name: 'Mike Storey',
+    profile_id: 'A00000000000000000000001',
+    roles: ['admin', 'coordinator', 'customer', 'mentee', 'mentor'],
+    customer_id: 'D00000000000000000000006',
+    mentor_id: '',
+  },
+  daniel: {
+    label: 'Daniel Dissler',
+    sub: 'daniel',
+    name: 'Daniel Dissler',
+    profile_id: 'A00000000000000000000002',
+    roles: ['mentee'],
+    customer_id: 'D00000000000000000000002',
+    mentor_id: 'A00000000000000000000006',
+  },
+  lucky: {
+    label: 'Lucky Minyard',
+    sub: 'lucky',
+    name: 'Lucky Minyard',
+    profile_id: 'A00000000000000000000003',
+    roles: ['mentee'],
+    customer_id: 'D00000000000000000000002',
+    mentor_id: 'A00000000000000000000006',
+  },
+  mary: {
+    label: 'Mary Anderson',
+    sub: 'mary',
+    name: 'Mary Anderson',
+    profile_id: 'A00000000000000000000004',
+    roles: ['mentee'],
+    customer_id: 'D00000000000000000000002',
+    mentor_id: 'A00000000000000000000006',
+  },
+  luther: {
+    label: 'Luther Still',
+    sub: 'luther',
+    name: 'Luther Still',
+    profile_id: 'A00000000000000000000005',
+    roles: ['mentee', 'admin'],
+    customer_id: 'D00000000000000000000002',
+    mentor_id: 'A00000000000000000000006',
+  },
+  marti: {
+    label: 'Marti Lombardi',
+    sub: 'marti',
+    name: 'Marti Lombardi',
+    profile_id: 'A00000000000000000000006',
+    roles: ['mentor'],
+    customer_id: '',
+    mentor_id: '',
+  },
+  carol: {
+    label: 'Carol Coordinator',
+    sub: 'carol',
+    name: 'Carol Coordinator',
+    profile_id: 'A00000000000000000000007',
+    roles: ['coordinator'],
+    customer_id: 'D00000000000000000000006',
+    mentor_id: '',
+  },
+  cat: {
+    label: 'Cat Customer',
+    sub: 'cat',
+    name: 'Cat Customer',
+    profile_id: 'A00000000000000000000008',
+    roles: ['customer'],
+    customer_id: 'D00000000000000000000001',
+    mentor_id: '',
+  },
+  sam: {
+    label: 'Sam Admin',
+    sub: 'sam',
+    name: 'Sam Admin',
+    profile_id: 'A00000000000000000000013',
+    roles: ['admin', 'coordinator', 'customer', 'mentee', 'mentor'],
+    customer_id: 'D00000000000000000000006',
+    mentor_id: '',
+  },
+  taylor: {
+    label: 'Taylor Dual',
+    sub: 'taylor',
+    name: 'Taylor Dual',
+    profile_id: 'A00000000000000000000014',
+    roles: ['mentor', 'mentee'],
+    customer_id: 'D00000000000000000000001',
+    mentor_id: 'A00000000000000000000006',
+  },
 }
-
-const ROLE_IDS = ['coordinator', 'mentor', 'customer', 'mentee', 'admin']
 
 function base64UrlEncodeBytes(bytes) {
   let binary = ''
@@ -60,33 +141,15 @@ async function signJwt(payload) {
   return `${signingInput}.${base64UrlEncodeBytes(new Uint8Array(signature))}`
 }
 
-function getSelectedRoles() {
-  return ROLE_IDS.filter((role) => {
-    const checkbox = document.getElementById(`welcome-login-role-${role}`)
-    return checkbox instanceof HTMLInputElement && checkbox.checked
-  })
-}
-
-function applyPersonaDefaults(sub) {
-  const persona = PERSONAS[sub]
-  if (!persona) return
-  ROLE_IDS.forEach((role) => {
-    const checkbox = document.getElementById(`welcome-login-role-${role}`)
-    if (checkbox instanceof HTMLInputElement) {
-      checkbox.checked = persona.roles.includes(role)
-    }
-  })
-}
-
 function populateUserSelect() {
   const userSelect = document.getElementById('welcome-login-user-id')
   if (!(userSelect instanceof HTMLSelectElement)) return
 
   userSelect.replaceChildren()
-  Object.entries(PERSONAS).forEach(([value, persona]) => {
+  Object.entries(PROFILES).forEach(([value, profile]) => {
     const option = document.createElement('option')
     option.value = value
-    option.textContent = persona.label
+    option.textContent = profile.label
     userSelect.appendChild(option)
   })
 }
@@ -129,14 +192,6 @@ function initWelcomeLogin() {
 
   populateUserSelect()
 
-  const userSelect = document.getElementById('welcome-login-user-id')
-  if (userSelect instanceof HTMLSelectElement) {
-    userSelect.addEventListener('change', () => {
-      applyPersonaDefaults(userSelect.value)
-    })
-    applyPersonaDefaults(userSelect.value)
-  }
-
   const form = document.getElementById('welcome-login-form')
   if (form instanceof HTMLFormElement) {
     form.addEventListener('submit', async (event) => {
@@ -146,14 +201,9 @@ function initWelcomeLogin() {
       const userSelectEl = document.getElementById('welcome-login-user-id')
       if (!(userSelectEl instanceof HTMLSelectElement)) return
 
-      const persona = PERSONAS[userSelectEl.value]
-      if (!persona) return
+      const profile = PROFILES[userSelectEl.value]
+      if (!profile) return
 
-      const roles = getSelectedRoles()
-      if (roles.length === 0) {
-        showReturnToError('Select at least one role before signing in.')
-        return
-      }
       showReturnToError('')
 
       const now = Math.floor(Date.now() / 1000)
@@ -163,16 +213,20 @@ function initWelcomeLogin() {
       const token = await signJwt({
         iss: JWT_ISSUER,
         aud: JWT_AUDIENCE,
-        sub: persona.sub,
+        sub: profile.sub,
+        name: profile.name,
         iat: now,
         exp,
-        roles,
+        roles: profile.roles,
+        profile_id: profile.profile_id,
+        customer_id: profile.customer_id,
+        mentor_id: profile.mentor_id,
       })
 
       const hashParams = new URLSearchParams()
       hashParams.set('access_token', token)
       hashParams.set('expires_at', expiresAt)
-      hashParams.set('roles', roles.join(','))
+      hashParams.set('roles', profile.roles.join(','))
 
       window.location.href = `${returnTo}#${hashParams.toString()}`
     })
