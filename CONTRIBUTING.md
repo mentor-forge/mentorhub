@@ -131,20 +131,18 @@ We utilize an Issue-Feature–Branch pattern for the developer workflow. Our iss
 Type-UserLayerNumber where:
 
 - Type is *F*eature or *D*efect
-- Layer is *D*ata, *A*pi, *U*iUx, *S*re 
-- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's) or *U*tils 
+- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's)
+- User for overall components are *W*elcome/Login, or *D*ata, or *U*tils
+- Layer is *A*pi, *S*pa, SR*E* 
 - Number is a 2-digit number for the issue.
 
 For Example:
-
-- Filter to F-U for all the SPA features
-- Filter to F-UR for all the SPA features in mentor_spa
-- F-UR05 would be the 5th Feature for the Mentor SPA
-- F-AE04 would be the 4th feature of the Mentee API
+- Filter to F-R for all the Mentor API/SPA features
+- Filter to F-RS for all the SPA features in mentor_spa
+- F-RS05 would be the 5th Feature for the Mentor SPA
+- F-EA04 would be the 4th feature of the Mentee API
 - F-D01 would be the first ever Data feature
 - F-S01 would be the first ever SRE feature
-
-
 
 ### Workflow
 
@@ -164,8 +162,8 @@ Developers should focus on one issue at a time, and should complete the followin
 11. After approval, merge the PR, delete the branch, locally change back to the main branch and sync.
 12. Go back to the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and make sure your issue moved from **In Progress** to **Done** then loop back up to 1.
 
-### Create Tasks Prompt
 
+### Create Tasks Prompt
 The Step 2 prompt is critical. It's not a book, but should contain clear instructions about what the intended outcome of the changes is. Most prompts will look something like:
 
 ```
