@@ -131,18 +131,20 @@ We utilize an Issue-Feature–Branch pattern for the developer workflow. Our iss
 Type-UserLayerNumber where:
 
 - Type is *F*eature or *D*efect
-- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's)
-- User for overall components are *W*elcome/Login, or *D*ata, or *U*tils
-- Layer is *A*pi, *S*pa, SR*E* 
+- Layer is *D*ata, *A*pi, *U*iUx, *S*re 
+- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's) or *U*tils 
 - Number is a 2-digit number for the issue.
 
 For Example:
-- Filter to F-R for all the Mentor API/SPA features
-- Filter to F-RS for all the SPA features in mentor_spa
-- F-RS05 would be the 5th Feature for the Mentor SPA
-- F-EA04 would be the 4th feature of the Mentee API
+
+- Filter to F-U for all the SPA features
+- Filter to F-UR for all the SPA features in mentor_spa
+- F-UR05 would be the 5th Feature for the Mentor SPA
+- F-AE04 would be the 4th feature of the Mentee API
 - F-D01 would be the first ever Data feature
 - F-S01 would be the first ever SRE feature
+
+
 
 ### Workflow
 
@@ -150,12 +152,12 @@ Developers should focus on one issue at a time, and should complete the followin
 
 1. Pick an issue from the "On Deck" cards on the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and move it from **On Deck** to **In Progress**
 2. Review the issue description, and create a feature branch that references the issue name
-3. Create a LLM Prompt to "Create a set of tasks" for automation. See below for advice on how to do this.
+3. Create a LLM Prompt to create a set of tasks for automation. See below for advice on how to do this.
 4. If you want Mike's review of your prompt, DM him with it on Discord.
 5. Open a **new** Cursor Chat and submit your Create Tasks prompt.
 6. Review tasks to fully understand the proposed changes, adjust as needed.
 7. If you want Mike to review your tasks, open a Draft PR and request the review.
-8. Ask Cursor to "Please use @_ORCHESTRATION.md for all PENDING tasks"
+8. Ask Cursor to "Orchestrate all pending tasks using the process outlined in tasks/README.md"
 9. Review cursors work, run unit and end-to-end testing, fix any problems you find.
 10. Open a Pull Request (or mark your PR as no longer a draft) - request a review.
   Make sure your PR references the issue # and the name (T-XX...)
@@ -163,13 +165,20 @@ Developers should focus on one issue at a time, and should complete the followin
 12. Go back to the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and make sure your issue moved from **In Progress** to **Done** then loop back up to 1.
 
 
+
 ### Create Tasks Prompt
+
 The Step 2 prompt is critical. It's not a book, but should contain clear instructions about what the intended outcome of the changes is. Most prompts will look something like:
 
 ```
-Please create @_PLANNING.md tasks to implement <issue description>
+Please review @standards, utils/@README repo/@README and repo/tasks/@README for context
+then create new tasks starting with <number> to <Implement Feature>. 
+...provide the details of what you expect the LLM to do to implement the feature...
+
 Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
 ```
+
+
 
 ## Umbrella Repo Developer Commands
 
