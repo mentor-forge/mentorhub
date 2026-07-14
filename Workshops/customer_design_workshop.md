@@ -16,8 +16,6 @@ Each Post in this channel represents a single Design Chat exercise. When contrib
 
 ---
 
-
-
 ## Ideate — Potential Customers
 
 The purpose of this exercise is to brainstorm the different types of customers who might pay for mentorship through MentorHub. Cast a wide net before we narrow to personas.
@@ -27,13 +25,11 @@ The purpose of this exercise is to brainstorm the different types of customers w
 Generate as many potential customer types as you can. Think about who signs the check, who manages the relationship, and who cares about outcomes.
 
 Use this format:
-
 ```
 <type>: <short description of who they are and why they buy>
 ```
 
 Example:
-
 ```
 family-sponsor: A parent or grandparent paying for a relative learning to code
 ```
@@ -48,18 +44,11 @@ Review the observations and:
 - Identify the **top 3 personas** to carry into the empathy exercise
 - Note any gaps (customer types we are not designing for yet)
 
-
-
 ### Observations
 
+**Customer type groupings**
 
-
-#### Customer type groupings
-
-*(to be completed during the workshop)*
-
-#### Top 3 personas selected
-
+**Top 3 personas selected
 
 | Persona | Customer type | One-line summary |
 | ------- | ------------- | ---------------- |
@@ -67,16 +56,11 @@ Review the observations and:
 |         |               |                  |
 |         |               |                  |
 
-
-
-
 ### Make
 
 Record the top 3 persona names and enough context for the empathy exercise (age, role, motivation, one personal detail).
 
 ---
-
-
 
 ## Empathize — Persona 1
 
@@ -111,31 +95,16 @@ Review the observations and summarize them by persona and category. Emphasize co
 
 ### Observations
 
-
-
-##### Does
-
-
-
-##### Says
-
-
-
-##### Thinks
-
-
-
-##### Feels
-
-
+**Does**
+**Says**
+**Thinks**
+**Feels**
 
 ### Make
 
 Based on the empathy maps, identify research questions, key pain points, and job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
 
 ---
-
-
 
 ## Empathize — Persona 2
 
@@ -170,31 +139,16 @@ Review the observations and summarize them by persona and category. Emphasize co
 
 ### Observations
 
-
-
-##### Does
-
-
-
-##### Says
-
-
-
-##### Thinks
-
-
-
-##### Feels
-
-
+**Does**
+**Says**
+**Thinks**
+**Feels**
 
 ### Make
 
 Based on the empathy maps, identify research questions, key pain points, and job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
 
 ---
-
-
 
 ## Empathize — Persona 3
 
@@ -229,31 +183,16 @@ Review the observations and summarize them by persona and category. Emphasize co
 
 ### Observations
 
-
-
-##### Does
-
-
-
-##### Says
-
-
-
-##### Thinks
-
-
-
-##### Feels
-
-
+**Does**
+**Says**
+**Thinks**
+**Feels**
 
 ### Make
 
 Based on the empathy maps, identify research questions, key pain points, and job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
 
 ---
-
-
 
 ## Big Ideas — Wow the Customer
 
@@ -279,11 +218,8 @@ When you're ready to start, reply with a thumbs up. When you have emptied your m
 
 ### Reflect
 
-
-
 ### Observations
-
-
+<past observations here>
 
 Review all the ideas generated and:
 
@@ -408,19 +344,19 @@ When you're ready to start, reply with a thumbs up. When you have emptied your m
 
 Review the observations and organize them as a markdown outline with these four category headings. Copy the observations verbatim; do not summarize:
 
-#### Questions
+**Questions
 
 
 
-#### What Worked
+**What Worked
 
 
 
-#### What Needs to Change
+**What Needs to Change
 
 
 
-#### New Ideas to Try
+**New Ideas to Try
 
 **Bold** any item that appears more than once (verbatim duplicate) to highlight consensus points.
 
