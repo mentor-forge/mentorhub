@@ -2,9 +2,21 @@
 
 **Issue:** F-W02
 
-Conduct a design workshop for the **Customer User Journey**. This session builds on prior customer empathy work and focuses on persona variety, wow-factor ideas, and an end-to-end journey from signup through off-boarding.
+# **Post Guidelines**
+
+# Design Chat Exercises
+
+Each Post in this channel represents a single Design Chat exercise. When contributing to an exercise you will add your reply to that post. Remember to:
+
+- Keep observations brief - sticky with a dull sharpie
+- Practice "yes and" thinking, writing, and speaking
+- Give all your ideas, include magical or absurd thinking
+- We are Observing as individuals, no discussion or cross-talk during the Observe phase
+- Human Contributions Only, do not copy/paste cursor chat in this workshop.
 
 ---
+
+
 
 ## Ideate — Potential Customers
 
@@ -36,17 +48,27 @@ Review the observations and:
 - Identify the **top 3 personas** to carry into the empathy exercise
 - Note any gaps (customer types we are not designing for yet)
 
+
+
+### Observations
+
+
+
 #### Customer type groupings
 
 *(to be completed during the workshop)*
 
 #### Top 3 personas selected
 
+
 | Persona | Customer type | One-line summary |
-|---------|---------------|------------------|
-| | | |
-| | | |
-| | | |
+| ------- | ------------- | ---------------- |
+|         |               |                  |
+|         |               |                  |
+|         |               |                  |
+
+
+
 
 ### Make
 
@@ -54,7 +76,9 @@ Record the top 3 persona names and enough context for the empathy exercise (age,
 
 ---
 
-## Empathize — Top 3 Personas
+
+
+## Empathize — Persona 1
 
 The purpose of this Empathy Mapping exercise is to focus our attention on the **top 3 customer personas** selected in the ideation exercise and empathize with their current realities.
 
@@ -85,41 +109,151 @@ When you're ready to start, reply with a thumbs up. When you have emptied your m
 
 Review the observations and summarize them by persona and category. Emphasize common observations. Highlight causal threads that allow you to follow a workflow.
 
-#### Persona 1
+### Observations
+
+
 
 ##### Does
 
-##### Says
 
-##### Thinks
-
-##### Feels
-
-#### Persona 2
-
-##### Does
 
 ##### Says
 
-##### Thinks
 
-##### Feels
-
-#### Persona 3
-
-##### Does
-
-##### Says
 
 ##### Thinks
 
+
+
 ##### Feels
+
+
 
 ### Make
 
 Based on the empathy maps, identify research questions, key pain points, and job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
 
 ---
+
+
+
+## Empathize — Persona 2
+
+The purpose of this Empathy Mapping exercise is to focus our attention on the **top 3 customer personas** selected in the ideation exercise and empathize with their current realities.
+
+For each persona, give them a name and just enough context to trigger a sense of familiarity — family circumstances, hobbies, interests. These details should help us imagine them quickly without biasing empathy in one direction.
+
+### Observe
+
+Please document your observations about each persona. Classify each observation into one of these categories:
+
+- **does** — What have you seen them do? What do you imagine they do?
+- **says** — What have you heard them say?
+- **thinks** — How do they reason about their work?
+- **feels** — What emotions do they show/share?
+
+Example format:
+
+```
+persona: Cat the Customer
+does: Reviews team progress between meetings
+says: Can you show me what my mentee learned this week in plain English?
+thinks: I need to know my money is paying for real progress
+feels: Relieved when billing and progress are easy to understand
+```
+
+When you're ready to start, reply with a thumbs up. When you have emptied your mind of all observations, react with a check-mark.
+
+### Reflect
+
+Review the observations and summarize them by persona and category. Emphasize common observations. Highlight causal threads that allow you to follow a workflow.
+
+### Observations
+
+
+
+##### Does
+
+
+
+##### Says
+
+
+
+##### Thinks
+
+
+
+##### Feels
+
+
+
+### Make
+
+Based on the empathy maps, identify research questions, key pain points, and job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
+
+---
+
+
+
+## Empathize — Persona 3
+
+The purpose of this Empathy Mapping exercise is to focus our attention on the **top 3 customer personas** selected in the ideation exercise and empathize with their current realities.
+
+For each persona, give them a name and just enough context to trigger a sense of familiarity — family circumstances, hobbies, interests. These details should help us imagine them quickly without biasing empathy in one direction.
+
+### Observe
+
+Please document your observations about each persona. Classify each observation into one of these categories:
+
+- **does** — What have you seen them do? What do you imagine they do?
+- **says** — What have you heard them say?
+- **thinks** — How do they reason about their work?
+- **feels** — What emotions do they show/share?
+
+Example format:
+
+```
+persona: Cat the Customer
+does: Reviews team progress between meetings
+says: Can you show me what my mentee learned this week in plain English?
+thinks: I need to know my money is paying for real progress
+feels: Relieved when billing and progress are easy to understand
+```
+
+When you're ready to start, reply with a thumbs up. When you have emptied your mind of all observations, react with a check-mark.
+
+### Reflect
+
+Review the observations and summarize them by persona and category. Emphasize common observations. Highlight causal threads that allow you to follow a workflow.
+
+### Observations
+
+
+
+##### Does
+
+
+
+##### Says
+
+
+
+##### Thinks
+
+
+
+##### Feels
+
+
+
+### Make
+
+Based on the empathy maps, identify research questions, key pain points, and job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
+
+---
+
+
 
 ## Big Ideas — Wow the Customer
 
@@ -145,11 +279,19 @@ When you're ready to start, reply with a thumbs up. When you have emptied your m
 
 ### Reflect
 
+
+
+### Observations
+
+
+
 Review all the ideas generated and:
 
 - Identify patterns and groupings
 - Discuss and reconcile similar ideas
 - Keep the floor open for "YES AND!" moments to build on others' ideas
+
+
 
 #### Idea groupings
 
@@ -157,15 +299,21 @@ Review all the ideas generated and:
 
 #### Suggested combined ideas
 
+
 | Working name | Merges |
-|--------------|--------|
-| | |
+| ------------ | ------ |
+|              |        |
+
+
+
 
 ### Make
 
 Create a list of unique ideas with clear names — input to prioritization and journey mapping if needed.
 
 ---
+
+
 
 ## User Journey Map — Signup to Off-Boarding
 
@@ -176,7 +324,7 @@ The purpose of this exercise is to map the **Customer User Journey** from first 
 Document observations for each stage of the journey. For each stage, note:
 
 - **stage** — Name of the journey step
-- **customer-does** — What the customer is trying to accomplish
+- **customer-needs** — What the customer is trying to accomplish
 - **touchpoints** — Where they interact with MentorHub (SPA, email, support, billing, etc.)
 - **pain** — Friction, confusion, or risk
 - **opportunity** — How we could wow them or remove pain
@@ -195,7 +343,7 @@ Suggested stages to consider (add, remove, or rename as needed):
 
 1. Discover / evaluate
 2. Sign up / subscribe
-3. Add or invite mentees
+3. Add Coordinator
 4. Monitor progress
 5. Manage billing and subscription
 6. Renew or expand sponsorship
@@ -207,31 +355,30 @@ When you're ready to start, reply with a thumbs up. When you have emptied your m
 
 Review the observations and organize them into a journey map outline. Highlight handoffs to other personas (Coordinator, Mentor, Mentee) where relevant.
 
+### Observations
+
+
+
 #### Journey stages
 
-##### 1. Discover / evaluate
-
-##### 2. Sign up / subscribe
-
-##### 3. Add or invite mentees
-
-##### 4. Monitor progress
-
-##### 5. Manage billing and subscription
-
-##### 6. Renew or expand sponsorship
-
-##### 7. Off-board / graduate / cancel
-
-#### Cross-persona handoffs
+**Discover / evaluate**
+**Sign up / subscribe**
+**Add or invite mentees**
+**Monitor progress**
+**Manage billing and subscription**
+**Renew or expand sponsorship**
+**Off-board / graduate / cancel**
+**Cross-persona handoffs**
 
 *(to be completed during the workshop)*
 
 ### Make
 
-Record key events and outcomes in user journey specifications. Note which ideas from the Big Ideas exercise belong at which journey stage.
+Crearte an Issue to record key events and outcomes in user journey specifications. Note which ideas from the Big Ideas exercise belong at which journey stage.
 
 ---
+
+
 
 ## Retrospective Exercise
 
@@ -263,9 +410,15 @@ Review the observations and organize them as a markdown outline with these four 
 
 #### Questions
 
+
+
 #### What Worked
 
+
+
 #### What Needs to Change
+
+
 
 #### New Ideas to Try
 
@@ -278,3 +431,4 @@ Create action items for:
 - Answer unanswered questions
 - Implement new ideas for improvement
 - Address items that need to change
+
