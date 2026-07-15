@@ -147,6 +147,14 @@ Budget reality: keep costs low, limited funded mentors, wish for more internship
 ### Make
 Based on the empathy map, identify research, key pain points, job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
 
+**Persona:** Stacey Brooks, CEO Persevere (Customer / institutional sponsor)
+
+- **Research:** How sponsors prove ROI to a board; donated vs paid mentor capacity; what a “weekly graduate progress” signal must include without forcing daily login.
+- **Pain points:** Limited funding vs desire for paid mentors / internships; volunteer mentors exist but matching is hard; hard to know how Mary (a graduate) is doing without digging.
+- **Job activities to focus on:** Promote programs, fundraise, meet employers, approve budgets, celebrate success stories, advocate for mentorship spend.
+- **Increase joy:** Effortless progress summaries and success stories she can share; clear mentee→mentor connection status.
+- **Decrease pain:** Reduce login burden for status checks; make budget / capacity (seats) transparent; support donated/discount capacity.
+
 ---
 ## Empathy Exercise
 The purpose of an Empathy Map exercise is to focus our attention on Mary the Mentee and try to empathize with their current realities. 
@@ -236,6 +244,14 @@ Feel: nervous + hopeful; fear of wasted time vs belief MentorHub is the path
 
 ### Make
 Based on the empathy map, identify research, key pain points, job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
+
+**Persona:** Mary the Mentee (dual-role note: also appeared as workshop facilitator — Customer design should use her as *learner* only when scoped to Mentee UI)
+
+- **Research:** What “what should I do next?” means in a meeting with a mentor; how curriculum progress and job-readiness signals show up for a *Customer* sponsoring someone like Mary.
+- **Pain points:** Lost / unclear next focus; fear of wasting time; redoing work; nervous about leading and being “right” before asking; uncertainty about pay/recognition.
+- **Job activities to focus on:** Hard work and learning (e.g. MongoDB, documents); helping teammates; promoting work (LinkedIn); asking “what’s next?”
+- **Increase joy (for Customer watching this mentee):** Clear “where they left off,” visible accomplishments, hope→job path.
+- **Decrease pain:** Ambiguity about next step; invisible progress for sponsors paying for her seat (feeds Customer Monitor needs).
 
 ---
 ## Empathy Exercise
@@ -327,6 +343,14 @@ Mentor / learn alongside people → pride, fulfillment, hope when the team and m
 ### Make
 Based on the empathy map, identify research, key pain points, job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
 
+**Persona:** Dave the Dev Lead (Customer — buys mentorship for his team)
+
+- **Research:** How a lead sells mentorship to a CEO on a limited budget; what “right mentor” and “technology the mentee needs at work” mean for notes/focus.
+- **Pain points:** No time to teach everything; skill gaps on the team; delivery pressure + limited budget; keeping the team focused with scarce resources.
+- **Job activities to focus on:** Assign work, stand-ups, code review, standards, budget management, advocate mentorship upward, leave focus notes for mentors.
+- **Increase joy:** Pride when deadlines are hit and people grow; see which mentees need what help; leave a mentor a targeted note.
+- **Decrease pain:** Teaching load; hunting for progress; buying mentorship that doesn’t connect people fast.
+
 ---
 
 ## Big Ideas Exercise
@@ -382,7 +406,18 @@ Find a resource with a short description click; share a coding example so the me
 - YES AND buy/subscribe *plus* immediate mentor connection so payment and help feel like one moment
 
 ### Make
-Create a list of unique ideas. Give each idea a clear name and description. Use this list as input to a priorities exercise if needed. 
+Create a list of unique ideas. Give each idea a clear name and description. Use this list as input to a priorities exercise if needed.
+
+1. **Minimal Signup + Codes** — Customer signs up with little friction and can apply discount / donated-capacity codes at subscribe.
+2. **Set-and-Forget Billing** — After subscribe, Customer only returns for billing changes; auto-pay by default; easy self-cancel.
+3. **Payment Safety Valves** — Delay payment when cash is late; never double-charge; notify on payment failure.
+4. **Weekly Progress Email** — End-of-week mentee accomplishment summary without requiring login.
+5. **Sponsor Progress Hub** — Dashboard + mentee detail with mentor ratings, notes, events, and encounter TL;DRs.
+6. **Mentor Focus Notes** — Customer leaves a note telling a mentor what technology/focus a mentee needs at work.
+7. **Subscribe → Connected** — Purchase/subscribe immediately routes to mentor connection / available mentors.
+8. **Customer-Chosen Mentor** — Customer can find a suitable mentor by needs rather than only accepting an assigned match.
+9. **Goals & Video Update** — Shared company/program goals plus a simple weekly update that makes everyone’s progress understandable.
+10. **Trial Before Commit** — Free trial so a Customer can try MentorHub before paying *(rules TBD — follow-up ticket)*.
 
 ---
 
@@ -572,15 +607,44 @@ Themes from Customer-only needs:
 - GDPR deletion request record / status
 
 ### Make
-From the Reflect summary, produce a short Customer UI checklist the team can hand to developers:
+From the Reflect summary, produce a short Customer UI checklist the team can hand to developers.
 
-we have a folllow up to determine free trial rules
+**Follow-up:** free trial rules still TBD (ticket).
 
-- Named **pages** (or emails / redirects) a Customer uses
-- **Rules** for each page (who can see what, what is required first)
-- **Data** each page needs (collections / fields / status concepts — not API design yet)
+#### Pages (or emails / redirects)
 
-Use this list as input for Customer SPA, Customer API, and data work.
+- Sign Up; Login / Reset Password; Login (2FA)
+- Plans / Trial; Subscribe / Checkout; return URLs from Stripe Checkout
+- Invite Coordinator; Find Mentor / Available Mentors
+- Dashboard / Mentee Activity; Team Progress; Program ROI / Status; Mentee Detail
+- Billing; Subscription; Promos; Cancel; Account / Privacy (GDPR)
+- Payment-failed notification (email and/or in-app); Weekly Progress Email (no-login)
+
+#### Rules
+
+- Signup requires username, company name, email
+- Password reset + double verification on login
+- Trial before subscribe (rules TBD)
+- Checkout: capacity pricing, popular payment methods, discount/donation tokens; no double-charge
+- Subscription: change capacity (add/remove mentee schedule), hold, delay payment, cancel; notify on failure
+- Long-term promo visibility (e.g. after two years)
+- Invite Coordinator with name + email only; Customer may self-mark as coordinator
+- Customer can choose mentor by needs (not only assigned)
+- Customer sees mentee/team activity and can drill into mentee detail + leave mentor notes
+- Customer can request full PII removal (GDPR)
+
+#### Data (concepts — not API design)
+
+- Customer / Profile (username, company, email, auth/2FA)
+- Subscription (plan/capacity, trial/active/hold/cancel, mentee seats, tokens, promo eligibility)
+- Billing (payment method, invoices, failure state, delay requests)
+- Coordinator invite (name, email, status)
+- Mentor match preferences / availability
+- Mentee roster + activity, ratings, mentor notes, customer notes, events, encounter TL;DRs
+- Program/team progress aggregates for ROI
+- GDPR deletion request status
+
+Use this list as input for Customer SPA (Daniel), Customer API (Lucky), and data work (Mary).
 
 ---
 
@@ -639,9 +703,27 @@ Review the observations from Observe and organize them as a markdown outline wit
 ### Make
 Create action items to:
 
-include updating our template? Update it to include both of our new ideas.
+#### Answer unanswered questions
 
-- Answer unanswered questions
-- Implement new ideas for improvement
-- Address items that need to change
+- Confirm with Daniel: SPA ideas taken from User Journey Reflect / checklist (yes — hand him the Make checklist).
+- Confirm with Lucky: API ideas for Checkout/Portal, webhooks, subscription status APIs (yes — hand him journey + Stripe research touch points).
+- Confirm with Mary: Customer-related data from Reflect “Data to support the UI” (yes — collections/fields listed above).
+
+#### Implement new ideas for improvement
+
+- Update the workshop **template** so before each Observe we emphasize **Scope (Customer UI, Customer Role)**.
+- Update introductions: **do not** do empathy for people we know; **do not** use “like me” framing.
+
+#### Address items that need to change
+
+- Re-focus future Customer workshops when Big Ideas drift off Customer role/UI.
+- When a dual-role persona appears (e.g. Mary), call out Customer vs Mentee needs explicitly (as done in User Journey Reflect).
+
+#### Kanban / tickets created from this workshop
+
+- #36 — F-W02 follow-up: Customer free trial rules
+- #37 — F-W02 follow-up: Update workshop template for Customer scope
+- #38 — F-UC: Customer SPA from Workshop 2 UI checklist (Daniel)
+- #39 — F-AC: Customer API from Workshop 2 + Stripe touch points (Lucky)
+- #40 — F-D: Customer subscription and billing data from Workshop 2 (Mary)
 
