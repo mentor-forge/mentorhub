@@ -417,7 +417,7 @@ Create a list of unique ideas. Give each idea a clear name and description. Use 
 7. **Subscribe → Connected** — Purchase/subscribe immediately routes to mentor connection / available mentors.
 8. **Customer-Chosen Mentor** — Customer can find a suitable mentor by needs rather than only accepting an assigned match.
 9. **Goals & Video Update** — Shared company/program goals plus a simple weekly update that makes everyone’s progress understandable.
-10. **Trial Before Commit** — Free trial so a Customer can try MentorHub before paying *(rules TBD — follow-up ticket)*.
+10. **Trial Before Commit** — Free trial so a Customer can try MentorHub before paying *(rules TBD — [#36](https://github.com/mentor-forge/mentorhub/issues/36))*.
 
 ---
 
@@ -609,7 +609,7 @@ Themes from Customer-only needs:
 ### Make
 From the Reflect summary, produce a short Customer UI checklist the team can hand to developers.
 
-**Follow-up:** free trial rules still TBD (ticket).
+**Follow-up:** free trial rules still TBD — [#36](https://github.com/mentor-forge/mentorhub/issues/36).
 
 #### Pages (or emails / redirects)
 
@@ -644,7 +644,7 @@ From the Reflect summary, produce a short Customer UI checklist the team can han
 - Program/team progress aggregates for ROI
 - GDPR deletion request status
 
-Use this list as input for Customer SPA (Daniel), Customer API (Lucky), and data work (Mary).
+Use this list as input for Customer SPA (Daniel — [#38](https://github.com/mentor-forge/mentorhub/issues/38)), Customer API (Lucky — [#39](https://github.com/mentor-forge/mentorhub/issues/39)), and data work (Mary — [#40](https://github.com/mentor-forge/mentorhub/issues/40)).
 
 ---
 
@@ -705,25 +705,25 @@ Create action items to:
 
 #### Answer unanswered questions
 
-- Confirm with Daniel: SPA ideas taken from User Journey Reflect / checklist (yes — hand him the Make checklist).
-- Confirm with Lucky: API ideas for Checkout/Portal, webhooks, subscription status APIs (yes — hand him journey + Stripe research touch points).
-- Confirm with Mary: Customer-related data from Reflect “Data to support the UI” (yes — collections/fields listed above).
+- Confirm with Daniel: SPA ideas taken from User Journey Reflect / checklist (yes — [#38](https://github.com/mentor-forge/mentorhub/issues/38)).
+- Confirm with Lucky: API ideas for Checkout/Portal, webhooks, subscription status APIs (yes — [#39](https://github.com/mentor-forge/mentorhub/issues/39)).
+- Confirm with Mary: Customer-related data from Reflect “Data to support the UI” (yes — [#40](https://github.com/mentor-forge/mentorhub/issues/40)).
 
 #### Implement new ideas for improvement
 
-- Update the workshop **template** so before each Observe we emphasize **Scope (Customer UI, Customer Role)**.
-- Update introductions: **do not** do empathy for people we know; **do not** use “like me” framing.
+- Update the workshop **template** so before each Observe we emphasize **Scope (Customer UI, Customer Role)** — [#37](https://github.com/mentor-forge/mentorhub/issues/37).
+- Update introductions: **do not** do empathy for people we know; **do not** use “like me” framing — [#37](https://github.com/mentor-forge/mentorhub/issues/37).
 
 #### Address items that need to change
 
-- Re-focus future Customer workshops when Big Ideas drift off Customer role/UI.
+- Re-focus future Customer workshops when Big Ideas drift off Customer role/UI — tracked via [#37](https://github.com/mentor-forge/mentorhub/issues/37).
 - When a dual-role persona appears (e.g. Mary), call out Customer vs Mentee needs explicitly (as done in User Journey Reflect).
 
 #### Kanban / tickets created from this workshop
 
-- #36 — F-W02 follow-up: Customer free trial rules
-- #37 — F-W02 follow-up: Update workshop template for Customer scope
-- #38 — F-UC: Customer SPA from Workshop 2 UI checklist (Daniel)
-- #39 — F-AC: Customer API from Workshop 2 + Stripe touch points (Lucky)
-- #40 — F-D: Customer subscription and billing data from Workshop 2 (Mary)
+- [#36](https://github.com/mentor-forge/mentorhub/issues/36) — F-W02 follow-up: Customer free trial rules
+- [#37](https://github.com/mentor-forge/mentorhub/issues/37) — F-W02 follow-up: Update workshop template for Customer scope
+- [#38](https://github.com/mentor-forge/mentorhub/issues/38) — F-UC: Customer SPA from Workshop 2 UI checklist (Daniel)
+- [#39](https://github.com/mentor-forge/mentorhub/issues/39) — F-AC: Customer API from Workshop 2 + Stripe touch points (Lucky)
+- [#40](https://github.com/mentor-forge/mentorhub/issues/40) — F-D: Customer subscription and billing data from Workshop 2 (Mary)
 
