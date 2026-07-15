@@ -145,16 +145,7 @@ Budget reality: keep costs low, limited funded mentors, wish for more internship
 ```
 
 ### Make
-Based on the empathy map, identify research, key pain points, job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
-
-**Persona:** Stacey Brooks, CEO Persevere (Customer / institutional sponsor)
-
-- **Research:** How sponsors prove ROI to a board; donated vs paid mentor capacity; what a “weekly graduate progress” signal must include without forcing daily login.
-- **Pain points:** Limited funding vs desire for paid mentors / internships; volunteer mentors exist but matching is hard; hard to know how Mary (a graduate) is doing without digging.
-- **Job activities to focus on:** Promote programs, fundraise, meet employers, approve budgets, celebrate success stories, advocate for mentorship spend.
-- **Increase joy:** Effortless progress summaries and success stories she can share; clear mentee→mentor connection status.
-- **Decrease pain:** Reduce login burden for status checks; make budget / capacity (seats) transparent; support donated/discount capacity.
-
+ no actions at this time
 ---
 ## Empathy Exercise
 The purpose of an Empathy Map exercise is to focus our attention on Mary the Mentee and try to empathize with their current realities. 
@@ -243,15 +234,7 @@ Feel: nervous + hopeful; fear of wasted time vs belief MentorHub is the path
 
 
 ### Make
-Based on the empathy map, identify research, key pain points, job activities to focus on. What areas can we increase joy or decrease pain? Use these insights to inform the Big Ideas exercise.
-
-**Persona:** Mary the Mentee (dual-role note: also appeared as workshop facilitator — Customer design should use her as *learner* only when scoped to Mentee UI)
-
-- **Research:** What “what should I do next?” means in a meeting with a mentor; how curriculum progress and job-readiness signals show up for a *Customer* sponsoring someone like Mary.
-- **Pain points:** Lost / unclear next focus; fear of wasting time; redoing work; nervous about leading and being “right” before asking; uncertainty about pay/recognition.
-- **Job activities to focus on:** Hard work and learning (e.g. MongoDB, documents); helping teammates; promoting work (LinkedIn); asking “what’s next?”
-- **Increase joy (for Customer watching this mentee):** Clear “where they left off,” visible accomplishments, hope→job path.
-- **Decrease pain:** Ambiguity about next step; invisible progress for sponsors paying for her seat (feeds Customer Monitor needs).
+No actions at this time
 
 ---
 ## Empathy Exercise
