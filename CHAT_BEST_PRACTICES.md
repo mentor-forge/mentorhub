@@ -13,7 +13,8 @@ Using Ask mode is the fastest way to control what the AI is going to do. It’s 
 The best way to keep a leash on the LLM is to start by asking for a clearly defined plan which describes all of the changes to be made. By asking the AI to create a plan, you give yourself an opportunity to make sure you are aligned before making changes. I use a _PLANNING.md document to describe a planning process to the LLM with important planning context, and instructions about how to document the plan. Prompts that I use for planning are then simply
 
 ```
-Please create @_PLANNING tasks to close the following issue <issue text>. Only create tasks, do not execute any tasks. Only create files in the tasks folder.
+Please create @_PLANNING tasks to close the following issue <issue text>. 
+Only create tasks, do not execute any tasks. Only create files in the tasks folder.
 ```
 
 The prompt doesn't have to be a book with tons of implementation details, just a well written issue with a clearly described goal. We what to let the LLM help plan the steps, and document all of them for our review before we execute anything. 
