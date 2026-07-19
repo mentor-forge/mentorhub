@@ -47,15 +47,37 @@
             gap: 8px;
         }
         .service-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #444;
-            margin-bottom: 2px;
+            font-size: 1.2rem;
         }
-        .service-meta {
-            font-size: 11px;
-            color: #888;
-            margin-bottom: 4px;
+        .section-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: #333;
+            font: inherit;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+        }
+        .section-toggle::before {
+            content: "▶";
+            font-size: 0.75em;
+            transition: transform 0.2s;
+        }
+        .section-toggle[aria-expanded="true"]::before {
+            transform: rotate(90deg);
+        }
+        .section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .section-content[hidden] {
+            display: none;
         }
         .cell-link {
             display: block;
@@ -73,17 +95,6 @@
             color: white;
             transform: translateX(4px);
         }
-        .portal-note {
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            color: #555;
-            font-size: 0.95em;
-            line-height: 1.5;
-        }
-        .portal-note a {
-            color: #3949ab;
-        }
     </style>
 </head>
 <body>
@@ -91,47 +102,46 @@
         <h1>Mentor Hub</h1>
         <p class="subtitle">Welcome to the Development Environment</p>
 
-        <p class="portal-note">
-            Journey SPAs redirect unauthenticated users to
-            <a href="/login.html">developer sign-in</a>.
-            Links below open each SPA without embedded tokens; sign in when prompted.
-        </p>
-
         <ul class="links">
             <li class="service-block">
-                <div class="service-title">Schema</div>
-                <p class="service-meta">mentorhub_configurator_spa (utility)</p>
-                <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
-                <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                <a href="https://github.com/mentor-forge/mentorhub_mongodb_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mongodb_api source">mentorhub_mongodb_api</a>
+                <h2 class="service-title">
+                    <button class="section-toggle" type="button" aria-expanded="true" aria-controls="spa-links">Single Page Applications</button>
+                </h2>
+                <div id="spa-links" class="section-content">
+                    <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
+                    <a href="#" id="customer-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer SPA</a>
+                    <a href="#" id="coordinator-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Coordinator SPA</a>
+                    <a href="#" id="mentor-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor SPA</a>
+                    <a href="#" id="mentee-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentee SPA</a>
+                </div>
             </li>
             <li class="service-block">
-                <div class="service-title">Customer</div>
-                <a href="#" id="customer-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer SPA</a>
-                <a href="#" id="customer-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                <a href="https://github.com/mentor-forge/mentorhub_customer_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_api source">mentorhub_customer_api</a>
-                <a href="https://github.com/mentor-forge/mentorhub_customer_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_spa source">mentorhub_customer_spa</a>
+                <h2 class="service-title">
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="api-links">API Explorer</button>
+                </h2>
+                <div id="api-links" class="section-content" hidden>
+                    <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Schema API</a>
+                    <a href="#" id="customer-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Customer API</a>
+                    <a href="#" id="coordinator-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Coordinator API</a>
+                    <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Mentor API</a>
+                    <a href="#" id="mentee-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Mentee API</a>
+                </div>
             </li>
             <li class="service-block">
-                <div class="service-title">Coordinator</div>
-                <a href="#" id="coordinator-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Coordinator SPA</a>
-                <a href="#" id="coordinator-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                <a href="https://github.com/mentor-forge/mentorhub_coordinator_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_api source">mentorhub_coordinator_api</a>
-                <a href="https://github.com/mentor-forge/mentorhub_coordinator_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_spa source">mentorhub_coordinator_spa</a>
-            </li>
-            <li class="service-block">
-                <div class="service-title">Mentor</div>
-                <a href="#" id="mentor-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor SPA</a>
-                <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                <a href="https://github.com/mentor-forge/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
-                <a href="https://github.com/mentor-forge/mentorhub_mentor_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_spa source">mentorhub_mentor_spa</a>
-            </li>
-            <li class="service-block">
-                <div class="service-title">Mentee</div>
-                <a href="#" id="mentee-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentee SPA</a>
-                <a href="#" id="mentee-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">API Explorer</a>
-                <a href="https://github.com/mentor-forge/mentorhub_mentee_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentee_api source">mentorhub_mentee_api</a>
-                <a href="https://github.com/mentor-forge/mentorhub_mentee_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentee_spa source">mentorhub_mentee_spa</a>
+                <h2 class="service-title">
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="github-links">GitHub</button>
+                </h2>
+                <div id="github-links" class="section-content" hidden>
+                    <a href="https://github.com/mentor-forge/mentorhub_mongodb_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mongodb_api source">mentorhub_mongodb_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_customer_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_api source">mentorhub_customer_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_customer_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_spa source">mentorhub_customer_spa</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_coordinator_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_api source">mentorhub_coordinator_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_coordinator_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="coordinator_spa source">mentorhub_coordinator_spa</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_mentor_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_spa source">mentorhub_mentor_spa</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_mentee_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentee_api source">mentorhub_mentee_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_mentee_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentee_spa source">mentorhub_mentee_spa</a>
+                </div>
             </li>
         </ul>
     </div>
@@ -148,6 +158,16 @@
         document.getElementById('mentor-api-docs-link').href = `http://${hostname}:8391/docs/explorer.html`;
         document.getElementById('mentee-spa-link').href = `http://${hostname}:8394/`;
         document.getElementById('mentee-api-docs-link').href = `http://${hostname}:8393/docs/explorer.html`;
+
+        document.querySelectorAll('.section-toggle').forEach((toggle) => {
+            toggle.addEventListener('click', () => {
+                const section = document.getElementById(toggle.getAttribute('aria-controls'));
+                const expanded = toggle.getAttribute('aria-expanded') === 'true';
+
+                toggle.setAttribute('aria-expanded', String(!expanded));
+                section.hidden = expanded;
+            });
+        });
     </script>
 </body>
 </html>
