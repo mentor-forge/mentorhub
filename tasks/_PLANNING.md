@@ -9,9 +9,11 @@ This folder contains coding tasks that an orchestration agent can execute, based
   - In-repo: `README.md`, `docs/openapi.yaml`, `src/...`, `test/...`, `tasks/...`
 
 - **Context** Before creating any task files you should review the following files for context:
-- ../mentorhub/DeveloperEdition/standards/api_standards.md
+- ../mentorhub/DeveloperEdition/standards/*.md
 - ../mentorhub_api_utils/README.md
+- ../mentorhub_spa_utils/README.md
 - ./README.md
+- ./Workshops/README.md
 - ./tasks/_ORCHESTRATE.md
 - ./tasks/_PLANNING.md (this file)
 
@@ -39,8 +41,11 @@ Each task file must contain the following sections under H1 and H2 headings.
 
 - Under a **Context** H2 header:
   - A list of context files. This list should always include:
-    - `../mentorhub/DeveloperEdition/standards/api_standards.md`
-    - `tasks/README_API.md`
+    - ../mentorhub/DeveloperEdition/standards/*.md
+    - ../mentorhub_api_utils/README.md
+    - ../mentorhub_spa_utils/README.md
+    - ./README.md
+    - ./Workshops/README.md
     - `README.md`
   - Any other input files for the execution of the task.
   - `AS_NEEDED` tasks may include a **Parameters (edit before running)** subsection here for values to customize before promoting to `Pending`.
@@ -50,25 +55,13 @@ Each task file must contain the following sections under H1 and H2 headings.
   - Each item should describe the outcome (e.g. "OpenAPI `Profile` schema includes `full_name`").
 
 - Under a **Testing Expectations** H2 header:
-  - Can include the creation of new tests for new features.
-  - Can include changing existing tests because of modified features.
   - Should always include a description of the tests that should be used to verify completion.
-  - In this repo, that typically means some combination of:
-    - `pipenv run install` — refresh dependencies after `Pipfile` / lockfile changes (CodeArtifact auth; run `mh` first if needed)
-    - `pipenv run test` — unit tests (pytest, excludes `@pytest.mark.e2e`)
-    - `pipenv run lint` — format check (`black --check`)
-    - `pipenv run build` — compile Python sources
-    - `pipenv run dev` — run API dev server locally (for manual or E2E verification)
-    - `pipenv run e2e` — end-to-end tests against a running API (long running)
-  - Should always include the **Packaging verification** step:
-    - `pipenv run container` — build the API container image
-    - `pipenv run api` — run db + API containers
-    - `pipenv run e2e` — E2E tests against the containerized API (or curl verification of `/docs/openapi.yaml` when appropriate)
-  - All test files should be identified in **Outputs** (below).
+  - In this repo, that typically means:
+    - linting of markdown files
 
 - Under an **Outputs** H2 header:
   - A list of the files that will be created/updated/moved/renamed/etc.
-  - `file_name.py` will be updated to support `<Goal>`
+  - `tickets.md` will be updated to support `<Goal>`
   - List all files including new files to be created.
   - The agent will not update files not listed.
 
@@ -77,21 +70,15 @@ Each task file must contain the following sections under H1 and H2 headings.
 
 ## Naming Conventions
 - **Recommended filename pattern**:
-  - `STATUS.LNNN.short_task_name.md` where L is (F)eature or (D)efect, and NNN is a serial task number. When planning, create only PENDING status tasks. 
+  - `STATUS.LNNN.short_task_name.md` where L is (B)efore or (A)fter workshop, and NNN is a serial task number. When planning, create only PENDING status tasks. 
   - Examples:
-    - `PENDING.D001.example_defect.md`
-    - `PENDING.F010.update_profile_openapi.md`
-    - `PENDING.F011.add_profile_field_tests.md`
-    - `PENDING.F012.update_profile_openapi.md`
+    - `PENDING.A010.identify_tickets.md`
+    - `PENDING.A011.identify_data_structures.md`
+    - `PENDING.A012.update_profile.md`
 
 ## External repository boundaries
 
-Task planning and execution in **this API repo** (`mentorhub_mentee_api`) must not read or depend on other sibling repositories for input context, except:
-
-- **`../mentorhub`** — platform standards and shared documentation (e.g. `DeveloperEdition/standards/api_standards.md`).
-- **`../mentorhub_api_utils`** — shared Python utilities used by domain APIs (e.g. `MongoIO`, Flask helpers, `README.md`).
-
-Do **not** reference paths under `mentorhub_mongodb_api`, other domain API repos, SPAs, or CloudFormation repos in task **Context** or **Goals**. If work in another repository is a prerequisite, describe it as an **external prerequisite** in prose (e.g. “MongoDB dictionary must include field X”) and set **Status** to `Blocked` until a human confirms it — do not link to or read files in that repo.
+Task planning and execution in **this API repo** (`mentorhub`) must not read or depend on other sibling repositories for input context, except:
 
 ## MongoDB dictionary schemas
 
@@ -107,25 +94,6 @@ Replace `<Dictionary>` with the collection name (e.g. `Path`, `Resource`, `Note`
 
 If the configurator is unavailable, set the task **Status** to `Blocked` and stop — do not fall back to dictionary YAML files in the `mentorhub_mongodb_api` repo.
 
-## Dependency management
-
-Domain APIs resolve `api-utils` and other packages from **AWS CodeArtifact**. When a task bumps or adds dependencies in `Pipfile` / `Pipfile.lock`, the execution agent must install them with:
-
-```bash
-pipenv run install
-```
-
-Do **not** use bare `pipenv install` or `pipenv install --dev` in task instructions — those skip the repo’s CodeArtifact auth wrapper (`scripts/pipenv-install.sh`). Run `mh` once per shell session before `pipenv run install` if CodeArtifact credentials are not already available (see `README.md` and `../mentorhub/DeveloperEdition/standards/api_standards.md`).
-
-Task **Testing Expectations** and **Goals** should call out `pipenv run install` whenever `Pipfile` or `Pipfile.lock` changes.
-
-## MongoDB access
-
-Service code must route all MongoDB I/O through **`MongoIO`** (`api_utils.mongo_utils.mongo_io`) — use `get_document`, `get_documents`, `create_document`, `update_document`, and `upsert_document` as appropriate. Do **not** call PyMongo directly (for example `mongo.get_collection(...)` followed by `collection.find`, `find_one`, `insert_one`, or similar).
-
-When planning or reviewing tasks, include this rule in **Context** or **Goals** for any work that touches `src/services/`. If a task cannot comply without an upstream `api_utils` change, document the gap and any temporary exception in that task’s **Execution Notes** — not here.
-
-Reference: `../mentorhub_api_utils/api_utils/mongo_utils/mongo_io.py`, `../mentorhub/DeveloperEdition/standards/api_standards.md`, and shipped task `SHIPPED.L070.refactor_services_to_mongoio.md`.
 
 ## Sample task file
 
