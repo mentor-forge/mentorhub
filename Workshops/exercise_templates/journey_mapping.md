@@ -32,21 +32,19 @@ When you're ready to start, reply with a thumbs up. When you have emptied your m
 ## Reflect
 LLM prompt:
 ```
-Review all the observations below and replace the code block with a serialized list of the needs. Group related steps, resolve duplicates, and arrange them in time order. Call out handoffs between personas (e.g. Customer → Coordinator → Mentor → Mentee) where they appear.
+Review all the observations below and replace the code block with a serialized list of the needs. Group related steps, resolve duplicates, and arrange them in time order. Call out handoffs between personas (e.g. Customer → Coordinator → Mentor → Mentee) where they appear. Document Data Structures, RBAC, and and UX Pages implied in the observations. 
 ```
 **Observations**
 ```
 ## PASTE MESSAGES HERE ##
 ```
 **Journey outline**
-
-1. *[Step]*
-2. *[Step]*
-3. *[Step]*
+**Data Structures**
+**RBAC Rules**
+**UX Pages**
 
 **Handoffs and boundaries**
 - *persona A does X → persona B picks up Y*
 
 ## Make
-
-Create TODO Tickets to implement each step or group of steps. Include tickets at the Data Layer with identified Data Structures, at the API Layer with identified RBAC, and at the UI Layer with identified pages.
+Create TODO Tickets to implement each step or group of steps. Include tickets at the Data Layer with identified Data Structures, at the API Layer with identified RBAC, and at the UI Layer with identified pages. Create TODO Tickets for research about unanswered Data, RBAC or UX information. 
