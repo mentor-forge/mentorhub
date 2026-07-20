@@ -1,18 +1,19 @@
-# API Task Automation Framework - Planning
+# Workshop Task Automation Framework - Planning
 
-This folder contains coding tasks that an orchestration agent can execute, based on the context and instructions in each task file. This file is a guide for an agent that is helping to plan changes by creating task files to achieve a goal. Create tasks following the [naming conventions](#naming-conventions) and guides below. When planning, only create tasks, do not execute any tasks, and do not change any files outside of the tasks folder. 
+This folder contains workshop tasks that an orchestration agent can execute, based on the context and instructions in each task file. This file is a guide for an agent that is helping to plan changes by creating task files to achieve a goal. Create tasks following the [naming conventions](#naming-conventions) and guides below. When planning, only create tasks, do not execute any tasks, and do not change any files outside of the tasks folder. 
 
 - **Path anchoring**
   - All paths in task files are relative to **this API repository root** (the directory that contains `Pipfile`).
   - Sibling repos must all be sibling folders under a common parent.
   - Standards: `../mentorhub/DeveloperEdition/standards/api_standards.md`
-  - In-repo: `README.md`, `docs/openapi.yaml`, `src/...`, `test/...`, `tasks/...`
+  - In-repo: `README.md`, `Workshops/...`,  `tasks/...`
 
 - **Context** Before creating any task files you should review the following files for context:
 - ../mentorhub/DeveloperEdition/standards/*.md
 - ../mentorhub_api_utils/README.md
 - ../mentorhub_spa_utils/README.md
 - ./README.md
+- ./CONTRIBUTING.md
 - ./Workshops/README.md
 - ./tasks/_ORCHESTRATE.md
 - ./tasks/_PLANNING.md (this file)
@@ -46,7 +47,6 @@ Each task file must contain the following sections under H1 and H2 headings.
     - ../mentorhub_spa_utils/README.md
     - ./README.md
     - ./Workshops/README.md
-    - `README.md`
   - Any other input files for the execution of the task.
   - `AS_NEEDED` tasks may include a **Parameters (edit before running)** subsection here for values to customize before promoting to `Pending`.
 
@@ -75,6 +75,7 @@ Each task file must contain the following sections under H1 and H2 headings.
     - `PENDING.A010.identify_tickets.md`
     - `PENDING.A011.identify_data_structures.md`
     - `PENDING.A012.update_profile.md`
+    - `SHIPPED.B009.plan_workshop.md`
 
 ## External repository boundaries
 
@@ -94,6 +95,16 @@ Replace `<Dictionary>` with the collection name (e.g. `Path`, `Resource`, `Note`
 
 If the configurator is unavailable, set the task **Status** to `Blocked` and stop — do not fall back to dictionary YAML files in the `mentorhub_mongodb_api` repo.
 
+## OpenAPI Specifications
+
+**Definitive** OpenAPI specifications must come from the **running API** not from files in the `mentorhub_mentee_api` repository.
+
+Start the backing API if needed (`npm run api`), then fetch the latest JSON schema with `curl`:
+
+```bash
+curl -X GET "http://localhost:8393/docs/openapi.yaml"
+```
+the port number can be found in ./DeveloperEdition/docker-compose.yaml
 
 ## Sample task file
 
