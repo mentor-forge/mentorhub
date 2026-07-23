@@ -4,7 +4,7 @@ Sources (Mike PR #31 review prompts + research):
 
 - `Workshops/customer_workshop_2.md` (User Journey Reflect — experiences, pages, data)
 - `Research/stripe_research.md` (Checkout + Customer Portal + webhooks; anti-patterns)
-- `Research/cognito_forms/cognito_forms_research.md` (**Cognito Forms** public registration → webhook/Sheet → `POST Profile`; distinct from **AWS Cognito** IdP)
+- `Research/cognito_forms/cognito_forms_research.md` (optional alternate form tooling; distinct from **AWS Cognito** IdP — primary onboarding is **Squarespace → Google Sheet → script → POST Profile**)
 - `Workshops/2026-07-21 Mary-Anderson (2).md` (embed subscriptions on Customer; drop Card / Dashboard; Payment webhooks)
 - `Workshops/exercise_templates/journey_mapping.md` (Make → Data / API / UI tickets per step group)
 - `tasks/_PLANNING.md` (task file layout for each repo)
@@ -26,7 +26,7 @@ Complete these before finalizing ticket text and creating GitHub issues. Researc
 | # | Research / decision | Why it blocks filing | Owner / notes |
 | --- | --- | --- | --- |
 | R1 | **AWS Cognito Admin create/update** — exact attributes + how to set **custom claims** (`profile_id`, `customer_id`, `mentor_id`, `roles`) when creating users via Admin API (not Hosted UI self-signup) | Registration → `POST Profile` depends on AdminCreateUser supporting custom claims; Hosted UI self-onboarding does **not** | Open: [F-W04 Cognito Research](https://github.com/mentor-forge/mentorhub/issues/33); document in `Research/` |
-| R2 | **Cognito Forms registration handoff** — choose Option A (JSON webhook → `POST Profile`) vs Option B (Zapier/Make → Google Sheet → script → `POST Profile`) vs Squarespace-native; lock form fields, auth, idempotency (Entry Id / email), retry-safe status codes | Defines Profile create contract; Sheet path matches Mike’s Squarespace→Sheet plan; webhook path is preferred in `Research/cognito_forms/` | `Research/cognito_forms/cognito_forms_research.md`; pairs with R1 |
+| R2 | **Squarespace registration → Google Sheet → script → special POST Profile** — lock form fields, Sheet columns, script auth (service token / shared secret), idempotency (email / row key), failure handling. Optional alternate: Cognito Forms webhook (see `Research/cognito_forms/`) | Defines Profile create contract; Hosted UI self-signup does **not** set MentorHub custom claims | Mike’s planned path; pairs with R1; Cognito Forms research is optional tooling |
 | R3 | **Stripe Checkout Session create payload** — Price/Product IDs, quantity, metadata / `client_reference_id`, success/cancel URLs | Blocks Customer.subscriptions[] cart shape + `POST /billing/checkout-session` | Largely in `Research/stripe_research.md`; lock sample payloads |
 | R4 | **Stripe webhook event list + JSON shapes** — at least checkout completed, subscription lifecycle, `invoice.paid` / `invoice.payment_failed` | Blocks Payment collection name/schema + test fixtures | Same research file; capture CLI fixtures |
 | R5 | **Product / Price catalog** — partner / third-party / individual ↔ Stripe Product+Price IDs | Blocks `GET /plans` and Product dictionary | Stripe Dashboard config + research |
@@ -102,7 +102,7 @@ Legacy **CRUD scaffolding to remove** (not extend): Card, Dashboard, standalone 
 | Assumption | Prefer |
 | --- | --- |
 | Custom SPA/API login or signup screens | **AWS Cognito** Hosted UI / existing SPA IdP redirect only |
-| Cognito Hosted UI self-signup sets MentorHub custom claims | **Cognito Forms** (on public site) → webhook and/or Sheet/script → **special POST Profile** + **AWS Cognito Admin API** with custom claims (`profile_id`, `customer_id`, `mentor_id`, `roles`) |
+| Cognito Hosted UI self-signup sets MentorHub custom claims | **Squarespace form → Google Sheet → script → special POST Profile** + **AWS Cognito Admin API** with custom claims (`profile_id`, `customer_id`, `mentor_id`, `roles`). Optional: Cognito Forms instead of/in addition to Squarespace (research alternate) |
 | MentorHub card forms | **Stripe Checkout** only; drop `Card` |
 | Customer API charges renewals | **Stripe Billing**; MentorHub receives **webhooks** only |
 | Success URL = paid | Webhooks update `Customer.subscriptions[]`; SPA **refetches** |
@@ -120,14 +120,12 @@ Legacy **CRUD scaffolding to remove** (not extend): Card, Dashboard, standalone 
 0. Cleanup first: strip legacy SPA nav/pages + API endpoints; drop Card / Subscription / Dashboard
    (Configuration + Dictionary + Test Data); remove Coordinator API+SPA from platform
 
-1. New Customer fills Cognito Forms registration (public site / Squarespace embed — see Research/cognito_forms/)
-2. Handoff to MentorHub (pick one after R2):
-   A) Cognito Forms JSON webhook → special POST Profile, or
-   B) Cognito Forms → Zapier/Make → Google Sheet → script → special POST Profile
-      (Mike’s Sheet+script model)
+1. New Customer fills registration form on the public Squarespace site
+2. Form writes a Google Sheet row; configured script calls special POST Profile
+   (optional alternate after R2: Cognito Forms JSON webhook — Research/cognito_forms/)
 3. Customer API creates Profile (+ Customer org as needed) and AWS Cognito user via Admin API
    with custom claims: profile_id, customer_id, mentor_id, roles (e.g. customer)
-   — idempotent on email / Cognito Forms Entry Id (webhook retries)
+   — idempotent on email / Sheet row key (and Entry Id if using Forms webhook)
 4. Customer opens Customer SPA → existing auth guards → AWS Cognito login → JWT already has claims
 5. Builds shopping cart (offering + capacity + optional discount/donation code)
 6. Checkout → POST /billing/checkout-session → Stripe Checkout
@@ -149,7 +147,7 @@ Legacy **CRUD scaffolding to remove** (not extend): Card, Dashboard, standalone 
 | # | Experience | Intent | Suggested IDs (start) |
 | --- | --- | --- | --- |
 | **E0** | **Cleanup first** | Remove legacy nav/endpoints/collections + Coordinator microservice | F-CS02, F-CA04, F-D14–16, F-W09 |
-| E1 | Register + account (form → Profile → AWS Cognito claims) | Provision Profile/Customer + IdP user with custom claims | F-D21+, F-CA05+, F-CS03+ |
+| E1 | Register + account (Squarespace → Sheet → Profile → AWS Cognito claims) | Provision Profile/Customer + IdP user with custom claims | F-D21+, F-CA05+, F-CS03+ |
 | E2 | First subscription (cart → Checkout → webhook) | First paid entitlement | continues CA/CS/D |
 | E3 | View fixed Customer home | Roster/activity gated on subscription | … |
 | E4 | Invite members | Customer invites people (name+email) | … |
@@ -287,26 +285,29 @@ Context: Workshops/customer_journey_issues.md E0
 
 ---
 
-## E1 — Register + account (Cognito Forms → Profile → AWS Cognito claims)
+## E1 — Register + account (Squarespace → Sheet → Profile → AWS Cognito claims)
 
 ### Actions
 
-1. Prospect fills **Cognito Forms** registration on the public site (Squarespace embed or hosted form link — see `Research/cognito_forms/cognito_forms_research.md`). Fields TBD by R2; align with Profile (`full_name`, `email`, …) and Customer org (`name` / description).
-2. **Handoff** (R2 decision):
-   - **Option A (preferred in research):** Cognito Forms **Submit Entry** JSON webhook → Customer API special `POST Profile`.
-   - **Option B (Mike Sheet model):** Cognito Forms → Zapier/Make → **Google Sheet** row → script → special `POST Profile`.
-3. API (service auth — not end-user JWT) creates **Profile** (+ **Customer** as needed), then **AWS Cognito AdminCreateUser** with custom claims: `profile_id`, `customer_id`, `mentor_id`, `roles` (e.g. `["customer"]`). Idempotent on email / Cognito Forms Entry Id (Forms retries webhooks on 5XX).
+1. Prospect fills **registration form on the public Squarespace site**. Fields TBD by R2; align with Profile (`full_name`, `email`, …) and Customer org (`name` / description).
+2. Squarespace form is configured to update a **Google Sheet**. A Sheet-bound **script** calls Customer API **special POST Profile** (service auth — not end-user JWT).
+3. API creates **Profile** (+ **Customer** as needed), then **AWS Cognito AdminCreateUser** with custom claims: `profile_id`, `customer_id`, `mentor_id`, `roles` (e.g. `["customer"]`). Idempotent on email / Sheet row key.
 4. Customer later opens SPA; **existing** guards → **AWS Cognito** login; JWT already has claims.
+
+**Why not Cognito Hosted UI self-signup alone:** it does not support configuring the MentorHub custom claims all APIs require.
+
+**Optional alternate (not primary):** Cognito Forms JSON webhook → same `POST Profile` — see `Research/cognito_forms/cognito_forms_research.md` if tooling changes later.
 
 **Not in this experience:** SPA login/signup screens; Hosted UI self-signup as the way to set custom claims.
 
 ### Issue text — Data (`F-D21`)
 
 ```text
-Title: F-D21: E1 Extend Customer and Profile for Cognito Forms registration provisioning
+Title: F-D21: E1 Extend Customer and Profile for Squarespace / Sheet registration provisioning
 
 Description:
-Schema + test data for registration pipeline (no cards; no GDPR request fields).
+Schema + test data for Squarespace → Google Sheet → POST Profile pipeline (no cards; no GDPR
+request fields).
 
 Current Customer (Customer.0.1.0.yaml): _id, name, description, created, saved, status only.
 Current Profile (Profile.0.1.0.yaml): already has name (IdP username), full_name, email,
@@ -315,13 +316,13 @@ email_verified, mentor_id, customer_id, roles (user_roles), plus goals/interests
 Goals:
 - Extend Customer only as research requires (e.g. stripe_customer_id placeholder; org display
   may reuse name/description). Do not add person-PII or gdpr_* properties on Customer.
-- Confirm Profile covers Cognito Forms intake + AWS Cognito Admin create fields from R1/R2;
-  add only missing attributes. Keep customer_id + roles as the sponsorship link.
-- Seed Profiles/Customers for webhook and/or Sheet→POST Profile paths (roles includes customer;
+- Confirm Profile covers Squarespace intake fields + AWS Cognito Admin create attributes from
+  R1/R2; add only missing attributes. Keep customer_id + roles as the sponsorship link.
+- Seed Profiles/Customers for Sheet→POST Profile happy path (roles includes customer;
   customer_id set). Base on test_data/Customer.0.1.0.0.json and Profile.0.1.0.0.json.
 - Definitive schemas from running configurator only.
 
-Depends on: Do This First R1–R2; Research/cognito_forms/cognito_forms_research.md.
+Depends on: Do This First R1–R2.
 Coordinate with F-D14 if subscriptions[] lands in same change set.
 
 Context: Workshops/customer_journey_issues.md E1; configurator/dictionaries/Customer.0.1.0.yaml;
@@ -331,22 +332,22 @@ configurator/dictionaries/Profile.0.1.0.yaml
 ### Issue text — API (`F-CA05`)
 
 ```text
-Title: F-CA05: E1 Special POST Profile — Cognito Forms handoff + AWS Cognito custom claims
+Title: F-CA05: E1 Special POST Profile — Sheet script + AWS Cognito custom claims
 
 Description:
-Endpoint for Cognito Forms webhook and/or Google Sheet script after public registration.
-Not an end-user signup UI. Hosted UI self-onboarding does not set MentorHub custom claims.
+Endpoint for the Google Sheet script after Squarespace registration. Not an end-user signup UI.
+Cognito Hosted UI self-onboarding does not set MentorHub custom claims (profile_id, customer_id,
+mentor_id, roles) required by all APIs.
 
 Goals:
 - Authenticated special POST Profile (service credential): create Profile (+ Customer as designed);
   AWS Cognito AdminCreateUser with custom claims profile_id, customer_id, mentor_id, roles.
-- Idempotent on email / Cognito Forms Entry Id (and Sheet row key if Option B); clear errors.
-- Return status codes that cooperate with Cognito Forms webhook retries (avoid 404/410/413 if
-  retry is desired; see Research/cognito_forms/).
+- Idempotent on email / Sheet row key; clear error contract for the script.
 - Do not implement password reset, MFA, or login APIs — AWS Cognito owns those.
-- Document payload map from Cognito Forms JSON and/or Sheet columns (R2).
+- Document required Squarespace form fields and Sheet columns / payload (R2).
+- Optional later: accept the same contract from a Cognito Forms webhook if tooling changes.
 
-Depends on: R1–R2; F-D21; Research/cognito_forms/cognito_forms_research.md.
+Depends on: R1–R2; F-D21.
 
 Context: Workshops/customer_journey_issues.md E1; api_utils JWT claim expectations
 ```
@@ -354,21 +355,21 @@ Context: Workshops/customer_journey_issues.md E1; api_utils JWT claim expectatio
 ### Issue text — SPA (`F-CS03`)
 
 ```text
-Title: F-CS03: E1 Post-auth Customer landing for provisioned accounts
+Title: F-CS03: E1 Post-auth landing for provisioned accounts
 
 Description:
-SPA assumes account already exists via Cognito Forms → POST Profile pipeline.
+SPA assumes account already exists via Squarespace → Sheet → POST Profile pipeline.
 AWS Cognito handles login UI; existing SPA IdP redirect is sufficient.
 
 Goals:
 - After IdP return (existing redirectToIdpLogin / VITE_IDP_LOGIN_URI), load Customer/Profile
   for JWT claims; empty-subscription CTA toward E2 cart.
-- Do NOT build Cognito Forms, registration, login, password-reset, or MFA screens in the SPA.
+- Do NOT build Squarespace/registration, login, password-reset, or MFA screens in the SPA.
 - Do NOT rework the existing AWS Cognito auth guardrail.
 
 Depends on: E0 SPA cleanup; F-CA05 provisioning in test/dev.
 
-Context: Workshops/customer_journey_issues.md E1; Research/cognito_forms/cognito_forms_research.md
+Context: Workshops/customer_journey_issues.md E1
 ```
 
 ---

@@ -7,7 +7,7 @@ Sources:
 
 - `Workshops/customer_journey_issues.md` (primary)
 - `Research/stripe_research.md`
-- `Research/cognito_forms/cognito_forms_research.md` (Cognito Forms registration — not AWS Cognito IdP)
+- `Research/cognito_forms/cognito_forms_research.md` (optional alternate form tooling — primary path is Squarespace → Sheet)
 - `configurator/dictionaries/*.yaml` in `mentorhub_mongodb_api` (schema-aware F-D work)
 
 **Naming (CONTRIBUTING.md):** `Type-UserLayerNumber: title` — journey then layer.
@@ -34,7 +34,7 @@ Do **not** use `F-UC` / `F-AC` (reversed). Rename/close mentorhub [#38](https://
 See full table in `customer_journey_issues.md`. At minimum:
 
 1. AWS Cognito Admin custom claims research (F-W04)
-2. Cognito Forms handoff choice (webhook vs Sheet+script) — `Research/cognito_forms/`
+2. **Squarespace → Google Sheet → script** registration handoff (form fields, Sheet columns, script auth) — optional Cognito Forms tooling in `Research/cognito_forms/`
 3. Stripe Checkout / webhook / Product-Price research — `Research/stripe_research.md`
 4. Confirm invite model (R6); free trial (#36)
 
@@ -43,7 +43,7 @@ See full table in `customer_journey_issues.md`. At minimum:
 ## Filing order (cleanup first)
 
 1. **E0** — `F-CS02` SPA nav/page cleanup → `F-CA04` remove Card/Dashboard/Subscription APIs → `F-D14/15/16` drop those collections (Config+Dict+Test Data) → `F-W09` remove Coordinator API+SPA  
-2. **E1** — Cognito Forms → `F-CA05` special POST Profile + AWS Cognito Admin claims → `F-D21` Customer/Profile → `F-CS03` post-auth landing (no signup UI)  
+2. **E1** — Squarespace → Sheet → `F-CA05` special POST Profile + AWS Cognito Admin claims → `F-D21` Customer/Profile → `F-CS03` post-auth landing (no signup UI)  
 3. **E2+** — Subscribe / home / invites / billing / renew / cancel / GDPR per `customer_journey_issues.md`
 
 ---
@@ -53,14 +53,14 @@ See full table in `customer_journey_issues.md`. At minimum:
 | ID | Title | Notes |
 | --- | --- | --- |
 | F-CS02 | E0 nav and legacy page cleanup | Remove Subscriptions/Dashboards/Cards CRUD; keep AWS Cognito redirect |
-| F-CS03 | E1 post-auth landing | No Cognito Forms / login / signup screens |
+| F-CS03 | E1 post-auth landing | No Squarespace/registration / login / signup screens |
 | F-CS04 | E2 Plans/cart + Checkout redirect | Stripe only |
 | F-CS05 | E3 Fixed Customer home | Not Dashboard collection |
 | F-CS06 | E4 Invite Members | name + email (R6) |
 | F-CS07–09 | E5–E7 Billing / past_due / cancel | Portal preferred |
 | F-CS10 | E8 Privacy button | Calls API; no GDPR field |
 
-**Do not file:** Cognito Hosted UI signup integration; post-login company onboarding forms that duplicate Cognito Forms registration.
+**Do not file:** Cognito Hosted UI signup integration; post-login company onboarding forms that duplicate Squarespace registration.
 
 ---
 
@@ -69,7 +69,7 @@ See full table in `customer_journey_issues.md`. At minimum:
 | ID | Title | Notes |
 | --- | --- | --- |
 | F-CA04 | E0 remove Card/Dashboard/Subscription APIs | |
-| F-CA05 | E1 special POST Profile | Cognito Forms webhook and/or Sheet script; AdminCreateUser claims |
+| F-CA05 | E1 special POST Profile | Google Sheet script after Squarespace; AdminCreateUser claims |
 | F-CA06–11 | E2–E7 Checkout, Portal, webhooks, cancel | See journey doc |
 | F-CA12 | E8 Privacy action | Redact Profile/Encounter; cancel Stripe; **no** gdpr_* property |
 
