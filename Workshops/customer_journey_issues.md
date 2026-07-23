@@ -1,557 +1,821 @@
 # Customer Journey Issues
 
-Sources:
+Sources (Mike PR #31 review prompts + research):
 
 - `Workshops/customer_workshop_2.md` (User Journey Reflect — experiences, pages, data)
 - `Research/stripe_research.md` (Checkout + Customer Portal + webhooks; anti-patterns)
+- `Research/cognito_forms/cognito_forms_research.md` (**Cognito Forms** public registration → webhook/Sheet → `POST Profile`; distinct from **AWS Cognito** IdP)
 - `Workshops/2026-07-21 Mary-Anderson (2).md` (embed subscriptions on Customer; drop Card / Dashboard; Payment webhooks)
 - `Workshops/exercise_templates/journey_mapping.md` (Make → Data / API / UI tickets per step group)
 - `tasks/_PLANNING.md` (task file layout for each repo)
+- Existing code: `mentorhub_customer_api`, `mentorhub_customer_spa` (template CRUD + working AWS Cognito / IdP redirect)
+- Schemas (provisional files; runtime configurator is definitive): `mentorhub_mongodb_api/configurator/dictionaries/*.yaml`
 
-**Actor:** Cat the Customer (paying sponsor).  
-**Naming:** `Type-UserLayer##` per [CONTRIBUTING.md](../CONTRIBUTING.md) — `F-UC` Customer SPA, `F-AC` Customer API, `F-D` Data, `F-W` / `F-S` Welcome/platform. **Mary assigns `##` when filing.**
+**Actor:** Cat the Customer (paying sponsor).
 
-**How to use:** Each Experience has paste-ready **Issue text** blocks intended for that repo’s local `tasks/_PLANNING.md` (or for creating `PENDING.*.md` tasks from it). Do **not** change MongoDB schemas until research tickets are ready (Mike, 2026-07-21).
+**How to use:** Each Experience has paste-ready **Issue text** for that repo’s local `tasks/_PLANNING.md`. Complete **Do This First** before filing GitHub issues. Prefer delete+create over rename in the configurator. When dropping a collection, delete **Configuration**, **Dictionary**, and **Test Data** (where present).
+
+**Auth:** **AWS Cognito** is the IdP. Login / password / MFA / Hosted UI are Cognito — do **not** file SPA or API tickets for custom login or signup screens. Customer SPA already redirects via `VITE_IDP_LOGIN_URI` / `redirectToIdpLogin`.
 
 ---
 
-## Design principles (draft steps corrected)
+## Do This First
 
-| Draft assumption | Prefer |
+Complete these before finalizing ticket text and creating GitHub issues. Research lives in `mentorhub/Research/`.
+
+| # | Research / decision | Why it blocks filing | Owner / notes |
+| --- | --- | --- | --- |
+| R1 | **AWS Cognito Admin create/update** — exact attributes + how to set **custom claims** (`profile_id`, `customer_id`, `mentor_id`, `roles`) when creating users via Admin API (not Hosted UI self-signup) | Registration → `POST Profile` depends on AdminCreateUser supporting custom claims; Hosted UI self-onboarding does **not** | Open: [F-W04 Cognito Research](https://github.com/mentor-forge/mentorhub/issues/33); document in `Research/` |
+| R2 | **Cognito Forms registration handoff** — choose Option A (JSON webhook → `POST Profile`) vs Option B (Zapier/Make → Google Sheet → script → `POST Profile`) vs Squarespace-native; lock form fields, auth, idempotency (Entry Id / email), retry-safe status codes | Defines Profile create contract; Sheet path matches Mike’s Squarespace→Sheet plan; webhook path is preferred in `Research/cognito_forms/` | `Research/cognito_forms/cognito_forms_research.md`; pairs with R1 |
+| R3 | **Stripe Checkout Session create payload** — Price/Product IDs, quantity, metadata / `client_reference_id`, success/cancel URLs | Blocks Customer.subscriptions[] cart shape + `POST /billing/checkout-session` | Largely in `Research/stripe_research.md`; lock sample payloads |
+| R4 | **Stripe webhook event list + JSON shapes** — at least checkout completed, subscription lifecycle, `invoice.paid` / `invoice.payment_failed` | Blocks Payment collection name/schema + test fixtures | Same research file; capture CLI fixtures |
+| R5 | **Product / Price catalog** — partner / third-party / individual ↔ Stripe Product+Price IDs | Blocks `GET /plans` and Product dictionary | Stripe Dashboard config + research |
+| R6 | **Invite model** — stick with Customer-invited members (name+email)? What roles (`customer` members vs former coordinator)? Seat/capacity coupling? | Blocks invite Data/API/SPA tickets (E4) | Workshop assumed invite; confirm with Mike |
+| R7 | **Free trial rules** | Blocks Plans/Trial UI if trial ships in MVP | [#36](https://github.com/mentor-forge/mentorhub/issues/36) |
+| R8 | **Misnamed umbrella issues** — mentorhub [#38](https://github.com/mentor-forge/mentorhub/issues/38) `F-UC` and [#39](https://github.com/mentor-forge/mentorhub/issues/39) `F-AC` reverse journey/layer | Rename or close/supersede when filing real `F-CS*` / `F-CA*` issues | CONTRIBUTING: `F-CA` = Customer API, `F-CS` = Customer SPA |
+
+**Schema rule:** Do not change MongoDB dictionaries until R1–R5 findings are recorded and Mike is ready for schema tickets. Fetch definitive schemas from the running configurator per `tasks/_PLANNING.md` (not YAML as write source of truth).
+
+---
+
+## Naming (CONTRIBUTING.md)
+
+Format: **`Type-UserLayerNumber: short title`** — **User (journey) then Layer**, then a colon and title (matches existing GitHub issues such as `F-CA03: …`, `F-D16: …`).
+
+| Prefix | Meaning | Repo |
+| --- | --- | --- |
+| `F-CA##` | Customer **A**pi | `mentorhub_customer_api` |
+| `F-CS##` | Customer **S**pa | `mentorhub_customer_spa` |
+| `F-D##` | **D**ata | `mentorhub_mongodb_api` |
+| `F-W##` | **W**elcome / mentorhub platform | `mentorhub` |
+| `F-S##` | **S**RE (when used) | platform / cloudformation as applicable |
+
+Examples from CONTRIBUTING: `F-RS05` = 5th Mentor SPA; `F-EA04` = 4th Mentee API → therefore **`F-CA05` = 5th Customer API**, **`F-CS05` = 5th Customer SPA**.
+
+### Next numbers (fetched 2026-07-22, open + closed)
+
+| Prefix | Highest seen | Next to assign | Notes |
+| --- | --- | --- | --- |
+| `F-CA` | `F-CA03` ([customer_api#4](https://github.com/mentor-forge/mentorhub_customer_api/issues/4)) | **F-CA04** | Also open: F-CA01, F-CA02 |
+| `F-CS` | `F-CS01` ([customer_spa#3](https://github.com/mentor-forge/mentorhub_customer_spa/issues/3)) | **F-CS02** | |
+| `F-D` | `F-D20` | **F-D21** for net-new | Open after F-W02: [F-D14 Subscription](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/35), [F-D15 Dashboard](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/36), [F-D16 Card](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/37) — **repurpose these for cleanup drops**, do not invent parallel drop tickets |
+| `F-W` | `F-W08` | **F-W09** | |
+
+Provisional numbers below assume filing in the order listed; adjust if issues land out of order.
+
+### Current schema snapshot (dictionaries — refine tickets against these)
+
+| Dictionary | Path | Properties today (summary) |
+| --- | --- | --- |
+| **Customer** | `configurator/dictionaries/Customer.0.1.0.yaml` | `_id`, `name`, `description`, `created`, `saved`, `status` (`default_status`) — **no** `subscriptions[]`, **no** `stripe_customer_id` |
+| **Profile** | `configurator/dictionaries/Profile.0.1.0.yaml` | `_id`, `name` (IdP username), `status` (`profile_status`), `description`, `full_name`, `email`, `email_verified`, `mentor_id`, `goals`, `interests`, `experience[]`, `created`, `saved`, `customer_id`, `roles` (`user_roles`: mentor/mentee/customer/coordinator/admin) |
+| **Encounter** | `configurator/dictionaries/Encounter.0.1.0.yaml` | `_id`, `mentor_id`, `mentee_id`, `date`, `plan_id`, `agenda[]`, `status`, **`transcript`**, **`summary`**, **`tldr`**, `created`, `saved` |
+| **Subscription** | `configurator/dictionaries/Subscription.0.1.0.yaml` | Stub: `_id`, `name`, `description`, `created`, `saved`, `status` — **drop** (embed on Customer) |
+| **Card** | `configurator/dictionaries/Card.0.1.0.yaml` | Includes **`number`** (PAN), `expiry`, `billing_zip`, … — **drop** (Stripe only) |
+| **Dashboard** | `configurator/dictionaries/Dashboard.0.1.0.yaml` | `_id`, `name`, `description`, `created`, `saved`, `status`, `customer_id` — **drop** (no custom dashboards) |
+
+Also drop matching `configurator/configurations/{Card,Subscription,Dashboard}.yaml` and any `configurator/test_data/*` for those collections (Card has `Card.0.1.0.0.json`; Subscription/Dashboard currently have no test_data files).
+
+**GDPR:** Applies to **person PII** on **Profile** (and possibly **Encounter** transcript/summary/tldr). Does **not** apply to Customer org/billing documents. **No** `gdpr_request` (or similar) data property — SPA button + API action only.
+
+---
+
+## Already exists — do **not** file as new work
+
+Reviewed `mentorhub_customer_spa` and `mentorhub_customer_api` (template microservices).
+
+| Capability | Where | Ticket guidance |
+| --- | --- | --- |
+| AWS Cognito / IdP JWT redirect + guards | SPA: `initAuth.ts`, router `beforeEach` → `redirectToIdpLogin`, `VITE_IDP_LOGIN_URI`; 401 → re-login; Logout → IdP | **Sufficient** — no login/signup screen tickets |
+| Bearer JWT on API | `api_utils` token helper; claims include `profile_id` (required), `customer_id`, `mentor_id`, `roles` | **Sufficient** plumbing; still need **provisioning** that *sets* those claims (E1) |
+| Generic Customer GET list/by-id | API + SPA scaffolding | Keep as base; rewrite for JWT `customer_id` + future `subscriptions[]` |
+| Generic Profile GET | API + SPA scaffolding | Keep as base; add special **POST Profile** for registration pipeline (E1) |
+| Stripe Checkout / Portal / webhooks | **None** | Net-new tickets |
+| Shopping cart / fixed Customer home / invites / GDPR UI button | **None** | Net-new tickets |
+
+Legacy **CRUD scaffolding to remove** (not extend): Card, Dashboard, standalone Subscription list/new/edit; likely Event/Journey/Rating/Note template pages unless a journey screen needs them. Default SPA home today is `/subscriptions` — change after cleanup.
+
+---
+
+## Design principles
+
+| Assumption | Prefer |
 | --- | --- |
-| MentorHub collects card data on a form | **Stripe Checkout** only — no MentorHub card form; drop `Card` |
-| Customer API charges the monthly fee | **Stripe Billing** runs renewals; MentorHub only receives **webhooks** |
-| Success URL = paid | Success URL is UX only; **webhooks** (or server Session retrieve) update `Customer.subscriptions[]`; SPA **refetches** |
-| Cancel by Customer API calling Stripe first | Prefer **Stripe Customer Portal** for cancel / payment-method update; webhooks sync MentorHub. Direct Stripe cancel is still needed for **GDPR offboard** if a subscription may still be active |
-| First checkout and renewal use different webhook URLs | Same endpoint: `POST /webhooks/stripe` — different **event types** / payloads |
-| Client-supplied unit price is the charge amount | Server maps cart line → configured Stripe **Price ID**; quantity = capacity / seats |
-| Configurable Dashboard collection for MVP | **Fixed** Customer dashboard (SPA aggregation); drop `Dashboard` collection |
-| Standalone `Subscription` collection | Embed **`subscriptions[]` on Customer**; drop top-level Subscription |
+| Custom SPA/API login or signup screens | **AWS Cognito** Hosted UI / existing SPA IdP redirect only |
+| Cognito Hosted UI self-signup sets MentorHub custom claims | **Cognito Forms** (on public site) → webhook and/or Sheet/script → **special POST Profile** + **AWS Cognito Admin API** with custom claims (`profile_id`, `customer_id`, `mentor_id`, `roles`) |
+| MentorHub card forms | **Stripe Checkout** only; drop `Card` |
+| Customer API charges renewals | **Stripe Billing**; MentorHub receives **webhooks** only |
+| Success URL = paid | Webhooks update `Customer.subscriptions[]`; SPA **refetches** |
+| Cancel primarily via MentorHub→Stripe API | Prefer **Customer Portal** + webhooks; direct Stripe cancel for **GDPR** offboard |
+| Configurable Dashboard collection | **Fixed** Customer home (SPA aggregation); **drop Dashboard** |
+| Standalone Subscription collection | Embed **`subscriptions[]` on Customer**; drop top-level Subscription |
+| GDPR request field on Customer/Profile | **No data property** — Privacy UI button + API redact action only |
+| Keep Coordinator microservice | **Remove** Coordinator API + SPA (Mike) |
 
 ---
 
 ## Serialized journey (refined)
 
 ```text
-1. Opens https://mentorhub.agile-learning.institute → Customer SPA loads
-2. SPA security guards validate JWT; if invalid → Cognito Hosted UI → return with valid token
-   (roles includes customer; claim customer_id when linked)
-3. First-time: Cognito signup (email / username) → post-auth onboarding collects company/org basics
-4. Builds shopping cart (offering + capacity/quantity + optional discount/donation code)
-5. Checkout → Customer API creates Stripe Checkout Session → browser to stripe.com
-6. Stripe → POST /webhooks/stripe (e.g. checkout.session.completed, subscription.*, invoice.paid)
-   → persist Payment doc + update Customer.subscriptions[]
-7. Return to success/cancel URL → SPA refetches Customer (do not invent paid from URL)
-8. Views fixed Dashboard (roster / activity gated on active subscription)
-9. Time passes → Stripe renews subscription (Stripe internals, not Customer API)
-10. Stripe → same webhook endpoint (invoice.paid | invoice.payment_failed) → persist + sync status
-11. Manages billing / changes capacity via Portal and/or new Checkout for seat changes
-12. Cancels in Stripe Customer Portal → webhook → subscriptions[] canceled
-13. Requests GDPR forget → API cancels any remaining Stripe subscription → redact Profile/Encounter PII
+0. Cleanup first: strip legacy SPA nav/pages + API endpoints; drop Card / Subscription / Dashboard
+   (Configuration + Dictionary + Test Data); remove Coordinator API+SPA from platform
+
+1. New Customer fills Cognito Forms registration (public site / Squarespace embed — see Research/cognito_forms/)
+2. Handoff to MentorHub (pick one after R2):
+   A) Cognito Forms JSON webhook → special POST Profile, or
+   B) Cognito Forms → Zapier/Make → Google Sheet → script → special POST Profile
+      (Mike’s Sheet+script model)
+3. Customer API creates Profile (+ Customer org as needed) and AWS Cognito user via Admin API
+   with custom claims: profile_id, customer_id, mentor_id, roles (e.g. customer)
+   — idempotent on email / Cognito Forms Entry Id (webhook retries)
+4. Customer opens Customer SPA → existing auth guards → AWS Cognito login → JWT already has claims
+5. Builds shopping cart (offering + capacity + optional discount/donation code)
+6. Checkout → POST /billing/checkout-session → Stripe Checkout
+7. Stripe → POST /webhooks/stripe → Payment doc + Customer.subscriptions[]
+8. Return URL → SPA refetches Customer (do not invent paid from URL)
+9. Fixed Customer home (roster/activity); CTA Choose a plan if unsubscribed
+10. Invites members (name + email) under invite model (pending R6)
+11. Manages billing / capacity via Portal and/or Checkout; webhooks sync
+12. Stripe renews (Stripe internals) → same webhook endpoint (invoice.paid | payment_failed)
+13. Cancels in Customer Portal → webhook → canceled
+14. GDPR forget → SPA Privacy button → API cancels Stripe if needed → redact Profile/Encounter PII
+    (no GDPR data property on Customer or Profile)
 ```
 
 ---
 
-## Experience map
+## Experience map (cleanup first)
 
-| # | Experience | Intent |
-| --- | --- | --- |
-| E1 | Sign up, account, first subscription | Cognito identity + Customer linkage + first paid entitlement |
-| E2 | View Dashboard | Fixed home / mentee activity after login |
-| E3 | Change subscription | Capacity / plan changes + manage payment method |
-| E4 | Recurring charge | Renewal success/failure without Customer-initiated charge |
-| E5 | Cancel subscription | Self-serve offboard via Portal + webhook sync |
-| E6 | GDPR forget | Cancel Stripe + remove person PII |
-| E7 | Cleanup — Coordinator & legacy data | Remove coordinator surfaces; drop Card / top-level Subscription / Dashboard |
+| # | Experience | Intent | Suggested IDs (start) |
+| --- | --- | --- | --- |
+| **E0** | **Cleanup first** | Remove legacy nav/endpoints/collections + Coordinator microservice | F-CS02, F-CA04, F-D14–16, F-W09 |
+| E1 | Register + account (form → Profile → AWS Cognito claims) | Provision Profile/Customer + IdP user with custom claims | F-D21+, F-CA05+, F-CS03+ |
+| E2 | First subscription (cart → Checkout → webhook) | First paid entitlement | continues CA/CS/D |
+| E3 | View fixed Customer home | Roster/activity gated on subscription | … |
+| E4 | Invite members | Customer invites people (name+email) | … |
+| E5 | Change subscription | Capacity + Portal | … |
+| E6 | Recurring charge | Renewal webhooks + past_due banner | … |
+| E7 | Cancel subscription | Portal + webhook sync | … |
+| E8 | GDPR forget | SPA button + API redact Profile/Encounter PII (no data property) | F-CA12, F-CS10 only |
 
 ---
 
-## E1 — Sign up, new account, new subscription
+## E0 — Cleanup first (do before most feature tickets)
 
 ### Actions
 
-1. Opens Customer SPA (`https://mentorhub.agile-learning.institute`).
-2. Security guards validate JWT; redirects to Cognito if invalid; returns with token (`roles: customer`).
-3. Completes Cognito signup / login (email, username; password + MFA owned by Cognito).
-4. Fills out **post-auth Customer onboarding** — company/org name (and any Profile fields Cognito create/update require).
-5. Chooses a plan / builds a **shopping cart** — offering (partner / third-party / individual), **capacity** (mentee seats / quantity), optional discount or donated-capacity code.
-6. Clicks **Checkout** — SPA calls Customer API; browser redirects to Stripe Checkout (card collected only on Stripe).
-7. Completes or abandons Checkout; returns to success or cancel URL.
-8. Stripe asynchronously notifies Customer API; SPA **refetches** Customer until `subscriptions[]` shows Active (or cancelled cart state).
+1. **SPA:** Remove legacy nav and pages (Subscriptions CRUD, Dashboards CRUD, Cards CRUD; trim Event/Journey/Rating/Note template noise unless retained on purpose). Keep AWS Cognito IdP redirect guards, Admin (role-gated), Logout. Set a temporary home route until E3.
+2. **API:** Remove OpenAPI/routes/services/tests for `/api/card`, `/api/dashboard`, `/api/subscription` (standalone CRUD). Keep `/api/customer` and `/api/profile` reads as starting points.
+3. **Data:** For each dropped collection — delete **Configuration**, **Dictionary**, and **Test Data** (where present).
+4. **Platform:** Remove **Coordinator API + SPA**.
 
-**Data answers (from workshop + research):**
-
-| Question | Answer |
-| --- | --- |
-| Basic information? | Cognito: email, username (+ MFA/password in Cognito). Post-auth: **company/org name**; Profile holds Cognito attributes research identifies. Shipping address TBD — not required for MVP Checkout. |
-| New subscription cart data? | Product/offering id → Stripe **Price ID** (server-side), **quantity** (capacity), optional promo/donation token, `client_reference_id` / metadata = MentorHub Customer `_id`. |
-| Async method / data? | `POST /webhooks/stripe` — at least `checkout.session.completed`, `customer.subscription.created`/`updated`, `invoice.paid`; verify signature; persist payload; upsert `Customer.subscriptions[]` + `stripe_customer_id`. |
-
-### Issue text — Data (`mentorhub_mongodb_api` / `F-D`)
+### Issue text — SPA (`F-CS02`)
 
 ```text
-Title: F-D## E1 Customer + Product + Payment for first subscribe
+Title: F-CS02: E0 Customer SPA nav and legacy page cleanup
 
 Description:
-Support first-time Customer signup and first subscription without storing cards.
+Remove template CRUD that conflicts with the Customer billing journey before building new pages.
 
 Goals:
-- Extend Customer for org/payer fields, stripe_customer_id, and embedded subscriptions[]
-  (status, stripe subscription id, price/product refs, quantity/capacity, current_period_end).
-- Add Product dictionary mapping partner / third-party / individual offerings → Stripe Product/Price IDs.
-- Add Payment (name TBD after webhook research) dictionary for Stripe webhook payloads.
-- Ensure Profile can store Cognito create/update attributes and customer_id linkage.
-- Seed test data: unsubscribed Customer; active after checkout; matching Profile.
+- Remove routes/pages/nav/client methods/Cypress for Cards, Dashboards, and standalone
+  Subscriptions list/new/edit (default home must leave /subscriptions).
+- Remove or hide Event/Journey/Rating/Note scaffolding unless a later experience needs them.
+- Keep existing AWS Cognito IdP auth guards (initAuth, router redirectToIdpLogin,
+  VITE_IDP_LOGIN_URI) — do not build or rework login/signup screens.
+- Keep Admin (admin role) and Logout.
+- Leave a minimal shell / placeholder home until E3 fixed Customer home ships.
 
-Do not edit schemas until Stripe/Cognito research findings are recorded. Fetch definitive
-schemas from the running configurator per tasks/_PLANNING.md. Prefer delete+create over rename
-when replacing Card/Subscription/Dashboard later (see E7).
-
-Context: Workshops/customer_journey_issues.md E1; Research/stripe_research.md; Workshops/customer_workshop_2.md
+Context: Workshops/customer_journey_issues.md E0; mentorhub_customer_spa App.vue + router
 ```
 
-### Issue text — API (`mentorhub_customer_api` / `F-AC`)
+### Issue text — API (`F-CA04`)
 
 ```text
-Title: F-AC## E1 Post-Cognito provisioning + Checkout Session + subscribe webhooks
+Title: F-CA04: E0 Remove Card, Dashboard, and standalone Subscription API surface
 
 Description:
-Enable Cat to become a Customer and purchase a first subscription via Stripe Checkout.
+Delete doomed collection endpoints before Stripe/billing work.
 
 Goals:
-- After Cognito JWT: provision/link Profile + Customer (company/org); require customer role.
-- GET /plans (or Product read) for cart UI — map offerings to Stripe Price IDs from config/DB.
-- POST /billing/checkout-session: accept cart (price mapping + quantity + optional code);
-  ensure Stripe Customer; create Checkout Session (mode: subscription); return { checkout_url }.
-- POST /webhooks/stripe: verify signature; idempotent; persist Payment; update Customer.subscriptions[].
-- GET Customer for JWT owner including subscriptions[] (SPA refetch after return).
-- Never accept card PANs; never trust success_url as paid; secret keys only on API.
+- Remove OpenAPI, routes, services, and tests for /api/card, /api/dashboard, /api/subscription.
+- Keep /api/customer and /api/profile GET as bases for later journey work.
+- Do not add Stripe yet in this ticket (E2+).
+- Do not add custom auth/login endpoints — AWS Cognito remains the IdP.
 
-Context: Workshops/customer_journey_issues.md E1; Research/stripe_research.md
+Context: Workshops/customer_journey_issues.md E0; mentorhub_customer_api docs/openapi.yaml
 ```
 
-### Issue text — SPA (`mentorhub_customer_spa` / `F-UC`)
+### Issue text — Data (repurpose open issues)
 
 ```text
-Title: F-UC## E1 Auth return, onboarding, cart, Checkout redirect, success/cancel
+Title: F-D16: E0 Drop Card — Configuration, Dictionary, and Test Data
+(update existing https://github.com/mentor-forge/mentorhub_mongodb_api/issues/37)
 
 Description:
-Customer SPA surfaces for first login through first paid subscription.
+Remove Card entirely (PCI — cards live only in Stripe).
+
+Current schema (configurator/dictionaries/Card.0.1.0.yaml): stores card number (PAN),
+expiry, billing_zip, name, status, breadcrumbs — must not remain in MentorHub.
 
 Goals:
-- Load SPA; JWT guards → Cognito Hosted UI / Amplify when invalid; land with customer role.
-- Post-auth onboarding form: company/org (and required Profile fields) — not custom password/2FA pages.
-- Plans / shopping cart page: offering, capacity, discount/donation code; Checkout CTA.
-- POST checkout-session → redirect to Stripe; handle success (“Confirming…” then refetch) and cancel.
-- Do not invent Active from URL alone; display only Customer API subscription state.
-- No card form; no Stripe secret key in SPA.
+- Delete Card Configuration (configurations/Card.yaml), Dictionary (dictionaries/Card.*.yaml),
+  and Test Data (test_data/Card.0.1.0.0.json).
+- Prefer delete + create over rename for any replacement collections later.
+- Confirm via running configurator after delete.
 
-Context: Workshops/customer_journey_issues.md E1; Research/stripe_research.md UI phase tables
+Context: Workshops/customer_journey_issues.md E0; Research/stripe_research.md
+```
+
+```text
+Title: F-D15: E0 Drop Dashboard — Configuration, Dictionary, and Test Data
+(update existing https://github.com/mentor-forge/mentorhub_mongodb_api/issues/36)
+
+Description:
+No custom dashboards; fixed Customer home is SPA aggregation only.
+
+Current schema (configurator/dictionaries/Dashboard.0.1.0.yaml): _id, name, description,
+created, saved, status, customer_id — configurable dashboard collection not used for MVP.
+
+Goals:
+- Delete Dashboard Configuration (configurations/Dashboard.yaml) and Dictionary
+  (dictionaries/Dashboard.0.1.0.yaml). Remove test_data if any is added before drop.
+- Do not replace with a new Dashboard dictionary.
+
+Context: Workshops/customer_journey_issues.md E0
+```
+
+```text
+Title: F-D14: E0 Drop top-level Subscription — Configuration, Dictionary, and Test Data
+(update existing https://github.com/mentor-forge/mentorhub_mongodb_api/issues/35)
+
+Description:
+Subscriptions move onto Customer.subscriptions[] (E1/E2 Data). Remove standalone collection.
+
+Current schema (configurator/dictionaries/Subscription.0.1.0.yaml): stub only —
+_id, name, description, created, saved, status (default_status). No customer_id, seats,
+or Stripe ids today.
+
+Goals:
+- Delete Subscription Configuration (configurations/Subscription.yaml) and Dictionary
+  (dictionaries/Subscription.0.1.0.yaml). Remove test_data if present.
+- Coordinate timing with F-D21/F-D22 Customer.subscriptions[] so environments stay usable.
+- Do not leave a renamed empty Subscription dictionary.
+
+Context: Workshops/customer_journey_issues.md E0 / E1
+```
+
+### Issue text — Welcome / platform (`F-W09`)
+
+```text
+Title: F-W09: E0 Remove Coordinator microservice (API + SPA) from MentorHub
+
+Description:
+Mike decided Coordinator API and SPA are removed. Strip platform references and retire the services.
+
+Goals:
+- Remove welcome/index.html links, welcome-auth.js coordinator personas,
+  DeveloperEdition/docker-compose.yaml coordinator_api/spa services and depends_on,
+  workspace/docs pointers to those images/repos.
+- Archive or delete mentorhub_coordinator_api and mentorhub_coordinator_spa remotes
+  (confirm with Mike for exact GitHub disposition).
+- Customer SPA/API remain; only Customer role owns subscriptions.
+- Do not replace with custom auth screens — AWS Cognito remains IdP for Customer SPA.
+
+Context: Workshops/customer_journey_issues.md E0
 ```
 
 ---
 
-## E2 — View Dashboard
+## E1 — Register + account (Cognito Forms → Profile → AWS Cognito claims)
 
 ### Actions
 
-1. Lands on fixed **Customer home / Dashboard** after login (configurable `Dashboard` collection is out for MVP).
-2. If no active subscription → CTA **Choose a plan** (links to E1 cart).
-3. If subscribed → views mentee roster / activity summary (resources completed, notes, encounters) appropriate to Customer role.
-4. May drill into mentee detail later (workshop pages); MVP gate: premium views require active `subscriptions[]`.
+1. Prospect fills **Cognito Forms** registration on the public site (Squarespace embed or hosted form link — see `Research/cognito_forms/cognito_forms_research.md`). Fields TBD by R2; align with Profile (`full_name`, `email`, …) and Customer org (`name` / description).
+2. **Handoff** (R2 decision):
+   - **Option A (preferred in research):** Cognito Forms **Submit Entry** JSON webhook → Customer API special `POST Profile`.
+   - **Option B (Mike Sheet model):** Cognito Forms → Zapier/Make → **Google Sheet** row → script → special `POST Profile`.
+3. API (service auth — not end-user JWT) creates **Profile** (+ **Customer** as needed), then **AWS Cognito AdminCreateUser** with custom claims: `profile_id`, `customer_id`, `mentor_id`, `roles` (e.g. `["customer"]`). Idempotent on email / Cognito Forms Entry Id (Forms retries webhooks on 5XX).
+4. Customer later opens SPA; **existing** guards → **AWS Cognito** login; JWT already has claims.
 
-### Issue text — Data (`F-D`)
+**Not in this experience:** SPA login/signup screens; Hosted UI self-signup as the way to set custom claims.
+
+### Issue text — Data (`F-D21`)
 
 ```text
-Title: F-D## E2 Dashboard read-model via existing collections (no Dashboard dictionary)
+Title: F-D21: E1 Extend Customer and Profile for Cognito Forms registration provisioning
 
 Description:
-Support a fixed Customer dashboard without a configurable Dashboard collection.
+Schema + test data for registration pipeline (no cards; no GDPR request fields).
+
+Current Customer (Customer.0.1.0.yaml): _id, name, description, created, saved, status only.
+Current Profile (Profile.0.1.0.yaml): already has name (IdP username), full_name, email,
+email_verified, mentor_id, customer_id, roles (user_roles), plus goals/interests/experience.
 
 Goals:
-- Confirm mentee roster via Profile.customer_id (and related Mentee/Encounter/Event/Note shapes).
-- Seed test data linking Customer → Profiles → mentee activity enough for Dashboard list + empty states.
-- Do not revive Dashboard.0.1.0 for MVP; drop is tracked in E7.
+- Extend Customer only as research requires (e.g. stripe_customer_id placeholder; org display
+  may reuse name/description). Do not add person-PII or gdpr_* properties on Customer.
+- Confirm Profile covers Cognito Forms intake + AWS Cognito Admin create fields from R1/R2;
+  add only missing attributes. Keep customer_id + roles as the sponsorship link.
+- Seed Profiles/Customers for webhook and/or Sheet→POST Profile paths (roles includes customer;
+  customer_id set). Base on test_data/Customer.0.1.0.0.json and Profile.0.1.0.0.json.
+- Definitive schemas from running configurator only.
 
-Context: Workshops/customer_journey_issues.md E2; Workshops/customer_workshop_2.md Monitor needs
+Depends on: Do This First R1–R2; Research/cognito_forms/cognito_forms_research.md.
+Coordinate with F-D14 if subscriptions[] lands in same change set.
+
+Context: Workshops/customer_journey_issues.md E1; configurator/dictionaries/Customer.0.1.0.yaml;
+configurator/dictionaries/Profile.0.1.0.yaml
 ```
 
-### Issue text — API (`F-AC`)
+### Issue text — API (`F-CA05`)
 
 ```text
-Title: F-AC## E2 Customer dashboard aggregates + subscription gate
+Title: F-CA05: E1 Special POST Profile — Cognito Forms handoff + AWS Cognito custom claims
 
 Description:
-APIs the fixed Customer Dashboard needs after login.
+Endpoint for Cognito Forms webhook and/or Google Sheet script after public registration.
+Not an end-user signup UI. Hosted UI self-onboarding does not set MentorHub custom claims.
 
 Goals:
-- Return Customer.subscriptions[] so SPA can show subscribed vs Choose-a-plan.
-- Aggregate mentee activity for JWT Customer (resources completed, notes, encounters) — 403 if not active where product rules require it.
-- No live Stripe round-trip per page load; read MongoDB state only.
+- Authenticated special POST Profile (service credential): create Profile (+ Customer as designed);
+  AWS Cognito AdminCreateUser with custom claims profile_id, customer_id, mentor_id, roles.
+- Idempotent on email / Cognito Forms Entry Id (and Sheet row key if Option B); clear errors.
+- Return status codes that cooperate with Cognito Forms webhook retries (avoid 404/410/413 if
+  retry is desired; see Research/cognito_forms/).
+- Do not implement password reset, MFA, or login APIs — AWS Cognito owns those.
+- Document payload map from Cognito Forms JSON and/or Sheet columns (R2).
+
+Depends on: R1–R2; F-D21; Research/cognito_forms/cognito_forms_research.md.
+
+Context: Workshops/customer_journey_issues.md E1; api_utils JWT claim expectations
+```
+
+### Issue text — SPA (`F-CS03`)
+
+```text
+Title: F-CS03: E1 Post-auth Customer landing for provisioned accounts
+
+Description:
+SPA assumes account already exists via Cognito Forms → POST Profile pipeline.
+AWS Cognito handles login UI; existing SPA IdP redirect is sufficient.
+
+Goals:
+- After IdP return (existing redirectToIdpLogin / VITE_IDP_LOGIN_URI), load Customer/Profile
+  for JWT claims; empty-subscription CTA toward E2 cart.
+- Do NOT build Cognito Forms, registration, login, password-reset, or MFA screens in the SPA.
+- Do NOT rework the existing AWS Cognito auth guardrail.
+
+Depends on: E0 SPA cleanup; F-CA05 provisioning in test/dev.
+
+Context: Workshops/customer_journey_issues.md E1; Research/cognito_forms/cognito_forms_research.md
+```
+
+---
+
+## E2 — First subscription (cart → Checkout → webhook)
+
+### Actions
+
+1. Builds **shopping cart** — offering, capacity/quantity, optional discount/donation code.
+2. Checkout → Customer API creates Stripe Checkout Session → browser to Stripe.
+3. Stripe → `POST /webhooks/stripe` → persist Payment + update `Customer.subscriptions[]`.
+4. Return success/cancel URL → SPA refetches (never invent Active from URL).
+
+### Issue text — Data (`F-D22`)
+
+```text
+Title: F-D22: E2 Product + Payment + Customer.subscriptions[] for Checkout
+
+Description:
+Data for first subscribe without storing cards. Builds on Customer.0.1.0.yaml (today has no
+subscriptions[] or stripe_customer_id).
+
+Goals:
+- Extend Customer with stripe_customer_id and subscriptions[] (status, stripe subscription id,
+  price/product refs, quantity/capacity, period end) — not a new top-level Subscription doc
+  (F-D14 drops Subscription.0.1.0.yaml stub).
+- Add Product dictionary: offerings → Stripe Product/Price IDs (Configuration + Dictionary + Test Data).
+- Add Payment dictionary for webhook payloads (name after R4; Configuration + Dictionary + Test Data).
+- Seed unsubscribed vs active Customers; do not reintroduce Card fields.
+- Fetch/update via running configurator; prefer delete+create over rename.
+
+Depends on: R3–R5; F-D14 drop complete or same coordinated PR.
+
+Context: Workshops/customer_journey_issues.md E2; Research/stripe_research.md;
+configurator/dictionaries/Customer.0.1.0.yaml
+```
+
+### Issue text — API (`F-CA06`)
+
+```text
+Title: F-CA06: E2 Checkout Session + subscribe webhooks
+
+Description:
+First paid subscription via Stripe Checkout.
+
+Goals:
+- GET /plans (or Product read) for cart.
+- POST /billing/checkout-session → { checkout_url } (server-side Price IDs; mode subscription).
+- POST /webhooks/stripe: verify signature; idempotent; persist Payment; update subscriptions[].
+- GET Customer for JWT owner including subscriptions[].
+- No PANs; no trusting success_url as paid.
+
+Depends on: F-D22; R3–R4.
 
 Context: Workshops/customer_journey_issues.md E2
 ```
 
-### Issue text — SPA (`F-UC`)
+### Issue text — SPA (`F-CS04`)
 
 ```text
-Title: F-UC## E2 Fixed Customer Dashboard / Mentee Activity home
+Title: F-CS04: E2 Plans / cart, Checkout redirect, success/cancel
 
 Description:
-Default home after login for Cat the Customer.
+Cart and Stripe redirect UI (not auth UI).
 
 Goals:
-- Shell + home: if no active subscription, CTA Choose a plan; else mentee roster/activity.
-- Gate premium UI on API-returned subscription status.
-- Align nav with Customer journey destinations only (see E7 SPA cleanup).
+- Plans/cart: offering, capacity, optional code; Checkout CTA.
+- Redirect to Stripe; success “Confirming…” then refetch; cancel messaging.
+- No card form; no Stripe secrets in SPA; no login screens.
 
-Context: Workshops/customer_journey_issues.md E2; Workshops/customer_workshop_2.md UI checklist
+Depends on: F-CA06; E0 cleanup.
+
+Context: Workshops/customer_journey_issues.md E2
 ```
 
 ---
 
-## E3 — Change subscription
+## E3 — View fixed Customer home
 
 ### Actions
 
-1. Opens **Subscription** / **Billing** surfaces from Dashboard.
-2. Changes capacity (add/remove mentee seats) — MentorHub cart describes the change; Checkout Session or Portal flow per Stripe config.
-3. Opens **Manage billing** → Customer API creates **Billing Portal** session → Stripe Portal for payment method (and plan changes Portal allows).
-4. Returns to SPA; SPA refetches Customer; webhooks keep `subscriptions[]` accurate.
-5. Optional later: hold / delay payment / promos (workshop) — defer until product rules exist; do not invent Stripe APIs prematurely.
+1. Lands on fixed Customer home (not Dashboard collection — F-D15).
+2. Unsubscribed → Choose a plan (E2). Subscribed → mentee roster/activity via `Profile.customer_id`.
+3. Gate premium views on API subscription status.
 
-### Issue text — Data (`F-D`)
+### Issue text — Data (`F-D23`)
 
 ```text
-Title: F-D## E3 Subscription capacity / status fields on Customer.subscriptions[]
+Title: F-D23: E3 Test data for fixed Customer home (reuse Profile.customer_id)
 
 Description:
-Data needed when Cat changes plan capacity or billing details.
+No Dashboard dictionary. Roster uses existing Profile.customer_id (Profile.0.1.0.yaml) and
+related Mentee/Encounter/Event data.
 
 Goals:
-- Ensure subscriptions[] can represent quantity/capacity changes, status transitions, and Stripe ids after Portal/Checkout updates.
-- Seed Customers with mid-lifecycle states (active with N seats; pending capacity change if needed).
-- Product/Price mappings cover upgrade/downgrade offerings used by cart.
+- Seed Customer → Profiles (customer_id set, roles) → activity enough for list + empty states.
+- Extend existing test_data/Profile.0.1.0.0.json and Customer.0.1.0.0.json; do not revive Dashboard.
+- Confirm F-D15 Dashboard Configuration + Dictionary remain deleted.
 
-Context: Workshops/customer_journey_issues.md E3; Research/stripe_research.md
+Context: Workshops/customer_journey_issues.md E3; configurator/dictionaries/Profile.0.1.0.yaml
 ```
 
-### Issue text — API (`F-AC`)
+### Issue text — API (`F-CA07`)
 
 ```text
-Title: F-AC## E3 Portal session + capacity-change Checkout
+Title: F-CA07: E3 Customer home aggregates + subscription gate
 
 Description:
-API support for manage-billing and capacity changes.
+Read APIs for fixed home; no live Stripe per page load.
 
 Goals:
-- POST /billing/portal-session → { portal_url } for payment method / Portal-managed changes.
-- Support capacity change via Checkout Session (or documented Portal configuration) without client-trusted prices.
-- Webhooks: customer.subscription.updated (and related) update Customer.subscriptions[].
-- Prefer Portal for card updates; never store PANs.
+- Return subscriptions[] for CTA vs roster.
+- Aggregate mentee activity for JWT customer_id (Profiles where customer_id matches);
+  403 when product rules require active sub.
 
 Context: Workshops/customer_journey_issues.md E3
 ```
 
-### Issue text — SPA (`F-UC`)
+### Issue text — SPA (`F-CS05`)
 
 ```text
-Title: F-UC## E3 Subscription + Billing pages (capacity change, Manage billing)
+Title: F-CS05: E3 Fixed Customer home / mentee activity
 
 Description:
-UI for changing seats and opening Stripe Customer Portal.
+Default home after E0 cleanup and AWS Cognito login return.
 
 Goals:
-- Subscription page: show plan, capacity, status from API; actions to change capacity.
-- Billing page: Manage billing → portal-session redirect; return + refetch.
-- Payment-failed entry point can deep-link here (shared with E4).
+- Home: Choose a plan vs roster/activity from API.
+- Gate premium UI on API subscription state only.
+- No custom Dashboard CRUD pages (removed in F-CS02 / F-D15).
 
 Context: Workshops/customer_journey_issues.md E3
 ```
 
 ---
 
-## E4 — Recurring charge
+## E4 — Invite members
+
+Pending **R6**. Workshop: invite with **name + email only**.
 
 ### Actions
 
-1. A billing period elapses — **Stripe** charges the saved payment method (**Stripe internals**, not Customer API).
-2. Stripe calls the **same** `POST /webhooks/stripe` with renewal outcomes:
-   - Success: typically `invoice.paid` (+ subscription status remains active).
-   - Failure: `invoice.payment_failed` → mark `past_due` (or agreed status); persist attempt.
-3. SPA shows **payment failed** banner / notification when status is past_due; CTA to Manage billing (E3 Portal).
-4. Customer does not need to be online for the charge; UI only reflects synced state on next visit.
+1. Opens Invite Members page.
+2. Submits name + email; API creates invite + (when accepted) Profile linkage under `customer_id` with `roles` via AWS Cognito Admin pattern from E1 where applicable.
+3. Lists pending/accepted invites; capacity rules per R6.
 
-**Same method, similar data?** Same webhook endpoint and verification. Different event types / `data.object` shapes (Invoice vs Checkout Session). Persist both in Payment (or webhook-events) collection for cross-customer reporting.
-
-### Issue text — Data (`F-D`)
+### Issue text — Data (`F-D24`)
 
 ```text
-Title: F-D## E4 Payment persistence for invoice.paid and invoice.payment_failed
+Title: F-D24: E4 Member invite persistence
 
 Description:
-Store renewal success and failure webhook payloads for reporting and SPA banners.
+Store Customer-created invites (name, email, status). Prefer embed on Customer or a small
+Invite dictionary (R6) — do not overload Profile.experience or Card.
+
+Profile.0.1.0.yaml already links people via customer_id + roles; invites are the
+pre-accept record before a Profile exists.
 
 Goals:
-- Payment schema supports Invoice-shaped webhook payloads (paid + failed), linked by customer_id / stripe ids.
-- Seed past_due Customer + failed Payment docs; seed successful renewal Payment docs.
-- Customer.subscriptions[] status values include past_due (or equivalent).
+- Schema + test data for pending/accepted/revoked invites tied to customer_id.
+- If new collection: Configuration + Dictionary + Test Data.
+- No GDPR request property on invite or Customer.
 
-Context: Workshops/customer_journey_issues.md E4; Research/stripe_research.md webhooks table
+Depends on: R6.
+
+Context: Workshops/customer_journey_issues.md E4; Workshops/customer_workshop_2.md Activate
 ```
 
-### Issue text — API (`F-AC`)
+### Issue text — API (`F-CA08`)
 
 ```text
-Title: F-AC## E4 Renewal webhooks + past_due signal (no charge API)
+Title: F-CA08: E4 Invite members API
 
 Description:
-Handle Stripe-driven renewals without MentorHub initiating charges.
+Customer-authenticated create/list/revoke invites; provision members per R6 (may reuse AWS
+Cognito Admin claim pattern from F-CA05).
 
 Goals:
-- On invoice.paid: persist Payment; confirm active on Customer.subscriptions[].
-- On invoice.payment_failed: persist failure; set past_due; expose signal for SPA/email.
-- Do not add an API that “charges the card”; Stripe owns recurrence.
-- Idempotent webhook handling (no double-apply).
+- POST/GET/(PATCH) invites for JWT customer_id; name + email only on create.
+- Enforce seat/capacity rules when R6 defines them.
+- No Coordinator microservice; no custom login APIs.
+
+Depends on: F-D24; R6; ideally F-CA05 patterns.
 
 Context: Workshops/customer_journey_issues.md E4
 ```
 
-### Issue text — SPA (`F-UC`)
+### Issue text — SPA (`F-CS06`)
 
 ```text
-Title: F-UC## E4 Payment-failed banner / notification
+Title: F-CS06: E4 Invite Members page
 
 Description:
-Surface renewal failure when Customer returns to the SPA.
+UI for Cat to invite members by name and email.
 
 Goals:
-- In-app banner when subscriptions[] / billing signal is past_due; CTA Manage billing (Portal).
-- Optional copy hook for email notification (email job may live outside SPA).
-- Never invent failure state client-side.
+- Invite form (name, email); list pending/accepted; revoke if supported.
+- Surface capacity errors from API.
+
+Depends on: F-CA08; R6.
 
 Context: Workshops/customer_journey_issues.md E4
 ```
 
 ---
 
-## E5 — Cancel subscription
+## E5 — Change subscription
 
 ### Actions
 
-1. Chooses cancel from Billing / Cancel flow.
-2. Preferred path: **Stripe Customer Portal** (already used in E3) — user cancels there.
-3. Stripe → webhook `customer.subscription.updated` / `deleted` → Customer API updates `subscriptions[]` to canceled/ended; persist webhook doc.
-4. SPA refetches → Resubscribe CTA; hide premium UI; API enforces 403 on gated resources.
-5. **Direct API cancel of Stripe subscription** is optional for in-app cancel without Portal; not required if Portal is the only cancel UX. Required path for forced cancel is E6 GDPR.
+1. Opens Subscription / Billing.
+2. Changes capacity via cart → Checkout and/or Portal.
+3. Manage billing → `POST /billing/portal-session` → Stripe Portal; return + refetch; webhooks sync.
 
-### Issue text — Data (`F-D`)
+### Issue text — Data (`F-D25`)
 
 ```text
-Title: F-D## E5 Canceled subscription states + test data
+Title: F-D25: E5 Capacity / mid-lifecycle subscription test data
 
 Description:
-Represent post-cancel Customer state for SPA and access control.
+Seed Customers with subscriptions[] quantity and status after Portal/Checkout updates
+(depends on F-D22 Customer shape — not Subscription.0.1.0.yaml stub).
 
 Goals:
-- subscriptions[] supports canceled/ended (+ period end if useful).
-- Seed canceled Customer for Resubscribe UI and 403 tests.
+- Test data covering active with N seats and post-change states on Customer documents.
+
+Context: Workshops/customer_journey_issues.md E5; configurator/dictionaries/Customer.0.1.0.yaml (extended)
+```
+
+### Issue text — API (`F-CA09`)
+
+```text
+Title: F-CA09: E5 Portal session + capacity-change Checkout
+
+Description:
+Manage billing and seat changes.
+
+Goals:
+- POST /billing/portal-session → { portal_url }.
+- Capacity change via Checkout or Portal config; webhook subscription.updated sync.
+- Never store PANs; never collect cards in MentorHub.
 
 Context: Workshops/customer_journey_issues.md E5
 ```
 
-### Issue text — API (`F-AC`)
+### Issue text — SPA (`F-CS07`)
 
 ```text
-Title: F-AC## E5 Cancel via Portal webhooks (+ optional API cancel)
+Title: F-CS07: E5 Subscription + Billing pages
 
 Description:
-Keep MentorHub in sync when Cat cancels.
+Capacity change UI and Manage billing → Stripe Customer Portal.
 
 Goals:
-- Rely on Portal + webhooks as primary cancel path; update Customer.subscriptions[].
-- Optional: server-side Stripe subscription cancel endpoint if product requires in-app cancel without Portal.
-- Enforce inactive access (403) on premium resources after cancel.
-
-Context: Workshops/customer_journey_issues.md E5
-```
-
-### Issue text — SPA (`F-UC`)
-
-```text
-Title: F-UC## E5 Cancel flow + unsubscribed CTA
-
-Description:
-Self-serve cancel and return to unsubscribed home.
-
-Goals:
-- Cancel entry → Portal (preferred) or confirmed in-app cancel if API supports it.
-- After return/refetch: show Resubscribe / Choose a plan; hide premium nav.
+- Show plan/capacity/status from API; Portal redirect + refetch.
+- Payment-failed deep link shared with E6.
+- No MentorHub card or login forms.
 
 Context: Workshops/customer_journey_issues.md E5
 ```
 
 ---
 
-## E6 — GDPR forget
+## E6 — Recurring charge
 
 ### Actions
 
-1. Opens **Account / Privacy** and requests removal of all person PII (workshop: Stacey GDPR).
-2. Customer API **cancels any remaining Stripe subscriptions / recurring charges** for the linked `stripe_customer_id` (needed even if UI cancel was skipped).
-3. Customer API (and data process) **redacts/anonymizes Profile and Encounter PII** (and related person-scoped fields). Org billing history in Payment may retain non-PII financial records per policy — do **not** model GDPR as a long-lived flag on the Customer commerce document.
-4. SPA shows request submitted / completed status; session ends or loses customer access as designed.
+1. Stripe renews (Stripe internals — **not** Customer API).
+2. Same `POST /webhooks/stripe`: `invoice.paid` or `invoice.payment_failed`.
+3. SPA shows past_due banner → Manage billing (E5).
 
-### Issue text — Data (`F-D`)
-
-```text
-Title: F-D## E6 GDPR deletion/anonymization of Profile (and Encounter) PII
-
-Description:
-Data support for right-to-be-forgotten without PCI card stores.
-
-Goals:
-- Define which Profile/Encounter fields are PII and anonymization rules.
-- Track request status only if ops need it (Profile or audit/Event) — not a Customer commerce field.
-- Seed Profile suitable for forget dry-run tests; ensure Card collection is gone (E7) so no PANs remain.
-
-Context: Workshops/customer_journey_issues.md E6; Workshops/customer_ui_implementation_issues.md Privacy notes
-```
-
-### Issue text — API (`F-AC`)
+### Issue text — Data (`F-D26`)
 
 ```text
-Title: F-AC## E6 Privacy request: cancel Stripe + redact PII
+Title: F-D26: E6 Payment fixtures for invoice.paid and invoice.payment_failed
 
 Description:
-Orchestrate GDPR forget for the authenticated Customer’s people/PII.
+Renewal success/failure documents + past_due on Customer.subscriptions[] (F-D22 Payment + Customer).
 
 Goals:
-- Endpoint to request forget: cancel active Stripe subscriptions for stripe_customer_id;
-  redact Profile/Encounter PII per data rules; return status.
-- Do not require SPA to call Stripe; secrets stay on API.
-- Document retention of Payment webhook docs (financial, non-PII) vs person PII.
+- Payment schema supports Invoice webhook shapes; link by customer_id / stripe ids.
+- Seed past_due Customer + failed/successful Payment docs.
+- No Card collection; no GDPR fields.
 
 Context: Workshops/customer_journey_issues.md E6
 ```
 
-### Issue text — SPA (`F-UC`)
+### Issue text — API (`F-CA10`)
 
 ```text
-Title: F-UC## E6 Account / Privacy — request PII removal
+Title: F-CA10: E6 Renewal webhooks + past_due signal (no charge API)
 
 Description:
-UI for GDPR forget request and status.
+Handle Stripe-driven renewals only.
 
 Goals:
-- Account / Privacy page: clear action to request PII removal; show status; no Customer commerce editor.
-- Confirm destructive intent; then call privacy API; handle logged-out / restricted aftermath.
+- invoice.paid / invoice.payment_failed → persist + sync subscriptions[]; expose past_due.
+- Idempotent; do not add MentorHub “charge card” API.
+
+Context: Workshops/customer_journey_issues.md E6
+```
+
+### Issue text — SPA (`F-CS08`)
+
+```text
+Title: F-CS08: E6 Payment-failed banner
+
+Description:
+In-app past_due banner → Manage billing.
+
+Goals:
+- Drive only from API state; optional email copy hook later.
 
 Context: Workshops/customer_journey_issues.md E6
 ```
 
 ---
 
-## E7 — Cleanup: Coordinator references & legacy collections
+## E7 — Cancel subscription
 
-### Actions (platform / data hygiene)
+### Actions
 
-1. Remove **coordinator_api / coordinator_spa** from MentorHub local/dev surfaces (welcome links, compose, personas) — Mike must confirm before deleting remote repos.
-2. Clean Customer SPA **navigation** of legacy CRUD (Subscriptions list, Dashboards, Cards, etc.) in favor of journey destinations.
-3. Data: **delete** Card, top-level Subscription, Dashboard dictionaries/config/test data; subscriptions live on Customer; payments/webhooks in Payment; cards only in Stripe.
-4. Hold off deleting Customer SPA/API repos until Mike finishes Customer ↔ Coordinator UI/API reflection (roles still split: only Customer role subscribes).
+1. Cancel via **Customer Portal** (preferred).
+2. Webhook subscription updated/deleted → `subscriptions[]` canceled.
+3. SPA Resubscribe CTA; API 403 on gated resources.
 
-### Issue text — Data (`F-D`)
-
-```text
-Title: F-D## E7 Drop Card, top-level Subscription, Dashboard; keep Customer.subscriptions[]
-
-Description:
-Configurator hygiene after Stripe research direction is accepted.
-
-Goals:
-- Delete Card dictionary/config/test data (PCI anti-pattern).
-- Delete top-level Subscription after Customer.subscriptions[] is in place.
-- Delete Dashboard dictionary for MVP (fixed SPA dashboard).
-- Prefer delete + create over rename; fetch schemas from running configurator only.
-
-Context: Workshops/customer_journey_issues.md E7; Research/stripe_research.md; 2026-07-21 encounter
-```
-
-### Issue text — API (`F-AC`)
+### Issue text — Data (`F-D27`)
 
 ```text
-Title: F-AC## E7 Remove Card/Subscription/Dashboard API surface; billing on Customer + Payment
+Title: F-D27: E7 Canceled subscription test data
 
 Description:
-Stop exposing dropped collections; billing via Customer + Payment only.
-
-Goals:
-- Remove OpenAPI/routes/tests for Card, standalone Subscription, Dashboard if present.
-- Ensure Checkout/Portal/webhooks hang off Customer + Payment as in E1–E6.
-- Do not delete customer API repo pending Mike’s journey-merge decision.
+Seed canceled Customer.subscriptions[] for Resubscribe UI and 403 tests (Customer document,
+not Subscription.0.1.0.yaml).
 
 Context: Workshops/customer_journey_issues.md E7
 ```
 
-### Issue text — SPA (`F-UC`)
+### Issue text — API (`F-CA11`)
 
 ```text
-Title: F-UC## E7 Customer SPA nav cleanup (drop legacy Coordinator-era CRUD)
+Title: F-CA11: E7 Cancel sync via Portal webhooks
 
 Description:
-Align drawer/routes with Customer journey only.
+Primary cancel path is Portal + webhooks; forced Stripe cancel for GDPR is E8.
 
 Goals:
-- Replace legacy nav (Subscriptions/Dashboards/Cards/Events/Profiles CRUD, etc.) with
-  Dashboard, Plans/Cart, Billing/Subscription, Mentors/Invites, Account/Privacy.
-- Remove coordinator-only entry points if any remain in this SPA.
-- Keep Admin (role-gated) and Logout.
+- Update subscriptions[] on subscription.updated/deleted; enforce inactive access.
 
-Context: Workshops/customer_journey_issues.md E7; Workshops/customer_workshop_followup_issues.md
+Context: Workshops/customer_journey_issues.md E7
 ```
 
-### Issue text — Welcome / platform (`F-W` / `F-S`)
+### Issue text — SPA (`F-CS09`)
 
 ```text
-Title: F-W## / F-S## Remove coordinator_api and coordinator_spa references from mentorhub
+Title: F-CS09: E7 Cancel flow + unsubscribed CTA
 
 Description:
-Strip local/dev and docs pointers to coordinator services.
+Entry to Portal cancel; after refetch show Resubscribe / Choose a plan.
 
-Goals:
-- Remove welcome/index.html links, welcome-auth.js coordinator personas if obsolete,
-  DeveloperEdition/docker-compose.yaml coordinator_api/spa services and depends_on,
-  workspace/docs mentions of those images/repos.
-- Coordinate with Mike before deleting remote GitHub repos; this ticket is mentorhub
-  reference + compose cleanup only.
-
-Context: Workshops/customer_journey_issues.md E7; Workshops/customer_workshop_followup_issues.md
+Context: Workshops/customer_journey_issues.md E7
 ```
 
 ---
 
-## Suggested filing / planning order
+## E8 — GDPR forget
 
-1. **E7 Data (drops)** only after E1 Customer.subscriptions[] / Payment / Product shapes are agreed — or sequence: research → E1 Data → E7 drops.
-2. **E1** Data → API → SPA (auth, cart, Checkout, webhooks).
-3. **E2** Dashboard gate + aggregates.
-4. **E3** Portal + capacity change.
-5. **E4** Renewal webhooks + past_due banner.
-6. **E5** Cancel sync.
-7. **E6** GDPR.
-8. **E7** SPA nav + Welcome coordinator cleanup (SPA nav can start early in parallel with E1).
+### Actions
 
-When creating tasks in a repo, copy the relevant **Issue text** into `tasks/_PLANNING.md` workflow and produce `PENDING.*.md` files per that repo’s `_PLANNING.md` layout (Status, Type, Depends On, Context, Goals, Testing Expectations, Outputs, Execution Notes).
+1. **SPA:** Account / Privacy — button to request PII removal (confirm destructive intent).
+2. **API:** Cancel remaining Stripe subscriptions for `stripe_customer_id` if needed; **redact/anonymize person PII** on **Profile** and possibly **Encounter**.
+3. **Data:** **No new property** (no `gdpr_request` on Customer or Profile). GDPR does **not** apply to Customer org/billing documents; Payment history may retain non-PII financial records per policy.
+
+**Profile PII candidates (Profile.0.1.0.yaml):** `name`, `full_name`, `email`, `email_verified`, `description`, `goals`, `interests`, `experience[]` (company, titles, markdown), breadcrumbs as applicable.
+
+**Encounter PII candidates (Encounter.0.1.0.yaml):** `transcript`, `summary`, `tldr` (and related narrative fields).
+
+### Issue text — Data
+
+**None.** Do not file an F-D ticket to add a GDPR request flag or status field. Redaction targets existing Profile / Encounter properties only.
+
+### Issue text — API (`F-CA12`)
+
+```text
+Title: F-CA12: E8 Privacy action — cancel Stripe + redact Profile/Encounter PII
+
+Description:
+Orchestrate forget for the authenticated Customer’s people. SPA button calls this action.
+No persistence of a “GDPR request” field on Customer or Profile.
+
+Goals:
+- Cancel Stripe subscriptions for stripe_customer_id when still active.
+- Redact/anonymize Profile person fields (full_name, email, experience, etc.) and Encounter
+  transcript/summary/tldr as policy requires.
+- Do not add or require a gdpr_* schema property; do not treat Customer org/billing docs as
+  person PII subject to the same erase rules.
+- Document Payment retention (financial, non-PII) vs person PII.
+- Do not implement Cognito login UI; may disable/delete Cognito user via Admin API as part of
+  the action if R1 defines that step.
+
+Context: Workshops/customer_journey_issues.md E8; configurator/dictionaries/Profile.0.1.0.yaml;
+configurator/dictionaries/Encounter.0.1.0.yaml
+```
+
+### Issue text — SPA (`F-CS10`)
+
+```text
+Title: F-CS10: E8 Account / Privacy — request PII removal button
+
+Description:
+UI button + confirm → call privacy API → show outcome. Not a data editor for Customer commerce.
+
+Goals:
+- Account / Privacy surface with destructive confirm; call F-CA12 action; show success/failure.
+- No form field bound to a GDPR data property (there is none).
+- No custom auth screens; session aftermath per product rules after redact.
+
+Context: Workshops/customer_journey_issues.md E8
+```
 
 ---
 
-## Explicitly out of scope (for these tickets)
+## Suggested implementation order
 
-- Free-trial product rules — [#36](https://github.com/mentor-forge/mentorhub/issues/36)
-- Merging Customer + Coordinator into one UI/API — Mike reflecting; do not delete Customer SPA/API yet
-- Custom password / MFA backends — Cognito only
-- Storing card PANs in MongoDB
-- Configurable Dashboard collection for MVP
-- Mentee “pick up studies” and Dev-Lead mentee organize tooling — other personas
-- Live Stripe calls on every Dashboard paint
+1. **Do This First** R1–R8 (research + rename/close misnamed F-UC / F-AC umbrellas).
+2. **E0 Cleanup** — SPA nav/pages → API endpoint removal → Data drops (F-D14/15/16: Configuration + Dictionary + Test Data) → F-W09 Coordinator removal.
+3. **E1** Provisioning (Data → API → SPA post-auth landing).
+4. **E2** Subscribe (Data → API → SPA).
+5. **E3** Fixed home.
+6. **E4** Invites (after R6).
+7. **E5–E7** Billing change / renew / cancel.
+8. **E8** GDPR — **F-CA12 + F-CS10 only** (no F-D property ticket).
+
+When creating tasks in a repo, copy Issue text into that repo’s `_PLANNING.md` workflow → `PENDING.*.md` per local planning layout.
+
+---
+
+## Explicitly out of scope
+
+- SPA/API tickets for login, signup, password reset, or MFA screens (**AWS Cognito** owns auth UI)
+- New SPA ticket to rewire IdP/JWT redirect guards (already implemented)
+- Cognito Hosted UI self-signup as the source of `profile_id` / `customer_id` / `roles` claims
+- Any **GDPR / privacy request data property** on Customer, Profile, or elsewhere
+- Treating **Customer** org/billing documents as GDPR person-PII erase targets (Profile ± Encounter only)
+- Keeping Coordinator API/SPA
+- Configurable Dashboard collection / custom dashboards
+- Storing card PANs; MentorHub-initiated recurring charges
+- Free-trial product rules until [#36](https://github.com/mentor-forge/mentorhub/issues/36)
+- Mentee “pick up studies” and non-Customer tooling
+- Live Stripe round-trip on every home page paint

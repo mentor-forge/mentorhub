@@ -1,109 +1,111 @@
 # Customer UI — Implementation Issues
 
-Source: Customer Workshop 2 (`Workshops/customer_workshop_2.md`).  
-Scope: Customer SPA, Customer API, and MongoDB (`configurator/dictionaries`).  
-Naming: `Type-LayerUser##` per [CONTRIBUTING.md](../CONTRIBUTING.md) (e.g. `F-UC` Customer SPA, `F-AC` Customer API, `F-D` Data). **Mary assigns `##` from existing repo issues.**  
-Auth: **AWS Cognito** is the IdP — do not build custom password/2FA backends.  
-Existing workshop follow-ups: [#36](https://github.com/mentor-forge/mentorhub/issues/36) trial · [#38](https://github.com/mentor-forge/mentorhub/issues/38) SPA · [#39](https://github.com/mentor-forge/mentorhub/issues/39) API · [#40](https://github.com/mentor-forge/mentorhub/issues/40) data.
+**Canonical tickets:** [`customer_journey_issues.md`](./customer_journey_issues.md) (E0–E8 issue text for `_PLANNING.md`).  
+This file keeps a schema-aware checklist for SPA / API / Data, updated for Mike’s PR #31 prompts.
+
+Source workshop: `Workshops/customer_workshop_2.md`.  
+Research: `Research/stripe_research.md`, `Research/cognito_forms/cognito_forms_research.md`.  
+Schemas: `mentorhub_mongodb_api/configurator/dictionaries/` (runtime configurator is definitive).
+
+**Naming (CONTRIBUTING.md):** `Type-UserLayerNumber: title` — **User then Layer**.
+
+| Prefix | Repo | Next number (2026-07-22) |
+| --- | --- | --- |
+| `F-CS##` | `mentorhub_customer_spa` | F-CS02 |
+| `F-CA##` | `mentorhub_customer_api` | F-CA04 |
+| `F-D##` | `mentorhub_mongodb_api` | F-D21 (repurpose F-D14/15/16 for drops) |
+| `F-W##` | `mentorhub` | F-W09 |
+
+Wrong: `F-UC`, `F-AC`, or `Type-LayerUser##`. Supersede mentorhub [#38](https://github.com/mentor-forge/mentorhub/issues/38) / [#39](https://github.com/mentor-forge/mentorhub/issues/39) when filing.
+
+**Auth:** AWS Cognito. SPA already has IdP redirect (`VITE_IDP_LOGIN_URI`) — **do not** file login/signup/reset/2FA screen tickets.
+
+**Registration:** Cognito Forms (public) → webhook and/or Google Sheet script → special `POST Profile` → AWS Cognito AdminCreateUser with custom claims. Not Hosted UI self-signup for claims.
+
+**GDPR:** UI button + API action. **No** data property. Redact **Profile** (± **Encounter** `transcript`/`summary`/`tldr`). Not Customer org/billing docs.
 
 ---
 
 ## Cross-cutting
 
-| Name (Mary numbers) | Issue | Notes |
-|---------------------|--------|--------|
-| F-W02 / #36 | Define free trial rules | Blocks Plans/Trial |
-| — | Agree Customer ↔ Profile ↔ seat model | `Profile.customer_id` already links people to a Customer |
-| — | Stripe Checkout + Portal + webhooks (F-W03) | Shared by API + data; prefer Stripe over `Card` collection for payment methods |
+| Name | Issue | Notes |
+| --- | --- | --- |
+| F-W02 / #36 | Free trial rules | Blocks Plans/Trial if in MVP |
+| F-W03 | Stripe research | Checkout + Portal + webhooks |
+| F-W04 | AWS Cognito Admin claims research | Required for F-CA05 |
+| — | Cognito Forms handoff (R2) | `Research/cognito_forms/` — webhook vs Sheet |
+| — | `Profile.customer_id` roster | Already on `Profile.0.1.0.yaml` |
 
 ---
 
-## Database (`mentorhub_mongodb_api`)
+## Database (`F-D`) — schema-aware
 
-Schemas reviewed under `configurator/dictionaries/` (Customer, Subscription, Profile, Mentee, Note, Rating, Encounter, Event, Journey, Dashboard, Card).
+| Name | Issue | Schema notes |
+| --- | --- | --- |
+| F-D16 | Drop **Card** | `Card.0.1.0.yaml` has PAN `number` — delete Configuration + Dictionary + `test_data/Card.0.1.0.0.json` |
+| F-D15 | Drop **Dashboard** | `Dashboard.0.1.0.yaml` (`customer_id`, stub fields) — no custom dashboards; delete Config + Dictionary |
+| F-D14 | Drop top-level **Subscription** | `Subscription.0.1.0.yaml` stub only — embed `subscriptions[]` on Customer later; delete Config + Dictionary |
+| F-D21 | Extend **Customer** + confirm **Profile** | Customer today: `_id`, `name`, `description`, `created`, `saved`, `status`. Profile already: `full_name`, `email`, `email_verified`, `customer_id`, `roles`, … — add only gaps from Cognito Forms / Admin research; **no** `gdpr_*` |
+| F-D22 | **Product** + **Payment** + `Customer.subscriptions[]` | After Stripe research; Config + Dictionary + Test Data for new collections |
+| F-D23+ | Seeds for home / capacity / renew / cancel | Use `Profile.customer_id`; no Dashboard collection |
+| F-D24 | Invite persistence (R6) | name, email, status — embed or Invite dictionary |
+| — | **GDPR** | **No F-D property ticket** — process redacts existing Profile/Encounter fields |
 
-| Name (Mary numbers) | Issue | Schema-aware notes |
-|---------------------|--------|-------------------|
-| F-D## / #40 | Extend **Customer** (`Customer.0.1.0`) for payer/org fields | Today: `_id`, `name`, `description`, `status`, breadcrumbs only. Add org/company display and Stripe customer id as needed. **Do not** add a GDPR-request property on Customer (see Privacy). |
-| F-D## | Extend **Subscription** (`Subscription.0.1.0`) for lifecycle | Today: stub (`_id`, `name`, `description`, `status`/`default_status`, breadcrumbs). Add `customer_id`, capacity/seats/schedule, trial/active/hold/cancel (new enums if needed), discount/token refs, Stripe subscription id, failure/delay flags synced from webhooks. |
-| F-D## | Coordinator invite persistence | No Invite collection today. New dictionary **or** embed on Customer; fields: name, email, status. |
-| F-D## | Confirm mentee roster via existing **Profile.customer_id** | Already on `Profile.0.1.0`. Prefer this over a new link table unless seats need their own membership docs. |
-| F-D## | Customer → mentor focus notes | `Mentee.0.1.0` has mentor `notes` / `focus`; `Note.0.1.0` is **resource-scoped** (`resource_id`). Decide: extend Mentee (e.g. customer-authored focus) vs new shape — do not overload resource Notes. |
-| F-D## | Mentor (person) rating for mentee detail | `Rating.0.1.0` is **resource-scoped** (`resource_id`). Workshop “rating of the mentor” needs a new model or agreed reuse — not the resource Rating as-is. |
-| F-D## | Discount / donated-capacity tokens | No Token collection. Fields on Subscription and/or small Token dictionary; redemptions tied to Customer/Subscription. |
-| F-D## | Extend **Dashboard** (`Dashboard.0.1.0`) for ROI / weekly summary (optional) | Already has `customer_id`. Extend only if Team Progress / Program ROI / weekly email need a read model vs live aggregates from Encounter/Event/Journey. |
-| F-D## | Customer subscription test data | Seed Customer + Subscription (+ Profiles with `customer_id`) for trial, active, hold, failed-payment scenarios. Align with existing Profile/Mentee/Encounter test data. |
-| — | **Privacy / GDPR (data)** | GDPR applies to **person PII** on **Profile** (and possibly **Encounter** transcript/summary), not to Customer org/billing documents. Prefer deletion/anonymization **process** over a long-lived “GDPR request” field on Customer. Track request state only if ops need it (e.g. on Profile or an audit/Event), not as Customer commerce data. |
+**Do not:** extend standalone Subscription for lifecycle; extend Dashboard for ROI; add GDPR request field on Customer.
 
 ---
 
-## Customer API (`F-AC` — Layer Api, User Customer)
+## Customer API (`F-CA`)
 
-| Name (Mary numbers) | Issue | Supports |
-|---------------------|--------|----------|
-| F-AC## / #39 | Customer API from Workshop 2 (umbrella) | epic |
-| F-AC## | Post-Cognito Customer + Profile provisioning | After Cognito signup/login JWT: ensure Profile (claims: `name`, email, `email_verified`) and Customer org linkage (`Profile.customer_id`) |
-| F-AC## | Subscription / Billing API | Checkout, Billing, Subscription, Cancel, Promos |
-| F-AC## | Stripe Checkout session + return handling | Subscribe / Checkout |
-| F-AC## | Stripe Customer Portal session | Billing / payment method (not custom card APIs; avoid `Card` PCI store) |
-| F-AC## | Stripe webhooks (idempotent; no double-charge) | Sync Subscription (+ failure flags) |
-| F-AC## | Trial start / eligibility (after #36) | Plans / Trial |
-| F-AC## | Capacity change, hold, delay payment, cancel | Subscription / Billing / Cancel |
-| F-AC## | Apply discount / donated-capacity codes | Checkout |
-| F-AC## | Coordinator invite create/list; self-mark coordinator role | Invite Coordinator (`Profile.roles`) |
-| F-AC## | Available mentors + match-by-needs | Find Mentor |
-| F-AC## | Team progress + mentee activity (aggregate) | Dashboard, Team Progress |
-| F-AC## | Mentee detail aggregate (Encounter `tldr`/`summary`, Mentee notes, Events, ratings) | Mentee Detail |
-| F-AC## | Post customer note for mentor | Mentee Detail |
-| F-AC## | Program ROI / status summary | Program ROI |
-| F-AC## | Privacy: request PII removal (Profile / Encounter) | Account / Privacy — action + workflow, not Customer field |
-| F-AC## | Payment-failed signal for notify | Notifications |
-| F-AC## | Weekly progress summary payload (email job) | Weekly Progress Email |
+| Name | Issue | Supports |
+| --- | --- | --- |
+| F-CA04 | Remove Card / Dashboard / Subscription API surface | E0 cleanup first |
+| F-CA05 | Special POST Profile + AWS Cognito Admin claims | Cognito Forms webhook / Sheet script |
+| F-CA06 | Checkout Session + subscribe webhooks | E2 |
+| F-CA07 | Customer home aggregates + sub gate | E3 |
+| F-CA08 | Invite members | E4 (R6) |
+| F-CA09 | Portal session + capacity Checkout | E5 |
+| F-CA10 | Renewal webhooks + past_due | E6 |
+| F-CA11 | Cancel sync via Portal webhooks | E7 |
+| F-CA12 | Privacy action — Stripe cancel + redact Profile/Encounter | E8 — no gdpr_* field |
 
-**Out of API scope (Cognito owns):** password reset, MFA/2FA challenge, credential storage, custom login session APIs.
+**Out of API scope:** password reset, MFA, custom login sessions (AWS Cognito).
 
 ---
 
-## Customer SPA (`F-UC` — Layer UiUx, User Customer)
+## Customer SPA (`F-CS`)
 
-| Name (Mary numbers) | Issue | Page / surface |
-|---------------------|--------|----------------|
-| F-UC## / #38 | Customer SPA from Workshop 2 UI checklist (umbrella) | epic |
-| F-UC## | Cognito sign-in / sign-up integration (Hosted UI or Amplify) | Replace custom Login / Reset / 2FA screens; Cognito handles password reset and MFA |
-| F-UC## | Post-auth Customer onboarding (company / org fields) | Collect company name etc. after Cognito identity exists; wire to Customer + Profile |
-| F-UC## | Plans / Trial page | blocked on #36 |
-| F-UC## | Subscribe / Checkout + Stripe return URLs | capacity, codes, pay |
-| F-UC## | Invite Coordinator page | name + email only |
-| F-UC## | Find Mentor / Available Mentors | choose by needs |
-| F-UC## | Dashboard / Mentee Activity | roster + activity |
-| F-UC## | Team Progress page | Dave persona |
-| F-UC## | Program ROI / Status page | Stacey / board |
-| F-UC## | Mentee Detail page | drill-down + leave mentor note |
-| F-UC## | Billing page | delay pay, failures; Portal for payment method |
-| F-UC## | Subscription page | seats, hold |
-| F-UC## | Promos page | long-tenure promos |
-| F-UC## | Cancel flow | |
-| F-UC## | Account / Privacy — request PII removal | UI button calling privacy API (Profile/Encounter), not a Customer data editor |
-| F-UC## | Payment-failed notification UI (and/or email copy) | |
-| F-UC## | Weekly Progress Email template (no-login) | may be API/email only |
+| Name | Issue | Surface |
+| --- | --- | --- |
+| F-CS02 | Nav + legacy page cleanup | E0 — first |
+| F-CS03 | Post-auth landing for provisioned Customer | E1 — **not** signup/login UI |
+| F-CS04 | Plans / cart / Checkout return | E2 |
+| F-CS05 | Fixed Customer home / mentee activity | E3 |
+| F-CS06 | Invite Members (name + email) | E4 |
+| F-CS07 | Subscription + Billing (Portal) | E5 |
+| F-CS08 | Payment-failed banner | E6 |
+| F-CS09 | Cancel + unsubscribed CTA | E7 |
+| F-CS10 | Privacy — PII removal **button** | E8 |
+
+**Do not file:** “Cognito sign-in / sign-up integration” replacing login screens (redirect exists); “post-auth company onboarding” that duplicates Cognito Forms registration.
+
+Optional later workshop pages (Find Mentor, Team Progress, ROI, Promos, weekly email) — only after E0–E8 MVP path; name as later `F-CS##` when prioritized.
 
 ---
 
 ## Suggested build order
 
-1. Data: extend Customer + Subscription; confirm Profile.customer_id roster  
-2. API: Cognito JWT → Profile/Customer provisioning + Subscription/Billing + Stripe  
-3. SPA: Cognito auth integration → Checkout → Billing/Subscription  
-4. Data/API: Invites, mentor match  
-5. API/SPA: Dashboard, Mentee Detail, notes, ROI  
-6. Trial (#36), Promos, Privacy (Profile/Encounter), notifications/email  
+1. Do This First research (claims, Cognito Forms handoff, Stripe)  
+2. E0 cleanup (SPA → API → Data drops → F-W09 Coordinator removal)  
+3. E1 Cognito Forms provisioning  
+4. E2 Subscribe → E3 home → E4 invites → E5–E7 billing → E8 privacy  
 
 ---
 
-## Out of Customer UI scope (workshop)
+## Out of Customer UI scope
 
-- Mentee Journey / “pick up studies” — Mentee product (`Journey` collection)  
-- Dan’s mentee organize list — Coordinator / Mentor tooling  
-- Custom auth servers or login/2FA/password-reset APIs — **AWS Cognito**  
-- Storing payment cards in Mongo `Card` — use Stripe  
-- GDPR request flag on **Customer** documents — PII lives on **Profile** / **Encounter**  
+- Mentee “pick up studies”; Dev-Lead organize list  
+- Custom auth servers / login / 2FA / password-reset UIs — **AWS Cognito**  
+- Card PANs in Mongo; configurable Dashboard collection  
+- GDPR request **data property** on Customer or Profile  
+- Keeping Coordinator API/SPA  
