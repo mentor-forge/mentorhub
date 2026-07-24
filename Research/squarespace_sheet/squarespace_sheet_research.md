@@ -64,26 +64,69 @@ Customer (later)
 
 ---
 
-## Candidate registration fields
+## Field map: candidate form → Profile / Customer (R2 step 2)
 
-Workshop / journey alignment (confirm on the real Squarespace form):
+**Sources (do not change schemas yet):**
+- Profile: `mentorhub_mongodb_api/configurator/dictionaries/Profile.0.1.0.yaml`
+- Customer: `mentorhub_mongodb_api/configurator/dictionaries/Customer.0.1.0.yaml`
+- Workshop candidates: username, company name, email (+ journey: full name / org)
 
-| Form field (candidate) | Likely destination | Notes |
+Dictionary note: Profile and Customer properties are all `required: false` in YAML; provisioning still needs a practical required set for the form/API (Mike/Lucky).
+
+### Candidate form fields → existing attributes
+
+| Candidate Squarespace field | Maps to | Dictionary type / meaning | Fit? |
+| --- | --- | --- | --- |
+| Full name / display name | Profile `full_name` | `sentence` — “Display name from intake (distinct from IdP username)” | **Yes — direct** |
+| Email | Profile `email` | `email` | **Yes — direct**; also primary idempotency key |
+| Username (IdP login name) | Profile `name` | `word` — “The IDP Username used in JWT Claims” | **Yes — if form collects it**; else API may derive from email local-part (Mike decision) |
+| Company / org name | Customer `name` | `sentence` — searchable org name | **Yes — direct** |
+| Company description (optional) | Customer `description` | `sentence` | **Yes — optional**; may omit from MVP form |
+| Phone | — | No Profile or Customer phone property | **Gap** — drop from form, or new schema attribute later (do not add until Mike agrees) |
+| Profile “about” / bio | Profile `description` | `sentence` — user comment on profile | **Unlikely on registration**; usually post-login |
+| Work history | Profile `experience[]` | nested company / titles / dates | **Not registration**; later SPA/profile edit |
+| Goals / interests | Profile `goals`, `interests` | array / enum_array | **Not registration** |
+
+### Profile attributes — not from the form (API / IdP sets)
+
+| Attribute | Set by | Registration notes |
 | --- | --- | --- |
-| Full name / name | Profile `full_name` | Display name |
-| Email | Profile `email`; Cognito username/email | Primary idempotency candidate |
-| Username (if collected) | Profile `name` (IdP username) | Workshop mentioned username — confirm if still required |
-| Company / org name | Customer `name` | Org display |
-| Company description (optional) | Customer `description` | TBD |
-| Phone / other | TBD | Only if form collects it |
+| `_id` | API on create | Returned to script / Sheet optional column |
+| `status` | API default (e.g. `active`) | Confirm enum `profile_status` value at create |
+| `email_verified` | API / Cognito | Likely `false` until Cognito verifies; confirm R1 |
+| `customer_id` | API after Customer create/link | Required for sponsorship; JWT claim later |
+| `roles` | API | Expect `["customer"]` (enum `user_roles`); confirm Mike |
+| `mentor_id` | API or empty | Usually unset for new customer registrant |
+| `created` / `saved` | API breadcrumbs | Not from form |
+| `goals` / `interests` / `experience` | Not at registration | Leave empty / omit |
 
-**Current Profile (from journey / dictionary notes):** `_id`, `name` (IdP username), `status`, `description`, `full_name`, `email`, `email_verified`, `mentor_id`, `goals`, `interests`, `experience[]`, `created`, `saved`, `customer_id`, `roles`.
+### Customer attributes — not from the form (API sets)
 
-**Current Customer:** `_id`, `name`, `description`, `created`, `saved`, `status` — no `subscriptions[]` yet (billing is later research).
+| Attribute | Set by | Registration notes |
+| --- | --- | --- |
+| `_id` | API on create | Linked onto Profile as `customer_id` |
+| `status` | API default (e.g. `active`) | Enum `default_status` |
+| `created` / `saved` | API breadcrumbs | Not from form |
+| `subscriptions[]` | — | **Not in Customer.0.1.0** yet — billing research (R3–R5); not a form field |
+| `stripe_customer_id` | — | **Not in dictionary** — future billing; not a form field |
 
-Add only missing attributes after this form list is locked + R1 Admin attributes are known.
+### Gaps / decisions for Mike
+
+| # | Question | Why it matters |
+| --- | --- | --- |
+| G1 | Confirm **required** Squarespace fields: at least `full_name`, `email`, `company_name`? Is **username** required or derived? | Locks Sheet columns + POST body |
+| G2 | If username is omitted, how does API set Profile `name` (email local-part vs email vs other)? | IdP username + JWT |
+| G3 | Does one registration always **create a new Customer**, or can it attach to an existing Customer? | F-CA05 create vs link |
+| G4 | Default Profile `roles` = `["customer"]` only? | Claims + RBAC |
+| G5 | Default `email_verified` at create? | Cognito Admin + Profile consistency (R1) |
+| G6 | Collect **phone** or any field with **no** dictionary home? | Avoid schema creep; drop or ticket later |
+| G7 | Collect Customer `description` on the form? | Optional column vs leave blank |
+| G8 | Any form field needed for Cognito Admin beyond email / name / full_name? | Depends on R1; do not invent Profile fields for Cognito-only attrs |
+
+**Verdict for schema tickets:** For the candidate form set above, **Profile and Customer already have homes** for name/email/username/company. **No dictionary change is required** for those mappings alone. Gaps are product rules (G1–G8), not missing columns — unless Mike adds phone or other new intake fields.
 
 ---
+
 
 ## Google Sheet columns (proposed)
 
@@ -106,17 +149,142 @@ Lock column names with ops before F-CA05. Proposed starter set:
 
 ---
 
-## Inbound: special POST Profile (script → Customer API)
+## Handoff mechanics — Squarespace → Sheet → script
 
-| Concern | Research need | Status |
+**Purpose:** Describe how the registration row gets from the public site into MentorHub, what the automation does, and how retries / failure rows work. Confirm against the live Mentor Forge Squarespace form + Sheet (gap: which Google account owns the Sheet).
+
+### How Squarespace → Google Sheet typically works
+
+1. **Form block on the public site** — Prospect submits the Squarespace Form (Storage tab configured).
+2. **Storage options** — Squarespace does not keep a durable in-form inbox by itself; connect at least one storage:
+   - **Email** — notification to an inbox (optional; good as a human alert).
+   - **Google Drive** — native integration that **creates/appends a Google Spreadsheet** with one row per submission ([Squarespace form storage pattern](https://www.chasinghoneyconsulting.com/blog/squarespace-built-in-forms-guide)).
+3. **Connect Google Drive once per form** — In the form editor → Storage → Google Drive → connect a Google account → name the new spreadsheet. Squarespace writes form field values into columns it creates (labels → headers).
+4. **Important platform limits (ops):**
+   - Reconnecting Google Drive typically **creates a new Sheet**; you generally **cannot** point the form at an arbitrary existing spreadsheet ([reconnect notes](https://www.usingmyhead.com/using-my-head/how-to-safely-disconnect-and-reconnect-google-sheets-to-squarespace)).
+   - After a reconnect, the **script must be attached to (or retargeted at) the new Sheet**, or provisioning stops while rows still land somewhere ops is not watching.
+   - Prefer **email + Google Drive** together so a Drive outage does not lose visibility of submissions.
+5. **Column reality** — First row headers come from Squarespace field labels. Ops/script may add **extra columns** on the right (`provision_status`, `sheet_row_id`, etc.) that Squarespace never overwrites. Do not rename Squarespace-owned headers without updating the script mapper.
+6. **Alternates (not primary for R2)** — Zapier/Make into an existing Sheet, or Cognito Forms webhook (see `Research/cognito_forms/`). Use only if native Drive storage is insufficient.
+
+```text
+Squarespace Form submit
+  → (optional) email notification
+  → Google Drive storage appends 1 row to connected Sheet
+  → Sheet script (trigger) reads row → POST Customer API
+  → script writes provision_* columns on that row
+```
+
+### What the script does
+
+**Runtime (proposed):** Google Apps Script bound to the registration spreadsheet (simplest ops story). Alternatives: Cloud Function on Sheet change, or Zapier “new row → HTTP” — same contract either way.
+
+**Triggers (pick one, document it):**
+
+| Trigger | Behavior | Tradeoff |
 | --- | --- | --- |
-| **Auth** | How the script proves itself (Bearer service token, shared secret header, API key, m2m) | **TBD — confirm with Mike / Lucky** |
-| **Payload** | Exact JSON mapped from Sheet columns | **Draft below — confirm** |
-| **Idempotency** | Key on `email` and/or `sheet_row_id` so retries do not double-create Profile or Cognito users | **TBD — prefer both** |
-| **Success / error** | Codes the script uses to set `provision_status` (avoid silent retries that duplicate) | **TBD** |
-| **AWS Cognito** | Admin create attributes + custom claims | **R1** — `Research/aws_cognito/` |
+| **On edit / on change** | Fires when Squarespace adds a row | Fast; must ignore edits to `provision_*` columns to avoid loops |
+| **Time-driven (e.g. every 1–5 min)** | Scans rows where `provision_status` is empty or `pending` | Simpler; small delay; good for retries |
+| **Manual “Process pending”** | Ops menu item | Backup when automation is paused |
 
-### Draft request body (not final)
+**Per eligible row — happy path:**
+
+1. Skip if `provision_status` is `success` (or `failed` unless ops reset to `pending`).
+2. Ensure `sheet_row_id` is set (row number or UUID); write it if missing.
+3. Map Sheet cells → JSON body (`full_name`, `email`, `name`, `company_name`, …) per API contract.
+4. `UrlFetchApp.fetch` (or equivalent) `POST` with:
+   - `Authorization: Bearer <service-token>` (Script Property / Secret — never a cell value)
+   - `Idempotency-Key: <lowercased email>`
+   - `Content-Type: application/json`
+5. Parse response:
+   - **2xx** → write `provision_status=success`, `provision_http_status`, `profile_id` / `customer_id` if returned, `processed_at`, clear or keep last `provision_error`.
+   - **4xx** → write `failed` + status + error body; **do not** auto-retry.
+   - **5xx / timeout** → write `pending` (or `failed` after max attempts) + status + error; allow retry.
+
+**Secrets:** Store the service token in Apps Script **Script Properties** (or Secret Manager for non-Apps runtimes). Never commit tokens to the Sheet or to git.
+
+**Idempotency:** Always resend the **same** `Idempotency-Key` for the same email/row so API retries do not double-create Profile / Cognito users.
+
+### Retries
+
+| Case | Retry? | How |
+| --- | --- | --- |
+| **5xx, 502, 503, 504, network timeout** | **Yes** | Backoff (e.g. next time-driven pass); same body + same `Idempotency-Key`; bump attempt count in optional `provision_attempts` column |
+| **400 validation** | **No** | Leave `failed`; ops fixes cells (email typo, missing company) then sets `provision_status=pending` |
+| **401 / 403** | **No** (auto) | Leave `failed`; fix script secret / API allowlist; then reset rows to `pending` |
+| **409 conflict** | Per API contract | If body returns existing `profile_id` → treat as **success**; else `failed` + ops |
+| **Already `success`** | **No** | Skip forever unless ops intentionally clears status for a controlled replay (rare) |
+
+**Suggested caps:** e.g. max **5** automatic attempts, then `failed` with `provision_error=max_retries` so the row does not retry forever.
+
+**Partial API failure:** If the API returns non-2xx, the row stays non-success. The script never marks `success` without 2xx — even if a Profile might exist server-side; idempotent replay on the next pending pass should converge.
+
+### Failure rows (ops playbook)
+
+| `provision_status` | Meaning | Ops action |
+| --- | --- | --- |
+| *(empty)* / `pending` | Not yet succeeded; eligible for script | Wait for next run, or run manual process |
+| `success` | Provisioned (or idempotent replay) | Done; optional verify login with that email |
+| `failed` | Client/config error or exhausted retries | Read `provision_http_status` + `provision_error`; fix data or secrets; set back to `pending` to retry |
+
+**Filter view:** Ops should keep a Sheet filter or separate tab view: `provision_status = failed` (and optionally `pending` older than N minutes).
+
+**Do not:**
+
+- Delete failure rows until the root cause is understood (loses audit trail).
+- Manually create Cognito users to “fix” a failed row — that bypasses Profile/`customer_id` claims.
+- Edit `profile_id` by hand unless Lucky documents a repair procedure.
+
+**Reconnect / new Sheet event:** When Squarespace creates a **new** spreadsheet after Google Drive reconnect, copy the script (or re-bind), re-add `provision_*` columns, re-set Script Properties, and smoke-test one submission before advertising registration.
+
+### Mechanics checklist (confirm on live site)
+
+1. Which Squarespace page/form is the registration form?
+2. Which Google account owns the connected Drive Sheet?
+3. Apps Script vs Zapier vs other for the POST?
+4. Trigger type (on change vs time-driven)?
+5. Who watches `failed` rows day-to-day?
+
+---
+
+## API contract (draft) — special POST Profile
+
+**Status:** Research draft for R2 / F-CA05. Exact path and service-auth mechanism are **Lucky/Mike** to lock. Aligns with existing Customer API style: `Authorization: Bearer …`, JSON errors as `{"error": "<message>"}` (`api_utils` route wrapper).
+
+**Caller:** Google Sheet script only (service credential). **Not** an end-user Cognito JWT from the Customer SPA.
+
+### Request
+
+```http
+POST /api/profile/register
+Host: <customer-api-host>
+Authorization: Bearer <service-token>
+Content-Type: application/json
+Idempotency-Key: <idempotency-key>
+```
+
+| Part | Draft value | Notes |
+| --- | --- | --- |
+| **Method / path** | `POST /api/profile/register` | Path is illustrative; final route name is F-CA05. Prefer a **special** path so it is not confused with generic Profile CRUD |
+| **Authorization** | `Bearer <service-token>` | Same header shape as other APIs; token is a **service** secret (or future M2M), **not** a user IdP access token. Missing/invalid → **401** |
+| **Content-Type** | `application/json` | Required |
+| **Idempotency-Key** | See below | Required for safe retries |
+
+Optional alternate if Bearer service JWT is not ready: `X-Registration-Secret: <shared-secret>` **in addition to or instead of** Bearer — pick one scheme and document it; do not leave both ambiguous in production.
+
+### Idempotency key
+
+| Rule | Draft |
+| --- | --- |
+| **Header** | `Idempotency-Key: <value>` |
+| **Recommended value** | Lowercased trimmed `email` (stable across Sheet retries) |
+| **Also accept / store** | `sheet_row_id` in body so ops can correlate; API may treat `(email)` or `(email + sheet_row_id)` as the dedupe key — **Mike/Lucky choose one** |
+| **Behavior** | Same key + same logical registration → **same outcome**, no second Profile / Customer / Cognito user |
+| **Replay response** | Prefer **200** with the existing resource ids (script treats as success). Avoid **409** unless product wants “already exists” as a distinct ops signal — if **409**, script still marks row `success` when body includes existing `profile_id` |
+
+Do **not** put a second copy of the key only in the body without the header; header is what the script retries with.
+
+### JSON body (request)
 
 ```json
 {
@@ -124,48 +292,90 @@ Lock column names with ops before F-CA05. Proposed starter set:
   "email": "jane@example.com",
   "name": "jane.customer",
   "company_name": "Acme Mentoring Co",
-  "company_description": "Optional",
-  "sheet_row_id": "row-42",
-  "idempotency_key": "jane@example.com"
+  "company_description": "Optional org blurb",
+  "sheet_row_id": "row-42"
 }
 ```
 
-Field names and whether `company_*` create a new Customer in the same call are **Lucky / Mike** design choices for F-CA05.
+| Field | Required (draft) | Maps to | Notes |
+| --- | --- | --- | --- |
+| `full_name` | **Yes** | Profile `full_name` | Display name |
+| `email` | **Yes** | Profile `email` | Normalize lowercase; idempotency basis |
+| `name` | No* | Profile `name` (IdP username) | *Required if Mike keeps username on form; else API derives (see field map G2) |
+| `company_name` | **Yes** | Customer `name` | Creates or links Customer per G3 |
+| `company_description` | No | Customer `description` | Omit or empty string OK |
+| `sheet_row_id` | **Yes** | Ops correlation only | Not a Profile property; store for logs / support |
 
-### Draft auth shape (not final)
+**Not in body (API sets):** `profile_id` / `_id`, `customer_id`, `roles`, `email_verified`, `status`, `mentor_id`, breadcrumbs, Cognito claims.
 
-```http
-POST /…/profiles  (exact path TBD in F-CA05)
-Authorization: Bearer <service-token>
-Content-Type: application/json
-Idempotency-Key: <email-or-sheet_row_id>
+### JSON body (success response)
+
+**201 Created** — first successful provision:
+
+```json
+{
+  "profile_id": "A00000000000000000000099",
+  "customer_id": "D00000000000000000000099",
+  "email": "jane@example.com",
+  "idempotency_key": "jane@example.com",
+  "created": true
+}
 ```
 
-Do **not** use an end-user Cognito JWT for the Sheet script.
+**200 OK** — idempotent replay (already provisioned for this key):
 
----
+```json
+{
+  "profile_id": "A00000000000000000000099",
+  "customer_id": "D00000000000000000000099",
+  "email": "jane@example.com",
+  "idempotency_key": "jane@example.com",
+  "created": false
+}
+```
 
-## Script behavior (proposed)
+Script: any **2xx** with `profile_id` → Sheet `provision_status=success`.
 
-1. Trigger on new Sheet row (or poll `provision_status = pending`).
-2. Skip rows already `success`.
-3. Build JSON from columns; POST with service auth.
-4. On **2xx**: set `provision_status=success`, store `profile_id` if returned, `processed_at`.
-5. On **4xx** (client error, e.g. validation): set `failed`; do **not** blind-retry without ops fix.
-6. On **5xx / network**: leave `pending` or `failed` with retry policy that respects idempotency.
-7. Never create Cognito users from the script directly — only via Customer API.
+### Error response shape
 
----
+Match existing APIs:
 
-## Failure handling / ops
+```json
+{ "error": "Human-readable message" }
+```
 
-| Situation | Handling |
-| --- | --- |
-| Duplicate submit (same email) | API returns success or conflict; no second Profile/Cognito user |
-| Bad/missing fields | 4xx → row `failed` + message in `provision_error` |
-| API down | Retry with backoff; idempotent POST |
-| Auth misconfigured | 401/403 → stop automatic retries; alert ops |
-| Partial success (Profile yes, Cognito no) | API responsibility — script treats non-2xx as failed unless API documents otherwise |
+### Status codes the Sheet script should expect
+
+| HTTP | When | Script action | `provision_status` |
+| --- | --- | --- | --- |
+| **201** | New Profile (+ Customer) + Cognito Admin create succeeded | Save `profile_id` / `customer_id`; done | `success` |
+| **200** | Idempotent replay; resources already exist | Save ids from body; done | `success` |
+| **400** | Validation (missing `email`, bad JSON, unknown fields if strict) | Do **not** auto-retry; fix Sheet row | `failed` |
+| **401** | Missing/invalid `Authorization` (or registration secret) | Stop retries; alert ops (secret/config) | `failed` |
+| **403** | Authenticated but not allowed to call register | Stop retries; alert ops | `failed` |
+| **409** | Optional: duplicate email with **different** payload / conflict policy | If body has existing ids → treat as success; else `failed` + ops | `success` or `failed` |
+| **404** | Should not happen for register; misconfigured path | Stop; fix script URL | `failed` |
+| **500** | Server / Cognito / DB failure mid-provision | Retry with backoff + same `Idempotency-Key` | leave `pending` (or `failed` after max attempts) |
+| **502 / 503 / 504** | Upstream / gateway unavailable | Retry with backoff + same key | leave `pending` |
+| *(network timeout)* | No HTTP status | Retry with backoff + same key | leave `pending` |
+
+**Partial failure:** If Profile is written but Cognito Admin fails, API should return **5xx** (not 2xx) until both succeed or a documented compensating path exists — script must not mark `success` without a 2xx.
+
+### Script expectations (summary)
+
+1. Always send `Authorization` + `Content-Type` + `Idempotency-Key`.
+2. On **2xx** → `success` + store ids.
+3. On **400 / 401 / 403 / 404** → `failed`; no blind retry.
+4. On **5xx** or transport errors → retry with **same** idempotency key; cap attempts.
+5. Never call Cognito Admin from the Sheet script.
+
+### Still TBD for Lucky / Mike
+
+- Final path name and whether register lives under Profile or a `/registration` namespace.
+- Service token vs shared-secret header (one scheme).
+- Exact idempotency key formula (`email` vs `email`+`sheet_row_id`).
+- Whether **409** is used or only **200** replay.
+- Whether `name` is required in the body.
 
 ---
 
