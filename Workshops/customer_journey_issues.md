@@ -36,6 +36,8 @@ Sources (Mike PR #31 review prompts + research):
 
 **Local dev mocks (locked — 2026-07-28):** `Research/local_dev_mocks.md` — **F-W10** (`login.html` tabs + stripe-mock in compose); **F-CA05** dev routes (`REGISTRATION_DEV_MODE`); **`COGNITO_ENABLED=false`** locally (no Cognito container); webhook fixtures with **`STRIPE_WEBHOOK_VERIFY=false`**. cognito-local explicitly deferred.
 
+**Task automation (locked — bootstrap before E0):** **F-CA-L001** and **F-CS-L001** — each repo adopts its own `tasks/_PLANNING.md` / `_ORCHESTRATE.md` (see [Framework bootstrap](#framework-bootstrap-before-e0)). Issues are filed and executed **in the target repo only**; do not edit sibling repos from `mentorhub`.
+
 **Schema rule:** Product, Subscription, and Discount business fields are locked below. Payment dictionary shape is derived in F-D22 from webhook event payloads (see that issue’s Stripe references). Fetch definitive schemas from the running configurator per `tasks/_PLANNING.md` (not YAML as write source of truth).
 
 ---
@@ -265,6 +267,96 @@ Legacy **CRUD scaffolding to remove** (not extend): Card, Dashboard, standalone 
 | E6 | Recurring charge | Renewal webhooks + past_due banner | … |
 | E7 | Cancel subscription | Portal + webhook sync | … |
 | E8 | GDPR forget | SPA button + API redact Profile/Encounter PII (no data property) | F-CA12, F-CS10 only |
+
+---
+
+## Framework bootstrap (before E0)
+
+Customer API and Customer SPA need the same agent task-automation model as `mentorhub_mongodb_api` (`Tasks/_PLANNING.md`, `Tasks/_ORCHESTRATE.md`). **Execute each issue in its own repository** — agents working in `mentorhub` must not modify sibling repos; copy issue text into GitHub or run agents scoped to the target repo.
+
+Reference implementation: `mentorhub_mongodb_api/Tasks/_PLANNING.md`, `Tasks/_ORCHESTRATE.md`.
+
+### Issue text — API (`F-CA-L001`)
+
+```text
+Title: F-CA-L001: Adopt tasks/_PLANNING and _ORCHESTRATE framework
+
+Repository: mentor-forge/mentorhub_customer_api
+
+Description:
+Bootstrap agent task automation so F-CA* Customer journey work is planned and orchestrated
+consistently. Mirror mentorhub_mongodb_api Tasks/ framework, adapted for Pipenv
+(test / container / api / e2e / down).
+
+Agent boundary: implement only in mentorhub_customer_api. Do not edit mentorhub or other
+sibling repos from this task.
+
+Goals:
+- Create tasks/_PLANNING.md — task file layout (Status, Type, Depends On, Description,
+  Path anchoring, Context, Goals, Testing expectations, Outputs, Execution notes);
+  Pipenv verification commands; LNNN vs F-CA## filename conventions; journey execution order;
+  external boundaries (MongoDB schemas from configurator, OpenAPI from running API).
+- Create tasks/_ORCHESTRATE.md — orchestration model (PENDING.* → SHIPPED.*, commit per task,
+  PR when complete); sub-agent workflow; external prerequisites as Blocked.
+- Create tasks/PENDING.L001.adopt_planning_orchestrate_framework.md — bootstrap task that
+  ships the two framework files and README updates (this meta-task; mark Shipped after merge).
+- Update tasks/README.md — point to _PLANNING / _ORCHESTRATE as canonical; retain existing
+  F-CA05–F-CA13 journey task index and Pipenv change-control notes.
+- Add Task automation section in repo README.md linking to tasks/_PLANNING.md.
+- Document suggested order: L001 → F-CA04 (E0) → F-CA05 → F-CA06 → F-CA13 → F-CA09 →
+  F-CA10 → F-CA11 → F-CA07 → F-CA08 → F-CA12.
+
+Testing expectations (L001):
+- Markdown/link review only for framework files.
+- No application code changes unless README pointer is in Outputs.
+
+Depends on: none.
+Blocks: F-CA04 and all subsequent F-CA feature tasks.
+
+Context: mentorhub/Workshops/customer_journey_issues.md (Framework bootstrap);
+mentorhub_mongodb_api/Tasks/_PLANNING.md; mentorhub_mongodb_api/Tasks/_ORCHESTRATE.md;
+mentorhub/Workshops/customer_journey_issues.md (F-CA* issue text)
+```
+
+### Issue text — SPA (`F-CS-L001`)
+
+```text
+Title: F-CS-L001: Adopt tasks/_PLANNING and _ORCHESTRATE framework
+
+Repository: mentor-forge/mentorhub_customer_spa
+
+Description:
+Create tasks/ folder with planning and orchestration guides so F-CS* Customer journey work
+follows the same agent automation model as mentorhub_mongodb_api. Adapt for npm/Vitest/Cypress
+(test / build / cypress:run / api / service).
+
+Agent boundary: implement only in mentorhub_customer_spa. Do not edit mentorhub,
+mentorhub_customer_api, or other sibling repos from this task.
+
+Goals:
+- Create tasks/_PLANNING.md — same section layout as mongodb_api framework; SPA path anchoring
+  (package.json root); spa_standards.md; F-CS## filename convention; no custom login/signup
+  screens in planned tasks unless explicitly scoped.
+- Create tasks/_ORCHESTRATE.md — orchestration model aligned with mongodb_api; external API
+  prerequisites tracked as Blocked until F-CA* ships.
+- Create tasks/PENDING.L001.adopt_planning_orchestrate_framework.md — bootstrap meta-task.
+- Create tasks/README.md — framework links + planned F-CS02–F-CS10 journey index (paste issue
+  text from customer_journey_issues.md into PENDING.F-CS*.md files in follow-on planning).
+- Add Task automation section in repo README.md linking to tasks/_PLANNING.md.
+- Document suggested order: L001 → F-CS02 (E0) → F-CS03 → F-CS04 → F-CS05 → F-CS06 →
+  F-CS07 → F-CS08 → F-CS09 → F-CS10.
+
+Testing expectations (L001):
+- Markdown/link review only.
+- No Vue/application code changes unless README pointer is in Outputs.
+
+Depends on: none (may run in parallel with F-CA-L001).
+Blocks: F-CS02 and all subsequent F-CS feature tasks.
+
+Context: mentorhub/Workshops/customer_journey_issues.md (Framework bootstrap + F-CS* issues);
+mentorhub_mongodb_api/Tasks/_PLANNING.md; mentorhub_mongodb_api/Tasks/_ORCHESTRATE.md;
+mentorhub/DeveloperEdition/standards/spa_standards.md
+```
 
 ---
 
@@ -1137,14 +1229,15 @@ Context: Workshops/customer_journey_issues.md E8
 
 ## Suggested implementation order
 
-1. **E0 Cleanup** — SPA nav/pages → API endpoint removal → Data drops (F-D14/15/16) → F-W09 Coordinator removal.
-2. **E1** Data (F-D21) → API **F-CA05** (registration_service + dev routes first for local testing) → **F-W10** login.html tabs → F-CS03. Prod Cognito **F-S01** (R071) can ship in parallel; not required for Developer Edition.
-3. **E2** Subscribe — F-D22 + **F-D28** → F-CA06 + **F-CA13** → F-CS04.
-4. **E3** Fixed home.
-5. **E4** Invites (F-D24 → F-CA08 → F-CS06) — after E1 provisioning works.
-6. **E5–E7** Billing change / renew / cancel.
-7. **E8** GDPR — **F-CA12 + F-CS10 only** (no F-D property ticket).
-8. **F-W10** — compose env (partially done) + login.html tabs; depends on F-CA05 dev route contract.
+1. **Framework** — **F-CA-L001** + **F-CS-L001** (each executed in its own repo; see [Framework bootstrap](#framework-bootstrap-before-e0)).
+2. **E0 Cleanup** — SPA nav/pages → API endpoint removal → Data drops (F-D14/15/16) → F-W09 Coordinator removal.
+3. **E1** Data (F-D21) → API **F-CA05** (registration_service + dev routes first for local testing) → **F-W10** login.html tabs → F-CS03. Prod Cognito **F-S01** (R071) can ship in parallel; not required for Developer Edition.
+4. **E2** Subscribe — F-D22 + **F-D28** → F-CA06 + **F-CA13** → F-CS04.
+5. **E3** Fixed home.
+6. **E4** Invites (F-D24 → F-CA08 → F-CS06) — after E1 provisioning works.
+7. **E5–E7** Billing change / renew / cancel.
+8. **E8** GDPR — **F-CA12 + F-CS10 only** (no F-D property ticket).
+9. **F-W10** — compose env (partially done) + login.html tabs; depends on F-CA05 dev route contract.
 
 When creating tasks in a repo, copy Issue text into that repo’s `_PLANNING.md` workflow → `PENDING.*.md` per local planning layout.
 
