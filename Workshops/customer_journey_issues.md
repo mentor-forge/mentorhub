@@ -14,7 +14,7 @@ Sources (Mike PR #31 review prompts + research):
 
 **Actor:** Cat the Customer (paying sponsor).
 
-**How to use:** Each Experience has paste-ready **Issue text** for that repo’s local `tasks/_PLANNING.md`. Locked Product, Subscription, and Discount shapes are below; Stripe webhook payload research is in the individual F-D22 / F-CA06 / F-CA10 / F-CA11 task files (with Stripe doc links). Prefer delete+create over rename in the configurator. When dropping a collection, delete **Configuration**, **Dictionary**, and **Test Data** (where present).
+**How to use:** Each Experience has paste-ready **Issue text** per target repository. Give an issue to a planning agent **in that repo only** — each issue ends with instructions to create `tasks/` files via `_PLANNING.md` (assume `_PLANNING.md` / `_ORCHESTRATE.md` already exist from a separate bootstrap ticket). **Do not** reference specific task filenames here; Cursor breaks work into appropriately sized tasks. Locked Product, Subscription, and Discount shapes are below. Prefer delete+create over rename in the configurator. When dropping a collection, delete **Configuration**, **Dictionary**, and **Test Data** (where present).
 
 **Auth:** **AWS Cognito** is the IdP. Login / password / MFA / Hosted UI are Cognito — do **not** file SPA or API tickets for custom login or signup screens. Customer SPA already redirects via `VITE_IDP_LOGIN_URI` / `redirectToIdpLogin`.
 
@@ -28,15 +28,15 @@ Sources (Mike PR #31 review prompts + research):
 
 **Discount / free encounters (locked — Mike):** See [Discount codes & free encounters](#discount-codes--free-encounters-locked).
 
-**Stripe webhooks:** Event list, JSON shapes, and Payment dictionary fields — research in **F-D22**, **F-CA06**, **F-CA10**, **F-CA11** task files; each links to [Stripe API docs](https://docs.stripe.com/api).
+**Stripe webhooks:** Event list, JSON shapes, and Payment dictionary fields — research during **F-D22** and **F-CA06** / **F-CA09** implementation; use [Stripe API docs](https://docs.stripe.com/api).
 
-**Stripe API implementation:** `mentorhub_customer_api/tasks/PENDING.F-CA06` (foundation), `F-CA09`, `F-CA10`, `F-CA11`, `F-CA13`.
+**Stripe API implementation:** **F-CA06** (E2 subscribe + discount codes), **F-CA09** (E5–E7 Portal, renewals, cancel, access gate).
 
-**Cognito infra:** Requirements in `Research/cognito.md`. Implementation **F-S01** — `mentorhub_cloudformation/tasks/PENDING.R071.dev_cognito_customer_onboarding.md`.
+**Cognito infra:** Requirements in `Research/cognito.md`. Implementation **F-S01** in `mentorhub_cloudformation`.
 
 **Local dev mocks (locked — 2026-07-28):** `Research/local_dev_mocks.md` — **F-W10** (`login.html` tabs + stripe-mock in compose); **F-CA05** dev routes (`REGISTRATION_DEV_MODE`); **`COGNITO_ENABLED=false`** locally (no Cognito container); webhook fixtures with **`STRIPE_WEBHOOK_VERIFY=false`**. cognito-local explicitly deferred.
 
-**Task automation (locked — bootstrap before E0):** **F-CA-L001** and **F-CS-L001** — each repo adopts its own `tasks/_PLANNING.md` / `_ORCHESTRATE.md` (see [Framework bootstrap](#framework-bootstrap-before-e0)). Issues are filed and executed **in the target repo only**; do not edit sibling repos from `mentorhub`.
+**Task automation (bootstrap before E0):** **F-CA-L001** and **F-CS-L001** — planning agents in each repo create journey `tasks/` files from this document. `_PLANNING.md` / `_ORCHESTRATE.md` are maintained separately; do not edit sibling repos from `mentorhub`.
 
 **Schema rule:** Product, Subscription, and Discount business fields are locked below. Payment dictionary shape is derived in F-D22 from webhook event payloads (see that issue’s Stripe references). Fetch definitive schemas from the running configurator per `tasks/_PLANNING.md` (not YAML as write source of truth).
 
@@ -82,7 +82,7 @@ Sources (Mike PR #31 review prompts + research):
 
 Free trials and sponsored/partner entitlements use **MentorHub discount codes** that grant a fixed number of **free encounters** on the subscription — not Stripe billing coupons. A “2 week trial” for retail customers is ops-defined as a code whose `free_encounters` matches policy (e.g. proportional to `encounters_mo`); partner orgs may use codes in the hundreds.
 
-**Discount** dictionary — redeemable codes (Configuration + Dictionary + Test Data — **F-D28**):
+**Discount** dictionary — redeemable codes (Configuration + Dictionary + Test Data — **F-D22**):
 
 | Field | Type / values | Role |
 | --- | --- | --- |
@@ -93,7 +93,7 @@ Free trials and sponsored/partner entitlements use **MentorHub discount codes** 
 | `expires_at` | ISO datetime, optional | Reject checkout if now > `expires_at` |
 | `max_redemptions` | integer, optional | Global cap; reject when redemption count ≥ cap (null = unlimited) |
 
-**Redemption tracking:** increment a counter on the Discount document (or derive from `subscriptions[].discount_code` counts) on successful subscribe webhook — implement in F-CA13. One redemption per `customer_id` per code (default).
+**Redemption tracking:** increment a counter on the Discount document (or derive from `subscriptions[].discount_code` counts) on successful subscribe webhook — implement in **F-CA06**. One redemption per `customer_id` per code (default).
 
 **Customer `subscriptions[]`** — discount fields are part of the locked embedded shape (see [Product & Subscription data shape](#product--subscription-data-shape-locked) above). Set on subscribe webhook when a valid code was in checkout metadata; otherwise `discount_code` = `""`, `free_encounters_granted` = 0, `free_encounters_remaining` = 0.
 
@@ -117,7 +117,7 @@ MentorHub owns the **cart** (plan, quantity, discount code). Stripe Checkout own
 }
 ```
 
-(or `"subscription": "<Product.subscription>"` instead of `product_id`). API validates `quantity >= Product.minimum_members` and Discount rules (F-CA13).
+(or `"subscription": "<Product.subscription>"` instead of `product_id`). API validates `quantity >= Product.minimum_members` and Discount rules (**F-CA06**).
 
 ### Customer API → Stripe (`POST /v1/checkout/sessions`)
 
@@ -127,7 +127,7 @@ MentorHub owns the **cart** (plan, quantity, discount code). Stripe Checkout own
 | `line_items[]` | `{ "price": "<Product.stripe_price_id>", "quantity": N }` | Price comes from Stripe Dashboard Price — **not** a client-supplied amount |
 | `customer` | existing `Customer.stripe_customer_id` | Or create/link Stripe Customer on first checkout using Profile email |
 | `success_url` / `cancel_url` | SPA routes | e.g. `{CUSTOMER_SPA_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}` |
-| `metadata` | `mentorhub_customer_id`, `product_id`, `quantity`, optional `discount_code` | Webhook reconciliation + F-CA13 grant |
+| `metadata` | `mentorhub_customer_id`, `product_id`, `quantity`, optional `discount_code` | Webhook reconciliation + discount grant |
 | `subscription_data.metadata` | same keys as needed | Propagates to Subscription object |
 
 **Not sent to Stripe (MVP):** MentorHub `free_encounters` amount, Stripe `discounts` / `allow_promotion_codes`, custom `unit_price` amounts, trial period overrides (unless added later).
@@ -168,9 +168,9 @@ Examples from CONTRIBUTING: `F-RS05` = 5th Mentor SPA; `F-EA04` = 4th Mentee API
 | --- | --- | --- | --- |
 | `F-CA` | `F-CA03` ([customer_api#4](https://github.com/mentor-forge/mentorhub_customer_api/issues/4)) | **F-CA04** | Also open: F-CA01, F-CA02 |
 | `F-CS` | `F-CS01` ([customer_spa#3](https://github.com/mentor-forge/mentorhub_customer_spa/issues/3)) | **F-CS02** | |
-| `F-D` | `F-D20` | **F-D21** for net-new | Open after F-W02: [F-D14 Subscription](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/35), [F-D15 Dashboard](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/36), [F-D16 Card](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/37) — **repurpose these for cleanup drops**, do not invent parallel drop tickets |
+| `F-D` | `F-D20` | **F-D21** for net-new | Repurpose open #35–#37 as **F-D-E0** (combined drop) |
 | `F-W` | `F-W09` | **F-W10** | F-W09 = E0 Coordinator removal; F-W10 = local dev mocks |
-| `F-S` | — | **F-S01** | `mentorhub_cloudformation` — Cognito pool (R071) |
+| `F-S` | — | **F-S01** | `mentorhub_cloudformation` — Cognito pool |
 
 Provisional numbers below assume filing in the order listed; adjust if issues land out of order.
 
@@ -180,7 +180,7 @@ Provisional numbers below assume filing in the order listed; adjust if issues la
 | --- | --- | --- |
 | **Customer** | `configurator/dictionaries/Customer.0.1.0.yaml` | `_id`, `name`, `description`, `created`, `saved`, `status` — add `stripe_customer_id`, `subscriptions[]` per [locked shape](#product--subscription-data-shape-locked) |
 | **Product** | *(new — F-D22)* | `minimum_members`, `subscription`, `unit_price`, `stripe_price_id` (+ standard dictionary metadata) |
-| **Discount** | *(new — F-D28)* | `code`, `free_encounters`, `status`, `description`, `expires_at`, `max_redemptions` |
+| **Discount** | *(new — F-D22)* | `code`, `free_encounters`, `status`, `description`, `expires_at`, `max_redemptions` |
 | **Profile** | `configurator/dictionaries/Profile.0.1.0.yaml` | `_id`, `name` (IdP username), `status` (`profile_status`), `description`, `full_name`, `email`, `email_verified`, `mentor_id`, `goals`, `interests`, `experience[]`, `created`, `saved`, `customer_id`, `roles` (`user_roles`: mentor/mentee/customer/coordinator/admin) |
 | **Encounter** | `configurator/dictionaries/Encounter.0.1.0.yaml` | `_id`, `mentor_id`, `mentee_id`, `date`, `plan_id`, `agenda[]`, `status`, **`transcript`**, **`summary`**, **`tldr`**, `created`, `saved` |
 | **Subscription** | `configurator/dictionaries/Subscription.0.1.0.yaml` | Stub: `_id`, `name`, `description`, `created`, `saved`, `status` — **drop** (embed on Customer) |
@@ -258,104 +258,56 @@ Legacy **CRUD scaffolding to remove** (not extend): Card, Dashboard, standalone 
 
 | # | Experience | Intent | Suggested IDs (start) |
 | --- | --- | --- | --- |
-| **E0** | **Cleanup first** | Remove legacy nav/endpoints/collections + Coordinator microservice | F-CS02, F-CA04, F-D14–16, F-W09 |
-| E1 | Primary self-registration (Hosted UI → new Customer + Profile → JWT claims) | First org owner via Cognito sign-up + API callback | F-D21+, F-CA05+, F-CS03+, F-S01+ |
-| E2 | First subscription (cart → Checkout → webhook) | First paid entitlement; optional discount code | F-D22+, F-D28+, F-CA06+, F-CA13+, F-CS04+ |
+| **E0** | **Cleanup first** | Remove legacy nav/endpoints/collections + Coordinator microservice | F-CS02, F-CA04, F-D-E0, F-W09 |
+| E1 | Primary self-registration (Hosted UI → new Customer + Profile → JWT claims) | First org owner via Cognito sign-up + API callback | F-D21, F-CA05, F-CS03, F-S01 |
+| E2 | First subscription (cart → Checkout → webhook) | First paid entitlement; optional discount code | F-D22, F-CA06, F-CS04 |
 | E3 | View fixed Customer home | Roster/activity gated on subscription | … |
-| E4 | Invite members (primary user → AdminCreateUser under own customer_id) | Additional org members; no public self-sign-up for invitees | F-D24+, F-CA08+, F-CS06+ |
-| E5 | Change subscription | Capacity + Portal | … |
-| E6 | Recurring charge | Renewal webhooks + past_due banner | … |
-| E7 | Cancel subscription | Portal + webhook sync | … |
+| E4 | Invite members (primary user → AdminCreateUser under own customer_id) | Additional org members; no public self-sign-up for invitees | F-D24, F-CA08, F-CS06 |
+| E5 | Change subscription | Capacity + Portal | F-D-E5E7, F-CA09, F-CS07 |
+| E6 | Recurring charge | Renewal webhooks + past_due banner | *(in F-CA09 / F-CS07)* |
+| E7 | Cancel subscription | Portal + webhook sync | *(in F-CA09 / F-CS07)* |
 | E8 | GDPR forget | SPA button + API redact Profile/Encounter PII (no data property) | F-CA12, F-CS10 only |
 
 ---
 
 ## Framework bootstrap (before E0)
 
-Customer API and Customer SPA need the same agent task-automation model as `mentorhub_mongodb_api` (`Tasks/_PLANNING.md`, `Tasks/_ORCHESTRATE.md`). **Execute each issue in its own repository** — agents working in `mentorhub` must not modify sibling repos; copy issue text into GitHub or run agents scoped to the target repo.
-
-Reference implementation: `mentorhub_mongodb_api/Tasks/_PLANNING.md`, `Tasks/_ORCHESTRATE.md`.
+Planning agents in Customer API and Customer SPA repos create journey task files from this document. **`_PLANNING.md` and `_ORCHESTRATE.md` already exist** in each repo (separate bootstrap ticket) — do not redefine them here.
 
 ### Issue text — API (`F-CA-L001`)
 
 ```text
-Title: F-CA-L001: Adopt tasks/_PLANNING and _ORCHESTRATE framework
+Title: F-CA-L001: Customer API — planning pass for journey tasks
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub_customer_api
 
 Description:
-Bootstrap agent task automation so F-CA* Customer journey work is planned and orchestrated
-consistently. Mirror mentorhub_mongodb_api Tasks/ framework, adapted for Pipenv
-(test / container / api / e2e / down).
+First planning pass for Customer API journey work (E0 onward). Read issue text in
+mentorhub/Workshops/customer_journey_issues.md and create appropriately scoped task files
+under tasks/ — Cursor decides task breakdown.
 
-Agent boundary: implement only in mentorhub_customer_api. Do not edit mentorhub or other
-sibling repos from this task.
-
-Goals:
-- Create tasks/_PLANNING.md — task file layout (Status, Type, Depends On, Description,
-  Path anchoring, Context, Goals, Testing expectations, Outputs, Execution notes);
-  Pipenv verification commands; LNNN vs F-CA## filename conventions; journey execution order;
-  external boundaries (MongoDB schemas from configurator, OpenAPI from running API).
-- Create tasks/_ORCHESTRATE.md — orchestration model (PENDING.* → SHIPPED.*, commit per task,
-  PR when complete); sub-agent workflow; external prerequisites as Blocked.
-- Create tasks/PENDING.L001.adopt_planning_orchestrate_framework.md — bootstrap task that
-  ships the two framework files and README updates (this meta-task; mark Shipped after merge).
-- Update tasks/README.md — point to _PLANNING / _ORCHESTRATE as canonical; retain existing
-  F-CA05–F-CA13 journey task index and Pipenv change-control notes.
-- Add Task automation section in repo README.md linking to tasks/_PLANNING.md.
-- Document suggested order: L001 → F-CA04 (E0) → F-CA05 → F-CA06 → F-CA13 → F-CA09 →
-  F-CA10 → F-CA11 → F-CA07 → F-CA08 → F-CA12.
-
-Testing expectations (L001):
-- Markdown/link review only for framework files.
-- No application code changes unless README pointer is in Outputs.
-
-Depends on: none.
-Blocks: F-CA04 and all subsequent F-CA feature tasks.
-
-Context: mentorhub/Workshops/customer_journey_issues.md (Framework bootstrap);
-mentorhub_mongodb_api/Tasks/_PLANNING.md; mentorhub_mongodb_api/Tasks/_ORCHESTRATE.md;
-mentorhub/Workshops/customer_journey_issues.md (F-CA* issue text)
+Depends on: _PLANNING.md / _ORCHESTRATE.md present in repo (separate ticket).
+Blocks: F-CA04 and later F-CA* feature issues.
 ```
 
 ### Issue text — SPA (`F-CS-L001`)
 
 ```text
-Title: F-CS-L001: Adopt tasks/_PLANNING and _ORCHESTRATE framework
+Title: F-CS-L001: Customer SPA — planning pass for journey tasks
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub_customer_spa
 
 Description:
-Create tasks/ folder with planning and orchestration guides so F-CS* Customer journey work
-follows the same agent automation model as mentorhub_mongodb_api. Adapt for npm/Vitest/Cypress
-(test / build / cypress:run / api / service).
+First planning pass for Customer SPA journey work (E0 onward). Read issue text in
+mentorhub/Workshops/customer_journey_issues.md and create appropriately scoped task files
+under tasks/ — Cursor decides task breakdown.
 
-Agent boundary: implement only in mentorhub_customer_spa. Do not edit mentorhub,
-mentorhub_customer_api, or other sibling repos from this task.
-
-Goals:
-- Create tasks/_PLANNING.md — same section layout as mongodb_api framework; SPA path anchoring
-  (package.json root); spa_standards.md; F-CS## filename convention; no custom login/signup
-  screens in planned tasks unless explicitly scoped.
-- Create tasks/_ORCHESTRATE.md — orchestration model aligned with mongodb_api; external API
-  prerequisites tracked as Blocked until F-CA* ships.
-- Create tasks/PENDING.L001.adopt_planning_orchestrate_framework.md — bootstrap meta-task.
-- Create tasks/README.md — framework links + planned F-CS02–F-CS10 journey index (paste issue
-  text from customer_journey_issues.md into PENDING.F-CS*.md files in follow-on planning).
-- Add Task automation section in repo README.md linking to tasks/_PLANNING.md.
-- Document suggested order: L001 → F-CS02 (E0) → F-CS03 → F-CS04 → F-CS05 → F-CS06 →
-  F-CS07 → F-CS08 → F-CS09 → F-CS10.
-
-Testing expectations (L001):
-- Markdown/link review only.
-- No Vue/application code changes unless README pointer is in Outputs.
-
-Depends on: none (may run in parallel with F-CA-L001).
-Blocks: F-CS02 and all subsequent F-CS feature tasks.
-
-Context: mentorhub/Workshops/customer_journey_issues.md (Framework bootstrap + F-CS* issues);
-mentorhub_mongodb_api/Tasks/_PLANNING.md; mentorhub_mongodb_api/Tasks/_ORCHESTRATE.md;
-mentorhub/DeveloperEdition/standards/spa_standards.md
+Depends on: _PLANNING.md / _ORCHESTRATE.md present in repo (separate ticket).
+Blocks: F-CS02 and later F-CS* feature issues.
 ```
 
 ---
@@ -372,115 +324,84 @@ mentorhub/DeveloperEdition/standards/spa_standards.md
 ### Issue text — SPA (`F-CS02`)
 
 ```text
-Title: F-CS02: E0 Customer SPA nav and legacy page cleanup
+Title: F-CS02: E0 Customer SPA cleanup — remove legacy template CRUD
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
 
 Description:
-Remove template CRUD that conflicts with the Customer billing journey before building new pages.
+Remove template CRUD that conflicts with the Customer billing journey. Keep Cognito IdP
+redirect guards; do not build login/signup screens.
 
 Goals:
-- Remove routes/pages/nav/client methods/Cypress for Cards, Dashboards, and standalone
-  Subscriptions list/new/edit (default home must leave /subscriptions).
-- Remove or hide Event/Journey/Rating/Note scaffolding unless a later experience needs them.
-- Keep existing AWS Cognito IdP auth guards (initAuth, router redirectToIdpLogin,
-  VITE_IDP_LOGIN_URI) — do not build or rework login/signup screens.
-- Keep Admin (admin role) and Logout.
-- Leave a minimal shell / placeholder home until E3 fixed Customer home ships.
+- Remove Cards, Dashboards, standalone Subscriptions CRUD (routes, pages, nav, API clients, Cypress).
+- Trim or hide Event/Journey/Rating/Note template scaffolding unless retained deliberately.
+- Keep Admin (admin role), Logout, existing initAuth / VITE_IDP_LOGIN_URI flow.
+- Placeholder home until E3 (F-CS05).
 
-Context: Workshops/customer_journey_issues.md E0; mentorhub_customer_spa App.vue + router
+Depends on: F-CS-L001 planning pass optional if tasks/ empty.
+Context: Workshops/customer_journey_issues.md E0
 ```
 
 ### Issue text — API (`F-CA04`)
 
 ```text
-Title: F-CA04: E0 Remove Card, Dashboard, and standalone Subscription API surface
+Title: F-CA04: E0 Customer API cleanup — remove doomed collection endpoints
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_api
 
 Description:
-Delete doomed collection endpoints before Stripe/billing work.
+Delete Card, Dashboard, and standalone Subscription API surface before Stripe/billing work.
 
 Goals:
-- Remove OpenAPI, routes, services, and tests for /api/card, /api/dashboard, /api/subscription.
-- Keep /api/customer and /api/profile GET as bases for later journey work.
-- Do not add Stripe yet in this ticket (E2+).
-- Do not add custom auth/login endpoints — AWS Cognito remains the IdP.
+- Remove /api/card, /api/dashboard, /api/subscription (OpenAPI, routes, services, tests).
+- Keep /api/customer and /api/profile GET as bases for later journeys.
+- No Stripe, no custom auth endpoints.
 
-Context: Workshops/customer_journey_issues.md E0; mentorhub_customer_api docs/openapi.yaml
-```
-
-### Issue text — Data (repurpose open issues)
-
-```text
-Title: F-D16: E0 Drop Card — Configuration, Dictionary, and Test Data
-(update existing https://github.com/mentor-forge/mentorhub_mongodb_api/issues/37)
-
-Description:
-Remove Card entirely (PCI — cards live only in Stripe).
-
-Current schema (configurator/dictionaries/Card.0.1.0.yaml): stores card number (PAN),
-expiry, billing_zip, name, status, breadcrumbs — must not remain in MentorHub.
-
-Goals:
-- Delete Card Configuration (configurations/Card.yaml), Dictionary (dictionaries/Card.*.yaml),
-  and Test Data (test_data/Card.0.1.0.0.json).
-- Prefer delete + create over rename for any replacement collections later.
-- Confirm via running configurator after delete.
-
-Context: Workshops/customer_journey_issues.md E0; Research/stripe_research.md
-```
-
-```text
-Title: F-D15: E0 Drop Dashboard — Configuration, Dictionary, and Test Data
-(update existing https://github.com/mentor-forge/mentorhub_mongodb_api/issues/36)
-
-Description:
-No custom dashboards; fixed Customer home is SPA aggregation only.
-
-Current schema (configurator/dictionaries/Dashboard.0.1.0.yaml): _id, name, description,
-created, saved, status, customer_id — configurable dashboard collection not used for MVP.
-
-Goals:
-- Delete Dashboard Configuration (configurations/Dashboard.yaml) and Dictionary
-  (dictionaries/Dashboard.0.1.0.yaml). Remove test_data if any is added before drop.
-- Do not replace with a new Dashboard dictionary.
-
+Depends on: F-CA-L001 planning pass optional if tasks/ empty.
 Context: Workshops/customer_journey_issues.md E0
 ```
 
+### Issue text — Data (`F-D-E0`)
+
 ```text
-Title: F-D14: E0 Drop top-level Subscription — Configuration, Dictionary, and Test Data
-(update existing https://github.com/mentor-forge/mentorhub_mongodb_api/issues/35)
+Title: F-D-E0: E0 Drop Card, Dashboard, and top-level Subscription collections
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_mongodb_api
 
 Description:
-Subscriptions move onto Customer.subscriptions[] (E1/E2 Data). Remove standalone collection.
-
-Current schema (configurator/dictionaries/Subscription.0.1.0.yaml): stub only —
-_id, name, description, created, saved, status (default_status). No customer_id, seats,
-or Stripe ids today.
+Remove legacy collections superseded by Stripe (Card) or SPA aggregation (Dashboard) or
+Customer.subscriptions[] (Subscription). Repurpose / close GitHub issues #35–#37 if open.
 
 Goals:
-- Delete Subscription Configuration (configurations/Subscription.yaml) and Dictionary
-  (dictionaries/Subscription.0.1.0.yaml). Remove test_data if present.
-- Coordinate timing with F-D21/F-D22 Customer.subscriptions[] so environments stay usable.
-- Do not leave a renamed empty Subscription dictionary.
+- Delete Configuration, Dictionary, and Test Data for Card, Dashboard, Subscription.
+- Prefer delete+create over rename; confirm via running configurator.
+- Coordinate with F-D21/F-D22 so environments stay usable when subscriptions[] is added later.
 
-Context: Workshops/customer_journey_issues.md E0 / E1
+Context: Workshops/customer_journey_issues.md E0; Research/stripe_research.md
 ```
 
 ### Issue text — Welcome / platform (`F-W09`)
 
 ```text
-Title: F-W09: E0 Remove Coordinator microservice (API + SPA) from MentorHub
+Title: F-W09: E0 Remove Coordinator microservice (API + SPA)
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub
 
 Description:
-Mike decided Coordinator API and SPA are removed. Strip platform references and retire the services.
+Remove Coordinator API and SPA from Developer Edition and platform docs.
 
 Goals:
-- Remove welcome/index.html links, welcome-auth.js coordinator personas,
-  DeveloperEdition/docker-compose.yaml coordinator_api/spa services and depends_on,
-  workspace/docs pointers to those images/repos.
-- Archive or delete mentorhub_coordinator_api and mentorhub_coordinator_spa remotes
-  (confirm with Mike for exact GitHub disposition).
-- Customer SPA/API remain; only Customer role owns subscriptions.
-- Do not replace with custom auth screens — AWS Cognito remains IdP for Customer SPA.
+- Strip welcome page, docker-compose, and workspace references to coordinator_api/spa.
+- Confirm GitHub disposition of coordinator repos with Mike.
+- Customer SPA/API remain; Cognito stays IdP for Customer.
 
 Context: Workshops/customer_journey_issues.md E0
 ```
@@ -496,129 +417,74 @@ Context: Workshops/customer_journey_issues.md E0
 3. **Pre Token Generation** Lambda maps attributes → JWT claims (`profile_id`, `customer_id`, `mentor_id`, `roles`).
 4. Primary user opens Customer SPA; **existing** IdP redirect → login → JWT has claims.
 
-**Prerequisites (infra — one-time per environment):** User pool with custom attribute schema, Hosted UI sign-up enabled, Post Confirmation + Pre Token Generation Lambdas, IAM, service credential. See `Research/cognito.md` P1–P9 and **F-S01** (`mentorhub_cloudformation` task R071).
+**Prerequisites (infra — one-time per environment):** User pool with custom attribute schema, Hosted UI sign-up enabled, Post Confirmation + Pre Token Generation Lambdas, IAM, service credential. See `Research/cognito.md` P1–P9 and **F-S01**.
 
-**Not in this experience:** SPA login/signup screens; public self-sign-up for **invited** members (E4).
-
-### Issue text — CloudFormation / SRE (`F-S01`) — repo `mentorhub_cloudformation`
+### Issue text — CloudFormation / SRE (`F-S01`)
 
 ```text
-Title: F-S01: E1 AWS Cognito user pool — custom attributes, Hosted UI, JWT claim Lambdas
+Title: F-S01: E1 AWS Cognito user pool for Customer onboarding
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub_cloudformation
-Task file: tasks/PENDING.R071.dev_cognito_customer_onboarding.md
 
 Description:
-One-time per-environment Cognito CloudFormation for Customer onboarding (E1 primary self-reg,
-E4 member invites). Replaces templates/dev/cognito.yaml placeholder. Requirements:
-mentorhub/Research/cognito.md P1–P9.
+Deploy Cognito for E1 primary self-registration and E4 member invites. Requirements:
+mentorhub/Research/cognito.md P1–P9. Replaces templates/dev/cognito.yaml placeholder.
 
 Goals:
-- User pool with immutable custom attributes: custom:profile_id, custom:customer_id,
-  custom:mentor_id, custom:roles.
-- App client + Hosted UI: sign-up enabled for primary users; callback/logout URLs match
-  Customer SPA (VITE_IDP_LOGIN_URI).
-- Cognito domain for Hosted UI.
-- Pre Token Generation Lambda (V2 if access token carries claims): maps custom:* → JWT claims.
-- Post Confirmation Lambda: service-authenticated call to Customer API F-CA05 callback;
-  pass Cognito sub, email, and standard attributes.
-- IAM: Customer API ECS task role — AdminCreateUser, AdminUpdateUserAttributes,
-  AdminDisableUser, AdminDeleteUser on this pool.
-- Service credential in Secrets Manager for trigger → API; document rotation.
-- Stack outputs: pool id, client id, Hosted UI URL — for SPA/API env config.
+- User pool with custom attributes (profile_id, customer_id, mentor_id, roles).
+- Hosted UI sign-up for primary users; app client URLs match Customer SPA.
+- Pre Token Generation + Post Confirmation Lambdas (Post Confirmation calls Customer API F-CA05).
+- IAM for Customer API Admin API on this pool; stack outputs for SPA/API env.
 
-Prerequisites / decisions (lock in PR):
-- Email-as-username (default).
-- Which token SPA reads for claims — align with customer_spa initAuth; use Pre Token Gen V2
-  if access token must carry claims.
-
-Depends on: R060 dev compute platform (ECS roles). Coordinates with F-CA05 callback URL.
-
-Blocks: F-D21, F-CA05, F-CS03 (E1); F-CA08 (E4 invites).
-
+Depends on: dev compute platform (ECS roles).
 Context: Research/cognito.md; Workshops/customer_journey_issues.md E1 / E4
 ```
 
 ### Issue text — Data (`F-D21`)
 
 ```text
-Title: F-D21: E1 Extend Customer and Profile for primary self-registration
+Title: F-D21: E1 Customer and Profile schema for primary self-registration
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_mongodb_api
 
 Description:
-Schema + test data for Cognito Hosted UI primary self-registration: new Customer org + new
-Profile owner per sign-up (no cards; no GDPR request fields).
-
-Current Customer (Customer.0.1.0.yaml): _id, name, description, created, saved, status only.
-Current Profile (Profile.0.1.0.yaml): already has name (IdP username), full_name, email,
-email_verified, mentor_id, customer_id, roles (user_roles), plus goals/interests/experience.
+Schema and test data for Cognito Hosted UI primary registration — new Customer org + owner
+Profile per sign-up. No Card; no GDPR request fields on Customer.
 
 Goals:
-- Extend Customer only as needed (e.g. stripe_customer_id placeholder; org name from Hosted UI
-  or API default). Do not add person-PII or gdpr_* on Customer.
-- Confirm Profile covers Hosted UI sign-up fields (email, full_name/name) + Cognito custom
-  attributes from F-S01; add only missing attributes.
-- Seed at least one primary-owner pair: new Customer + Profile with roles ["customer"],
-  customer_id linked, mentor_id empty — for callback + JWT integration tests.
+- Extend Customer / confirm Profile for sign-up + Cognito custom attributes (F-S01).
+- Seed primary-owner Customer + Profile pair for integration tests.
 - Definitive schemas from running configurator only.
 
-Prerequisites / decisions:
-- Org owner roles default: ["customer"] only (no coordinator on self-reg).
-- mentor_id reserved but empty on primary create.
-- Customer.name sourced from Hosted UI display name or email local-part if absent.
-
-Depends on: F-S01 pool attribute names must match before production seed.
-
-Coordinate with F-D14 if subscriptions[] lands in same change set.
-
-Context: Workshops/customer_journey_issues.md E1; Research/cognito.md Path A;
-configurator/dictionaries/Customer.0.1.0.yaml; Profile.0.1.0.yaml
+Depends on: F-D-E0 coordinated if subscriptions[] added in same window.
+Context: Workshops/customer_journey_issues.md E1; Research/cognito.md Path A
 ```
 
 ### Issue text — API (`F-CA05`)
 
 ```text
-Title: F-CA05: E1 Primary self-registration — Cognito Post Confirmation callback + dev routes
+Title: F-CA05: E1 Primary registration — Post Confirmation callback and local dev provisioning
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub_customer_api
-Task file: tasks/PENDING.F-CA05.primary_registration_callback.md
 
 Description:
-Service-authenticated endpoint invoked by Post Confirmation Lambda after Hosted UI sign-up.
-Creates a new Customer org and new Profile (owner); sets Cognito custom attributes when
-COGNITO_ENABLED=true so JWTs include profile_id, customer_id, mentor_id (empty), roles.
-Not an end-user or SPA endpoint in production.
-
-Local dev (locked — Research/local_dev_mocks.md L3–L4, L6):
-- Extract registration_service: provision_primary, provision_invited_member, update_claims.
-- Dev routes mounted only when REGISTRATION_DEV_MODE=true (never in prod):
-    POST /api/dev/register/primary — email, name, organization_name
-    POST /api/dev/register/invite — customer_id, email, name
-    PATCH /api/dev/profile/{profile_id}/claims — roles, customer_id, mentor_id
-- login.html (F-W10) calls dev routes then mints JWT client-side.
-- COGNITO_ENABLED=false in Developer Edition — skip AdminUpdateUserAttributes locally.
+Provision new Customer + Profile on primary self-registration. Production: Post Confirmation
+Lambda → service-authenticated callback. Local dev: dev routes when REGISTRATION_DEV_MODE
+(see Research/local_dev_mocks.md). Shared registration logic for E4 invites.
 
 Goals:
-- POST /api/internal/cognito/post-confirmation (service credential): input Cognito sub, email,
-  name attrs; atomically create Customer + Profile via registration_service.
-- When COGNITO_ENABLED=true: AdminUpdateUserAttributes for custom:profile_id,
-  custom:customer_id, custom:mentor_id (""), custom:roles (["customer"]).
-- Idempotent on Cognito sub and/or email — Lambda retries must not duplicate org/user.
-- On MongoDB failure after Cognito user exists: return 5xx for retry; do not leave user with
-  usable API access without profile_id claim.
-- Do not implement password reset, MFA, or login APIs — Cognito owns those.
-- Document request/response contract for F-S01 Post Confirmation Lambda and dev route shapes.
+- Create Customer + Profile (owner); sync Cognito custom attributes when COGNITO_ENABLED.
+- Idempotent on Cognito sub/email; no login/password/MFA APIs.
+- Dev provisioning paths for Developer Edition (F-W10 login.html).
 
-Prerequisites / decisions (locked):
-- Post Confirmation trigger (not Post Authentication).
-- customer_id on Profile must equal newly created Customer._id.
-- Invited members use F-CA08 (AdminCreateUser) in prod — primary callback must reject emails
-  that already have a Profile under a different customer (invite path).
-- Dev routes return Profile + claim fields for welcome-auth JWT minting.
-
-Depends on: F-S01 (prod Cognito); F-D21.
-
-Context: Workshops/customer_journey_issues.md E1; Research/cognito.md Path A;
-Research/local_dev_mocks.md; api_utils JWT claim expectations
+Depends on: F-D21; F-S01 for production Cognito.
+Context: Research/cognito.md; Research/local_dev_mocks.md; Workshops/customer_journey_issues.md E1
 ```
 
 ### Issue text — SPA (`F-CS03`)
@@ -626,24 +492,20 @@ Research/local_dev_mocks.md; api_utils JWT claim expectations
 ```text
 Title: F-CS03: E1 Post-auth landing for self-registered primary users
 
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
+
 Description:
-After Cognito Hosted UI login, SPA loads Customer/Profile for JWT claims. Account is created
-by Post Confirmation → F-CA05 during sign-up — no SPA registration flow.
+After Cognito login (or local dev register tab), load Customer/Profile from JWT claims.
+No SPA registration UI.
 
 Goals:
-- After IdP return (existing redirectToIdpLogin / VITE_IDP_LOGIN_URI), load Customer/Profile
-  for JWT claims; empty-subscription CTA toward E2 cart.
-- Handle first-login edge case: if claims missing (provisioning lag), show retry/error — do not
-  invent local signup.
-- Do NOT build registration, login, password-reset, or MFA screens in the SPA.
-- Do NOT rework existing AWS Cognito auth guardrail.
+- Post-IdP landing with empty-subscription CTA toward E2 cart.
+- Handle provisioning lag (missing claims) with retry — do not invent signup.
+- Keep existing Cognito auth guards unchanged.
 
-Prerequisites:
-- F-S01 + F-CA05 in prod; locally F-W10 + F-CA05 dev routes so JWT carries profile_id
-  and customer_id after register tab sign-up (no Hosted UI in Developer Edition).
-
-Depends on: E0 SPA cleanup; F-CA05 (prod callback; dev routes for local testing).
-
+Depends on: E0 cleanup; F-CA05.
 Context: Workshops/customer_journey_issues.md E1; Research/cognito.md
 ```
 
@@ -661,155 +523,68 @@ Context: Workshops/customer_journey_issues.md E1; Research/cognito.md
 ### Issue text — Data (`F-D22`)
 
 ```text
-Title: F-D22: E2 Product + Payment + Customer.subscriptions[] for Checkout
+Title: F-D22: E2 Catalog, Payment, Discount, and Customer.subscriptions[] for Checkout
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_mongodb_api
 
 Description:
-Data for first subscribe without storing cards. Product and Subscription business fields are
-locked (see customer_journey_issues.md Product & Subscription data shape).
+Data layer for first subscribe: Product catalog, Payment webhooks, Discount codes, embedded
+subscriptions[] on Customer. Locked shapes in customer_journey_issues.md.
 
 Goals:
-- Extend Customer with stripe_customer_id and subscriptions[] embedded objects:
-    mentee_count, encounters_mo, subscription, quantity, unit_cost, total_cost
-    plus Stripe sync: status, stripe_subscription_id, stripe_price_id, current_period_end.
-- Add Product dictionary (Configuration + Dictionary + Test Data):
-    minimum_members, subscription, unit_price, stripe_price_id.
-- Add Payment dictionary for webhook payloads (Configuration + Dictionary + Test Data).
-  Derive fields from Stripe Event / object payloads — research in this issue using:
-  - [Event object](https://docs.stripe.com/api/events/object)
-  - [Event types](https://docs.stripe.com/api/events/types)
-  - [Checkout Session object](https://docs.stripe.com/api/checkout/sessions/object) (`checkout.session.completed`)
-  - [Subscription object](https://docs.stripe.com/api/subscriptions/object) (`customer.subscription.*`)
-  - Capture sample fixtures via [Stripe CLI](https://docs.stripe.com/stripe-cli) (`stripe listen`, `stripe trigger`).
-- Seed unsubscribed vs active Customers with sample subscriptions[] using locked fields;
-  seed Products with minimum_members / unit_price; do not reintroduce Card fields.
-- Fetch/update via running configurator; prefer delete+create over rename.
+- Customer: stripe_customer_id, subscriptions[] (business + Stripe sync + discount fields).
+- Product dictionary; Discount dictionary (code, free_encounters, status, description,
+  expires_at, max_redemptions); Payment dictionary (derive fields from Stripe webhook payloads).
+- Seed Products, Discounts, unsubscribed and active Customers.
+- Use running configurator; prefer delete+create over rename.
 
-Depends on: F-D14 drop complete or same coordinated PR.
-
-Context: Workshops/customer_journey_issues.md E2 / Product & Subscription data shape;
-configurator/dictionaries/Customer.0.1.0.yaml
+Depends on: F-D-E0.
+Context: Workshops/customer_journey_issues.md E2 — Product, Discount, and Subscription shapes
 ```
 
-### Issue text — Data (`F-D28`)
+### Issue text — API (`F-CA06`)
 
 ```text
-Title: F-D28: E2 Discount dictionary — codes and free encounter grants
+Title: F-CA06: E2 Stripe subscribe — Checkout, webhooks, and discount codes
 
-Description:
-Discount codes for free trials and sponsored customers. Grants a fixed number of free
-encounters on subscribe — not Stripe billing coupons. See customer_journey_issues.md
-Discount codes & free encounters (locked).
-
-Goals:
-- Add Discount dictionary (Configuration + Dictionary + Test Data) — locked fields:
-    code (unique, required), free_encounters (integer ≥ 0, required),
-    status (active | inactive, default active),
-    description (string, ops label),
-    expires_at (ISO datetime, optional),
-    max_redemptions (integer, optional — null/unset = unlimited).
-- Customer.subscriptions[] already includes discount_code, free_encounters_granted,
-  free_encounters_remaining in F-D22 shape — ensure test data sets all three (zeros when no code).
-- Seed examples: retail trial (small free_encounters, expires_at), partner code (large
-  free_encounters, max_redemptions), inactive code for negative tests.
-- Fetch/update via running configurator; prefer delete+create over rename.
-
-Depends on: F-D22 subscriptions[] shape (same PR or immediately after).
-
-Context: Workshops/customer_journey_issues.md — Discount codes & free encounters (locked)
-```
-
-### Issue text — API (`F-CA06`) — repo `mentorhub_customer_api`
-
-```text
-Title: F-CA06: E2 Checkout Session + subscribe webhooks
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub_customer_api
-Task file: tasks/PENDING.F-CA06.stripe_checkout_and_subscribe_webhooks.md
 
 Description:
-First paid subscription via Stripe Checkout. Implements GET /plans, POST /billing/checkout-session,
-POST /webhooks/stripe (subscribe events), Payment persistence, Customer.subscriptions[] sync.
+First paid subscription via Stripe Checkout. Includes MentorHub discount codes (free encounters,
+not Stripe coupons). See locked Checkout contract and Stripe Checkout section in journey doc.
 
 Goals:
-- Stripe SDK + env config (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET).
-- GET /api/plans — Product fields: minimum_members, subscription, unit_price (+ product_id).
-- POST /api/billing/checkout-session — body { subscription or product_id, quantity };
-  validate quantity >= Product.minimum_members; resolve stripe_price_id; snapshot unit_cost/total_cost
-  onto Customer.subscriptions[] on webhook success.
-- POST /api/webhooks/stripe — signature verify; idempotent on event.id; persist Payment;
-  handle checkout.session.completed, customer.subscription.created/updated, invoice.paid.
-- Extend Customer GET for JWT owner with subscriptions[] (locked business + sync fields).
-- No PANs; never trust success_url as paid.
-
-Decisions still open (detail in task file):
-- Success/cancel URL base (CUSTOMER_SPA_BASE_URL).
-- Payment collection name (default: Payment).
-- Stripe Customer creation on first checkout (default: first checkout).
-- encounters_mo source at purchase (copy from Product extension vs plan config — default: Product field when added).
-
-Stripe webhook research (in task file — use these docs when implementing):
-- [Webhooks overview](https://docs.stripe.com/webhooks)
-- [Signature verification](https://docs.stripe.com/webhooks/signatures)
-- [Event types](https://docs.stripe.com/api/events/types) — MVP handlers: checkout.session.completed,
-  customer.subscription.created/updated, invoice.paid
-- [Checkout Session create](https://docs.stripe.com/api/checkout/sessions/create)
-- [Stripe CLI testing](https://docs.stripe.com/stripe-cli)
+- GET /plans; POST /billing/checkout-session; POST /webhooks/stripe (subscribe events).
+- Validate discount codes; grant free_encounters on subscriptions[] via webhook metadata.
+- Persist Payment; sync Customer.subscriptions[]; never trust success URL as paid.
+- Local dev: stripe-mock + STRIPE_WEBHOOK_VERIFY=false per Research/local_dev_mocks.md.
 
 Depends on: F-D22.
-
-Context: Workshops/customer_journey_issues.md E2; Product & Subscription data shape (locked)
-```
-
-### Issue text — API (`F-CA13`) — repo `mentorhub_customer_api`
-
-```text
-Title: F-CA13: E2 Discount codes — validate at checkout, grant free encounters on subscribe
-
-Repository: mentor-forge/mentorhub_customer_api
-Task file: tasks/PENDING.F-CA13.discount_codes_free_encounters.md
-
-Description:
-Apply Discount codes at checkout. Codes grant free_encounters on Customer.subscriptions[]
-after successful subscribe webhook — Stripe price unchanged (encounter entitlement only).
-
-Goals:
-- Accept optional discount_code on POST /billing/checkout-session (with F-CA06).
-- GET /api/discounts/validate?code= — optional pre-check for SPA (or validate inline on checkout).
-- Validate: code exists, active, not expired, under max_redemptions if set.
-- Store pending discount on checkout metadata or session-scoped hold until webhook succeeds.
-- On subscribe webhook: set discount_code, free_encounters_granted, free_encounters_remaining
-  on subscriptions[] entry; increment redemption count on Discount doc.
-- Return free_encounters_remaining on Customer GET for SPA display.
-- Do not implement encounter decrement here — follow-on Mentor/Encounter API ticket.
-
-Decisions required (defaults in task file):
-- Case sensitivity for code lookup (default: uppercase normalize).
-- Single-use per Customer vs global max_redemptions.
-- Invalid code: reject checkout (400) vs warn-only (default: reject).
-
-Depends on: F-D28; F-CA06 checkout + webhook path.
-
-Context: Workshops/customer_journey_issues.md — Discount codes & free encounters (locked)
+Context: Workshops/customer_journey_issues.md E2; Research/stripe_research.md (background)
 ```
 
 ### Issue text — SPA (`F-CS04`)
 
 ```text
-Title: F-CS04: E2 Plans / cart, Checkout redirect, success/cancel
+Title: F-CS04: E2 Plans, cart, Checkout redirect, success/cancel
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
 
 Description:
-Cart and Stripe redirect UI (not auth UI).
+Shopping cart and Stripe redirect — not auth UI.
 
 Goals:
-- Plans/cart: pick Product (subscription, unit_price, minimum_members); set quantity >= minimum_members;
-  optional discount code field; validate via API if pre-check exists; show computed total;
-  show free_encounters grant when code valid; Checkout CTA.
-- POST checkout with { subscription or product_id, quantity, discount_code? } — no unit_price from client.
-- Redirect to Stripe; success “Confirming…” then refetch; show free_encounters_remaining when present.
-- Cancel messaging; no card form; no Stripe secrets in SPA; no login screens.
+- Plan picker, quantity, optional discount code, Checkout CTA.
+- Redirect to Stripe; success/cancel flows refetch Customer (webhooks activate entitlement).
+- No card forms or Stripe secrets in SPA.
 
-Depends on: F-CA06; F-CA13; E0 cleanup.
-
+Depends on: F-CA06; E0 cleanup.
 Context: Workshops/customer_journey_issues.md E2
 ```
 
@@ -819,39 +594,43 @@ Context: Workshops/customer_journey_issues.md E2
 
 ### Actions
 
-1. Lands on fixed Customer home (not Dashboard collection — F-D15).
+1. Lands on fixed Customer home (not Dashboard collection — dropped in F-D-E0).
 2. Unsubscribed → Choose a plan (E2). Subscribed → mentee roster/activity via `Profile.customer_id`.
 3. Gate premium views on API subscription status.
 
 ### Issue text — Data (`F-D23`)
 
 ```text
-Title: F-D23: E3 Test data for fixed Customer home (reuse Profile.customer_id)
+Title: F-D23: E3 Test data for fixed Customer home
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_mongodb_api
 
 Description:
-No Dashboard dictionary. Roster uses existing Profile.customer_id (Profile.0.1.0.yaml) and
-related Mentee/Encounter/Event data.
+Seed data for Customer home roster/activity using Profile.customer_id — no Dashboard collection.
 
 Goals:
-- Seed Customer → Profiles (customer_id set, roles) → activity enough for list + empty states.
-- Extend existing test_data/Profile.0.1.0.0.json and Customer.0.1.0.0.json; do not revive Dashboard.
-- Confirm F-D15 Dashboard Configuration + Dictionary remain deleted.
+- Customer → Profiles → enough Encounter/Event activity for list and empty states.
 
-Context: Workshops/customer_journey_issues.md E3; configurator/dictionaries/Profile.0.1.0.yaml
+Context: Workshops/customer_journey_issues.md E3
 ```
 
 ### Issue text — API (`F-CA07`)
 
 ```text
-Title: F-CA07: E3 Customer home aggregates + subscription gate
+Title: F-CA07: E3 Customer home aggregates and subscription gate
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_api
 
 Description:
-Read APIs for fixed home; no live Stripe per page load.
+Read APIs for fixed Customer home; gate premium routes on subscription status.
 
 Goals:
-- Return subscriptions[] for CTA vs roster.
-- Aggregate mentee activity for JWT customer_id (Profiles where customer_id matches);
-  403 when product rules require active sub.
+- subscriptions[] on Customer GET for CTA vs roster.
+- Mentee activity aggregate for JWT customer_id; 403 when active sub required.
 
 Context: Workshops/customer_journey_issues.md E3
 ```
@@ -859,16 +638,19 @@ Context: Workshops/customer_journey_issues.md E3
 ### Issue text — SPA (`F-CS05`)
 
 ```text
-Title: F-CS05: E3 Fixed Customer home / mentee activity
+Title: F-CS05: E3 Fixed Customer home and mentee activity
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
 
 Description:
-Default home after E0 cleanup and AWS Cognito login return.
+Default home after E0 — Choose a plan vs roster gated on API subscription state.
 
 Goals:
-- Home: Choose a plan vs roster/activity from API.
-- Gate premium UI on API subscription state only.
-- No custom Dashboard CRUD pages (removed in F-CS02 / F-D15).
+- Home page wired to F-CA07; no Dashboard CRUD.
 
+Depends on: F-CA07; E0 cleanup.
 Context: Workshops/customer_journey_issues.md E3
 ```
 
@@ -888,59 +670,40 @@ Context: Workshops/customer_journey_issues.md E3
 ```text
 Title: F-D24: E4 Member invite persistence
 
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_mongodb_api
+
 Description:
-Store invites created by an authenticated primary user (name, email, status) before invitee
-accepts. Profile.0.1.0.yaml links accepted members via customer_id + roles; invites are the
-pre-accept record.
+Persist invites from authenticated primary user before invitee accepts (embed on Customer or
+small Invite collection).
 
 Goals:
-- Schema + test data for pending/accepted/revoked invites tied to inviter customer_id.
-- Prefer embed on Customer document OR small Invite dictionary — do not overload Profile fields.
-- If new collection: Configuration + Dictionary + Test Data.
-- No GDPR request property on invite or Customer.
+- pending / accepted / revoked invites tied to inviter customer_id.
+- No GDPR request property.
 
-Prerequisites / decisions (defaults for MVP unless Mike overrides):
-- Invitee roles: ["customer"] only — not coordinator, not admin.
-- Invitee mentor_id: "" on create.
-- customer_id on invite and resulting Profile: always inviter’s JWT customer_id (never from body).
-- Persistence shape: embed invites[] on Customer unless query patterns need separate collection.
-
-Depends on: E1 primary registration working (F-CA05); F-D21 Profile.customer_id.
-
-Context: Workshops/customer_journey_issues.md E4; Research/cognito.md Path B;
-Workshops/customer_workshop_2.md Activate
+Depends on: F-D21.
+Context: Workshops/customer_journey_issues.md E4; Research/cognito.md Path B
 ```
 
 ### Issue text — API (`F-CA08`)
 
 ```text
-Title: F-CA08: E4 Invite members — AdminCreateUser under inviter customer_id
+Title: F-CA08: E4 Invite members — Cognito AdminCreateUser under inviter customer_id
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_api
 
 Description:
-Authenticated primary user invites additional org members by name + email. Creates Profile
-under inviter’s customer_id and Cognito user via AdminCreateUser invite — invitees must NOT
-use public Hosted UI self-sign-up.
+Primary user invites org members by name + email. Profile under inviter customer_id;
+AdminCreateUser in prod; dev path per local_dev_mocks.md when COGNITO_ENABLED=false.
 
 Goals:
-- POST invite: require JWT customer_id; accept name + email only; create Profile with
-  customer_id = inviter’s, roles ["customer"], mentor_id "" via same registration_service as F-CA05.
-- When COGNITO_ENABLED=true: AdminCreateUser + invite message; set custom:profile_id,
-  custom:customer_id, custom:mentor_id, custom:roles before or at first token (F-S01).
-- When COGNITO_ENABLED=false (Developer Edition): Profile create only — no AdminCreateUser;
-  invitee first login simulated by login.html "Join as invited member" tab (F-W10) or
-  POST /api/dev/register/invite.
-- GET list invites; PATCH revoke if supported.
-- Idempotent re-invite same email under same customer: resend message, no duplicate Profile/Cognito user.
-- Reject invite if email already has Profile under another customer_id (direct to support/E1 conflict message).
-- Optional seat/capacity: compare active+pending invites to subscriptions[].quantity and
-  Product.minimum_members — hard block when at capacity (soft warning is a product override).
+- POST invite, GET list, optional revoke; idempotent re-invite.
+- Reject emails already bound to another customer; optional seat/capacity check.
 
-Prerequisites:
-- F-S01 Cognito pool + Pre Token Generation (same as E1).
-- Inviter must have completed E1 self-registration (valid customer_id on JWT).
-
-Depends on: F-D24; F-S01; F-CA05 patterns.
-
+Depends on: F-D24; F-CA05; F-S01.
 Context: Workshops/customer_journey_issues.md E4; Research/cognito.md Path B
 ```
 
@@ -949,223 +712,93 @@ Context: Workshops/customer_journey_issues.md E4; Research/cognito.md Path B
 ```text
 Title: F-CS06: E4 Invite Members page
 
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
+
 Description:
-UI for primary user (Cat) to invite org members by name and email. Invitee onboarding is
-Cognito invite email only — no SPA signup for invitees.
+UI for primary user to invite members; invitee onboarding via Cognito email only.
 
 Goals:
-- Invite form (name, email); list pending/accepted; revoke if API supports.
-- Surface capacity errors from API (at-capacity hard block by default).
-- Do not link to or embed Hosted UI self-sign-up for invitees.
-- Gate page on authenticated session with customer_id claim present.
+- Invite form, pending list, capacity errors from API.
+- Gate on customer_id claim; no public self-sign-up for invitees.
 
 Depends on: F-CA08.
-
-Context: Workshops/customer_journey_issues.md E4; Research/cognito.md Path B
+Context: Workshops/customer_journey_issues.md E4
 ```
 
 ---
 
-## E5 — Change subscription
+## E5–E7 — Billing lifecycle (change, renew, cancel)
 
 ### Actions
 
-1. Opens Subscription / Billing.
-2. Changes capacity via cart → Checkout and/or Portal.
-3. Manage billing → `POST /billing/portal-session` → Stripe Portal; return + refetch; webhooks sync.
+**E5 — Change subscription:** Subscription / Billing → capacity via Checkout and/or Portal → webhooks sync.
 
-### Issue text — Data (`F-D25`)
+**E6 — Recurring charge:** Stripe renews; same webhook endpoint (`invoice.paid` / `invoice.payment_failed`) → past_due banner.
+
+**E7 — Cancel:** Customer Portal cancel → webhook → canceled; Resubscribe CTA; API 403 on gated routes.
+
+### Issue text — Data (`F-D-E5E7`)
 
 ```text
-Title: F-D25: E5 Capacity / mid-lifecycle subscription test data
+Title: F-D-E5E7: E5–E7 Billing lifecycle test data
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_mongodb_api
 
 Description:
-Seed Customers with subscriptions[] quantity and status after Portal/Checkout updates
-(depends on F-D22 Customer shape — not Subscription.0.1.0.yaml stub).
+Test data for capacity changes, renewals (invoice.paid / payment_failed), and canceled subscriptions.
 
 Goals:
-- Test data covering active with N seats and post-change states on Customer documents.
+- Customers with varied subscriptions[] quantity, status (active, past_due, canceled).
+- Payment fixtures supporting invoice webhook shapes.
 
-Context: Workshops/customer_journey_issues.md E5; configurator/dictionaries/Customer.0.1.0.yaml (extended)
+Depends on: F-D22.
+Context: Workshops/customer_journey_issues.md E5 / E6 / E7
 ```
 
-### Issue text — API (`F-CA09`) — repo `mentorhub_customer_api`
+### Issue text — API (`F-CA09`)
 
 ```text
-Title: F-CA09: E5 Portal session + capacity-change Checkout
+Title: F-CA09: E5–E7 Stripe billing lifecycle — Portal, renewals, cancel, access gate
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub_customer_api
-Task file: tasks/PENDING.F-CA09.stripe_portal_and_capacity_checkout.md
 
 Description:
-Manage billing via Stripe Customer Portal; change seat capacity via Checkout (extends F-CA06).
+Post-subscribe billing: Customer Portal, capacity checkout, renewal webhooks, cancel sync,
+and subscription gate on premium routes. Extends F-CA06 webhook router.
 
 Goals:
-- POST /api/billing/portal-session → { portal_url }; return_url to SPA billing page.
-- Extend checkout-session for capacity change (quantity validation).
-- Document Stripe Dashboard Portal configuration requirements.
-- Never store PANs.
+- Portal session; capacity-change checkout.
+- invoice.paid / invoice.payment_failed → past_due; subscription updated/deleted → canceled.
+- require_active_subscription on gated routes; honor cancel_at_period_end.
 
-Decisions required (detail in task file):
-- Portal allowed actions (default: cancel + update payment method).
-- Capacity change via Checkout vs Subscription API (default: Checkout).
-- Seat decrease vs active invites (blocked on F-CA08 for full validation).
-
-Depends on: F-CA06; F-D25 test data optional.
-
-Context: Workshops/customer_journey_issues.md E5; Research/stripe_research.md
+Depends on: F-CA06.
+Context: Workshops/customer_journey_issues.md E5–E7; Research/stripe_research.md
 ```
 
 ### Issue text — SPA (`F-CS07`)
 
 ```text
-Title: F-CS07: E5 Subscription + Billing pages
+Title: F-CS07: E5–E7 Subscription, billing, payment-failed, and cancel UX
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
 
 Description:
-Capacity change UI and Manage billing → Stripe Customer Portal.
+Billing management UI: plan/capacity, Portal redirect, past_due banner, cancel/resubscribe CTA.
 
 Goals:
-- Show plan/capacity/status from API; Portal redirect + refetch.
-- Payment-failed deep link shared with E6.
-- No MentorHub card or login forms.
+- Subscription / Billing pages; payment-failed banner from API state.
+- Portal entry for manage billing and cancel; refetch after return.
 
-Context: Workshops/customer_journey_issues.md E5
-```
-
----
-
-## E6 — Recurring charge
-
-### Actions
-
-1. Stripe renews (Stripe internals — **not** Customer API).
-2. Same `POST /webhooks/stripe`: `invoice.paid` or `invoice.payment_failed`.
-3. SPA shows past_due banner → Manage billing (E5).
-
-### Issue text — Data (`F-D26`)
-
-```text
-Title: F-D26: E6 Payment fixtures for invoice.paid and invoice.payment_failed
-
-Description:
-Renewal success/failure documents + past_due on Customer.subscriptions[] (F-D22 Payment + Customer).
-
-Goals:
-- Payment schema supports Invoice webhook shapes; link by customer_id / stripe ids.
-  Derive fields from:
-  - [Invoice object](https://docs.stripe.com/api/invoices/object)
-  - [Event types](https://docs.stripe.com/api/events/types) — invoice.paid, invoice.payment_failed
-  - Sample payloads via [Stripe CLI](https://docs.stripe.com/stripe-cli) (`stripe trigger invoice.paid`, etc.).
-- Seed past_due Customer + failed/successful Payment docs.
-- No Card collection; no GDPR fields.
-
-Context: Workshops/customer_journey_issues.md E6
-```
-
-### Issue text — API (`F-CA10`) — repo `mentorhub_customer_api`
-
-```text
-Title: F-CA10: E6 Renewal webhooks + past_due signal (no charge API)
-
-Repository: mentor-forge/mentorhub_customer_api
-Task file: tasks/PENDING.F-CA10.stripe_renewal_webhooks_and_past_due.md
-
-Description:
-Stripe-driven renewals only — extend webhook router from F-CA06.
-
-Goals:
-- invoice.paid / invoice.payment_failed handlers; persist Payment; sync subscriptions[].
-- Set past_due on payment failure for SPA banner (F-CS08).
-- Idempotent; no MentorHub charge API.
-
-Decisions required (defaults in task file):
-- past_due as subscriptions[].status (default).
-- Invoice fields stored on Payment doc (follow F-D26).
-
-Stripe webhook research (in task file):
-- [Invoice object](https://docs.stripe.com/api/invoices/object)
-- [Event types](https://docs.stripe.com/api/events/types) — invoice.paid, invoice.payment_failed
-- [Stripe CLI](https://docs.stripe.com/stripe-cli) — `stripe trigger invoice.payment_failed`
-
-Depends on: F-CA06; F-D26 fixtures.
-
-Context: Workshops/customer_journey_issues.md E6
-```
-
-### Issue text — SPA (`F-CS08`)
-
-```text
-Title: F-CS08: E6 Payment-failed banner
-
-Description:
-In-app past_due banner → Manage billing.
-
-Goals:
-- Drive only from API state; optional email copy hook later.
-
-Context: Workshops/customer_journey_issues.md E6
-```
-
----
-
-## E7 — Cancel subscription
-
-### Actions
-
-1. Cancel via **Customer Portal** (preferred).
-2. Webhook subscription updated/deleted → `subscriptions[]` canceled.
-3. SPA Resubscribe CTA; API 403 on gated resources.
-
-### Issue text — Data (`F-D27`)
-
-```text
-Title: F-D27: E7 Canceled subscription test data
-
-Description:
-Seed canceled Customer.subscriptions[] for Resubscribe UI and 403 tests (Customer document,
-not Subscription.0.1.0.yaml).
-
-Context: Workshops/customer_journey_issues.md E7
-```
-
-### Issue text — API (`F-CA11`) — repo `mentorhub_customer_api`
-
-```text
-Title: F-CA11: E7 Cancel sync via Portal webhooks
-
-Repository: mentor-forge/mentorhub_customer_api
-Task file: tasks/PENDING.F-CA11.stripe_cancel_webhook_and_access_gate.md
-
-Description:
-Primary cancel path is Portal + webhooks; enforce inactive access on premium routes.
-
-Goals:
-- customer.subscription.updated / deleted → update subscriptions[]; persist event.
-- require_active_subscription gate — 403 on premium routes when no active sub.
-- Honor cancel_at_period_end grace (default in task file).
-
-Decisions required (detail in task file):
-- Which routes are gated (coordinate with F-CA07, F-CA08).
-- MVP single subscription per Customer (default).
-
-Depends on: F-CA06, F-CA09; F-D27 test data.
-
-Stripe webhook research (in task file):
-- [Subscription object](https://docs.stripe.com/api/subscriptions/object)
-- [Event types](https://docs.stripe.com/api/events/types) — customer.subscription.updated, customer.subscription.deleted
-
-Context: Workshops/customer_journey_issues.md E7
-```
-
-### Issue text — SPA (`F-CS09`)
-
-```text
-Title: F-CS09: E7 Cancel flow + unsubscribed CTA
-
-Description:
-Entry to Portal cancel; after refetch show Resubscribe / Choose a plan.
-
-Context: Workshops/customer_journey_issues.md E7
+Depends on: F-CA09.
+Context: Workshops/customer_journey_issues.md E5–E7
 ```
 
 ---
@@ -1189,39 +822,36 @@ Context: Workshops/customer_journey_issues.md E7
 ### Issue text — API (`F-CA12`)
 
 ```text
-Title: F-CA12: E8 Privacy action — cancel Stripe + redact Profile/Encounter PII
+Title: F-CA12: E8 Privacy action — cancel Stripe and redact Profile/Encounter PII
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_api
 
 Description:
-Orchestrate forget for the authenticated Customer’s people. SPA button calls this action.
-No persistence of a “GDPR request” field on Customer or Profile.
+Forget flow for authenticated Customer: cancel Stripe if needed; redact person PII on Profile
+and Encounter. No gdpr_* data property.
 
 Goals:
-- Cancel Stripe subscriptions for stripe_customer_id when still active.
-- Redact/anonymize Profile person fields (full_name, email, experience, etc.) and Encounter
-  transcript/summary/tldr as policy requires.
-- Do not add or require a gdpr_* schema property; do not treat Customer org/billing docs as
-  person PII subject to the same erase rules.
-- Document Payment retention (financial, non-PII) vs person PII.
-- Do not implement Cognito login UI; may disable/delete Cognito user via Admin API as part of
-  the action (F-S01 pool must grant Customer API AdminDeleteUser).
+- Privacy API action callable from SPA; optional Cognito AdminDeleteUser.
+- Document Payment retention vs person PII.
 
-Context: Workshops/customer_journey_issues.md E8; configurator/dictionaries/Profile.0.1.0.yaml;
-configurator/dictionaries/Encounter.0.1.0.yaml
+Context: Workshops/customer_journey_issues.md E8
 ```
 
 ### Issue text — SPA (`F-CS10`)
 
 ```text
-Title: F-CS10: E8 Account / Privacy — request PII removal button
+Title: F-CS10: E8 Account Privacy — PII removal button
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
+
+Repository: mentor-forge/mentorhub_customer_spa
 
 Description:
-UI button + confirm → call privacy API → show outcome. Not a data editor for Customer commerce.
+Destructive confirm → call F-CA12 → show outcome. Not a Customer commerce editor.
 
-Goals:
-- Account / Privacy surface with destructive confirm; call F-CA12 action; show success/failure.
-- No form field bound to a GDPR data property (there is none).
-- No custom auth screens; session aftermath per product rules after redact.
-
+Depends on: F-CA12.
 Context: Workshops/customer_journey_issues.md E8
 ```
 
@@ -1229,17 +859,16 @@ Context: Workshops/customer_journey_issues.md E8
 
 ## Suggested implementation order
 
-1. **Framework** — **F-CA-L001** + **F-CS-L001** (each executed in its own repo; see [Framework bootstrap](#framework-bootstrap-before-e0)).
-2. **E0 Cleanup** — SPA nav/pages → API endpoint removal → Data drops (F-D14/15/16) → F-W09 Coordinator removal.
-3. **E1** Data (F-D21) → API **F-CA05** (registration_service + dev routes first for local testing) → **F-W10** login.html tabs → F-CS03. Prod Cognito **F-S01** (R071) can ship in parallel; not required for Developer Edition.
-4. **E2** Subscribe — F-D22 + **F-D28** → F-CA06 + **F-CA13** → F-CS04.
-5. **E3** Fixed home.
-6. **E4** Invites (F-D24 → F-CA08 → F-CS06) — after E1 provisioning works.
-7. **E5–E7** Billing change / renew / cancel.
-8. **E8** GDPR — **F-CA12 + F-CS10 only** (no F-D property ticket).
-9. **F-W10** — compose env (partially done) + login.html tabs; depends on F-CA05 dev route contract.
+1. **Framework** — **F-CA-L001** + **F-CS-L001** (planning pass in each repo).
+2. **E0** — F-CS02, F-CA04, F-D-E0, F-W09.
+3. **E1** — F-D21, F-CA05, F-W10, F-CS03; F-S01 in parallel for prod Cognito.
+4. **E2** — F-D22, F-CA06, F-CS04.
+5. **E3** — F-D23, F-CA07, F-CS05.
+6. **E4** — F-D24, F-CA08, F-CS06.
+7. **E5–E7** — F-D-E5E7, F-CA09, F-CS07.
+8. **E8** — F-CA12, F-CS10.
 
-When creating tasks in a repo, copy Issue text into that repo’s `_PLANNING.md` workflow → `PENDING.*.md` per local planning layout.
+Each issue instructs a planning agent to create `tasks/` files via `_PLANNING.md` — do not pre-specify task filenames in GitHub issues.
 
 ---
 
@@ -1256,34 +885,22 @@ When creating tasks in a repo, copy Issue text into that repo’s `_PLANNING.md`
 ### Issue text — Welcome / platform (`F-W10`)
 
 ```text
-Title: F-W10: Local dev — Stripe mock + login.html register, invite, update (locked design)
+Title: F-W10: Local dev — Stripe mock and login.html register, invite, update
+
+Create @_PLANNING.md tasks to implement this issue. Only create tsaks, do not execute tasks, do not edit any files outside of the @tasks folder.
 
 Repository: mentor-forge/mentorhub
 
 Description:
-Developer Edition tests Cognito-shaped and Stripe flows without AWS/Stripe credentials.
-Locked design: Research/local_dev_mocks.md (L1–L9). Production Hosted UI unchanged.
+Developer Edition without AWS/Stripe credentials. Locked design: Research/local_dev_mocks.md.
 
 Goals:
-- docker-compose.yaml: mock_stripe_api enabled; customer_api env:
-    COGNITO_ENABLED=false, REGISTRATION_DEV_MODE=true,
-    STRIPE_API_BASE=http://mock_stripe_api:12111, STRIPE_WEBHOOK_VERIFY=false
-  (compose changes may already be partial — verify and document).
-- login.html + welcome-auth.js — four flows:
-    Sign in (existing persona picker).
-    Register organization → POST Customer API /api/dev/register/primary → mint JWT.
-    Join as invited member → POST /api/dev/register/invite → mint JWT.
-    Update profile claims → PATCH /api/dev/profile/{id}/claims → re-mint JWT.
-- Do NOT add cognito-local, LocalStack, or Hosted UI locally.
-- Pointer in DeveloperEdition/README or api_standards to Research/local_dev_mocks.md.
+- stripe-mock in compose; customer_api dev env vars (see local_dev_mocks.md).
+- login.html tabs: register org, join invite, update claims (mint JWT after Customer API).
+- No cognito-local or Hosted UI locally.
 
-Prerequisites:
-- F-CA05 implements registration_service + dev routes (customer_api repo).
-- JWT_SECRET / iss / aud unchanged (local-dev-jwt-secret-fixed, dev-idp, dev-api).
-
-Depends on: F-CA05 dev route contract (can stub until shipped).
-
-Context: Research/local_dev_mocks.md; Research/cognito.md Path A/B; E1, E4, E2
+Depends on: F-CA05 dev provisioning (customer_api repo).
+Context: Research/local_dev_mocks.md; E1, E4, E2
 ```
 
 ---
