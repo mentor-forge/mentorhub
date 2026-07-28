@@ -134,6 +134,8 @@ Implement via `mentorhub_cloudformation` (pool template is placeholder) or docum
 
 Manual Cognito console edits are **break-glass only** — they bypass Profile/`customer_id` consistency.
 
+**Local development (locked):** See `Research/local_dev_mocks.md` — extend **`login.html`** (register / invite / update tabs) + Customer API **dev routes** (`REGISTRATION_DEV_MODE`, `COGNITO_ENABLED=false`); **stripe-mock** for billing. No Cognito container or Hosted UI locally. Production path unchanged.
+
 ---
 
 ## API vs manual

@@ -5,6 +5,7 @@ Sources (Mike PR #31 review prompts + research):
 - `Workshops/customer_workshop_2.md` (User Journey Reflect — experiences, pages, data)
 - `Research/stripe_research.md` (Checkout + Customer Portal + webhooks; anti-patterns)
 - `Research/cognito.md` (AWS Cognito — primary self-registration + invitation onboarding; JWT claims)
+- `Research/local_dev_mocks.md` (Developer Edition — Cognito & Stripe mocks; extend `login.html`)
 - `Workshops/2026-07-21 Mary-Anderson (2).md` (embed subscriptions on Customer; drop Card / Dashboard; Payment webhooks)
 - `Workshops/exercise_templates/journey_mapping.md` (Make → Data / API / UI tickets per step group)
 - `tasks/_PLANNING.md` (task file layout for each repo)
@@ -13,7 +14,7 @@ Sources (Mike PR #31 review prompts + research):
 
 **Actor:** Cat the Customer (paying sponsor).
 
-**How to use:** Each Experience has paste-ready **Issue text** for that repo’s local `tasks/_PLANNING.md`. Complete **Do This First** before filing GitHub issues. Prefer delete+create over rename in the configurator. When dropping a collection, delete **Configuration**, **Dictionary**, and **Test Data** (where present).
+**How to use:** Each Experience has paste-ready **Issue text** for that repo’s local `tasks/_PLANNING.md`. Locked Product, Subscription, and Discount shapes are below; Stripe webhook payload research is in the individual F-D22 / F-CA06 / F-CA10 / F-CA11 task files (with Stripe doc links). Prefer delete+create over rename in the configurator. When dropping a collection, delete **Configuration**, **Dictionary**, and **Test Data** (where present).
 
 **Auth:** **AWS Cognito** is the IdP. Login / password / MFA / Hosted UI are Cognito — do **not** file SPA or API tickets for custom login or signup screens. Customer SPA already redirects via `VITE_IDP_LOGIN_URI` / `redirectToIdpLogin`.
 
@@ -21,24 +22,21 @@ Sources (Mike PR #31 review prompts + research):
 
 ---
 
-## Do This First
-
-Complete these before finalizing ticket text and creating GitHub issues. Research lives in `mentorhub/Research/`.
-
-| # | Research / decision | Why it blocks filing | Owner / notes |
-| --- | --- | --- | --- |
-| R1 | **Stripe webhook event list + JSON shapes** — at least checkout completed, subscription lifecycle, `invoice.paid` / `invoice.payment_failed` | Blocks Payment collection schema + webhook test fixtures | F-CA06/F-CA10 handlers; F-D22 Payment dictionary |
-| R2 | **Misnamed umbrella issues** — mentorhub [#38](https://github.com/mentor-forge/mentorhub/issues/38) `F-UC` and [#39](https://github.com/mentor-forge/mentorhub/issues/39) `F-AC` reverse journey/layer | Rename or close/supersede when filing real `F-CS*` / `F-CA*` issues | CONTRIBUTING: `F-CA` = Customer API, `F-CS` = Customer SPA |
+## Locked decisions (file issues when ready)
 
 **Product & Subscription shape (locked — Mike):** See [Product & Subscription data shape](#product--subscription-data-shape-locked) below.
 
-**Discount / free encounters (locked — Mike):** See [Discount codes & free encounters](#discount-codes--free-encounters-locked). Replaces Do This First free-trial rules ([#36](https://github.com/mentor-forge/mentorhub/issues/36) — encounter-grant model supersedes time-only trial research).
+**Discount / free encounters (locked — Mike):** See [Discount codes & free encounters](#discount-codes--free-encounters-locked).
 
-**Stripe API implementation:** `mentorhub_customer_api/tasks/PENDING.F-CA06` (foundation), `F-CA09`, `F-CA10`, `F-CA11`.
+**Stripe webhooks:** Event list, JSON shapes, and Payment dictionary fields — research in **F-D22**, **F-CA06**, **F-CA10**, **F-CA11** task files; each links to [Stripe API docs](https://docs.stripe.com/api).
 
-**Cognito infra (was Do This First):** Requirements are in `Research/cognito.md`. Implementation is **F-S01** in `mentorhub_cloudformation` — task `tasks/PENDING.R071.dev_cognito_customer_onboarding.md`. File that issue before E1 API/SPA work; E1 tickets depend on F-S01, not open research.
+**Stripe API implementation:** `mentorhub_customer_api/tasks/PENDING.F-CA06` (foundation), `F-CA09`, `F-CA10`, `F-CA11`, `F-CA13`.
 
-**Schema rule:** Product and Subscription business fields are locked below. Payment dictionary still follows R1 webhook research. Fetch definitive schemas from the running configurator per `tasks/_PLANNING.md` (not YAML as write source of truth).
+**Cognito infra:** Requirements in `Research/cognito.md`. Implementation **F-S01** — `mentorhub_cloudformation/tasks/PENDING.R071.dev_cognito_customer_onboarding.md`.
+
+**Local dev mocks (locked — 2026-07-28):** `Research/local_dev_mocks.md` — **F-W10** (`login.html` tabs + stripe-mock in compose); **F-CA05** dev routes (`REGISTRATION_DEV_MODE`); **`COGNITO_ENABLED=false`** locally (no Cognito container); webhook fixtures with **`STRIPE_WEBHOOK_VERIFY=false`**. cognito-local explicitly deferred.
+
+**Schema rule:** Product, Subscription, and Discount business fields are locked below. Payment dictionary shape is derived in F-D22 from webhook event payloads (see that issue’s Stripe references). Fetch definitive schemas from the running configurator per `tasks/_PLANNING.md` (not YAML as write source of truth).
 
 ---
 
@@ -62,9 +60,9 @@ Complete these before finalizing ticket text and creating GitHub issues. Researc
 | `quantity` | Purchased seat quantity (Stripe `line_items.quantity`) |
 | `unit_cost` | Unit price at purchase time (snapshot of Product.`unit_price`) |
 | `total_cost` | `quantity × unit_cost` (computed at purchase; webhooks refresh if Stripe amount differs) |
-| `discount_code` | Redeemed Discount.`code` (empty if none) |
-| `free_encounters_granted` | Copy of Discount.`free_encounters` at checkout |
-| `free_encounters_remaining` | Countdown as encounters are consumed under this subscription |
+| `discount_code` | Redeemed Discount.`code` (empty string if none) |
+| `free_encounters_granted` | Copy of Discount.`free_encounters` at checkout (0 if no code) |
+| `free_encounters_remaining` | Starts equal to `free_encounters_granted`; decremented as encounters are consumed |
 
 **Integration fields (F-D22 — still required for Stripe sync, not business cart fields):**
 
@@ -84,24 +82,67 @@ Free trials and sponsored/partner entitlements use **MentorHub discount codes** 
 
 **Discount** dictionary — redeemable codes (Configuration + Dictionary + Test Data — **F-D28**):
 
-| Field | Role |
-| --- | --- |
-| `code` | Unique redeemable string (case-normalize on lookup) |
-| `free_encounters` | Number of encounters granted when code is applied at checkout |
+| Field | Type / values | Role |
+| --- | --- | --- |
+| `code` | string, unique | Redeemable code (API normalizes: trim + uppercase on lookup) |
+| `free_encounters` | integer ≥ 0 | Encounters granted when code is applied at checkout |
+| `status` | `active` \| `inactive` | Default `active`; inactive codes reject at checkout |
+| `description` | string | Ops label (e.g. “Retail 2-week trial”, “Partner ACME 2026”) — not shown on Stripe Checkout |
+| `expires_at` | ISO datetime, optional | Reject checkout if now > `expires_at` |
+| `max_redemptions` | integer, optional | Global cap; reject when redemption count ≥ cap (null = unlimited) |
 
-**Optional fields (decide in F-D28 / F-CA13 — defaults in issue text):** `status`, `description`, `expires_at`, `max_redemptions`.
+**Redemption tracking:** increment a counter on the Discount document (or derive from `subscriptions[].discount_code` counts) on successful subscribe webhook — implement in F-CA13. One redemption per `customer_id` per code (default).
 
-**Customer `subscriptions[]`** — add when a discount is applied at checkout:
+**Customer `subscriptions[]`** — discount fields are part of the locked embedded shape (see [Product & Subscription data shape](#product--subscription-data-shape-locked) above). Set on subscribe webhook when a valid code was in checkout metadata; otherwise `discount_code` = `""`, `free_encounters_granted` = 0, `free_encounters_remaining` = 0.
 
-| Field | Role |
-| --- | --- |
-| `discount_code` | Code redeemed (empty if none) |
-| `free_encounters_granted` | Copy of Discount.`free_encounters` at redemption |
-| `free_encounters_remaining` | Decremented when a billable encounter is consumed under this subscription |
-
-**Checkout:** optional `discount_code` in cart → API validates active Discount → on successful subscribe webhook, set grant fields on the new `subscriptions[]` entry. **Stripe price is unchanged** unless a separate Stripe coupon is added later; this model grants encounter entitlement only.
+**Checkout:** optional `discount_code` in MentorHub cart → API validates active Discount → pass code in Checkout Session **`metadata`** only (Stripe line-item price unchanged) → on successful subscribe webhook, set grant fields on the new `subscriptions[]` entry.
 
 **Encounter consumption:** decrement `free_encounters_remaining` when an Encounter is created or completed under the customer’s entitlement — implement in Encounter/Mentor API (follow-on ticket; Customer API exposes remaining count on Customer GET).
+
+---
+
+## Stripe Checkout — what we send vs what the user edits (locked)
+
+MentorHub owns the **cart** (plan, quantity, discount code). Stripe Checkout owns **payment** (card entry). User briefly leaves the SPA; success/cancel URLs are UX only — **webhooks** activate entitlement.
+
+### MentorHub SPA → Customer API
+
+```json
+{
+  "product_id": "<Product._id>",
+  "quantity": 5,
+  "discount_code": "TRIAL2026"
+}
+```
+
+(or `"subscription": "<Product.subscription>"` instead of `product_id`). API validates `quantity >= Product.minimum_members` and Discount rules (F-CA13).
+
+### Customer API → Stripe (`POST /v1/checkout/sessions`)
+
+| Field | Value | Notes |
+| --- | --- | --- |
+| `mode` | `subscription` | Recurring billing |
+| `line_items[]` | `{ "price": "<Product.stripe_price_id>", "quantity": N }` | Price comes from Stripe Dashboard Price — **not** a client-supplied amount |
+| `customer` | existing `Customer.stripe_customer_id` | Or create/link Stripe Customer on first checkout using Profile email |
+| `success_url` / `cancel_url` | SPA routes | e.g. `{CUSTOMER_SPA_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}` |
+| `metadata` | `mentorhub_customer_id`, `product_id`, `quantity`, optional `discount_code` | Webhook reconciliation + F-CA13 grant |
+| `subscription_data.metadata` | same keys as needed | Propagates to Subscription object |
+
+**Not sent to Stripe (MVP):** MentorHub `free_encounters` amount, Stripe `discounts` / `allow_promotion_codes`, custom `unit_price` amounts, trial period overrides (unless added later).
+
+### What the user can edit on Stripe’s hosted Checkout page
+
+| Editable on Stripe | Fixed (set by our Session) |
+| --- | --- |
+| **Payment method** (card) | **Plan / product** (Price ID) |
+| **Email** (if not pre-filled via `customer`) | **Quantity** (no `adjustable_quantity` in MVP) |
+| Billing name / address **only if** we enable collection flags later | **Unit price** (defined on Stripe Price) |
+| | **MentorHub discount code** (already validated in SPA/API before redirect) |
+| | **Stripe promotion codes** (`allow_promotion_codes: false` in MVP) |
+
+**Recommendation (locked):** do **not** enable `line_items[].adjustable_quantity` or `allow_promotion_codes` for v1 — keeps cart authority in MentorHub and avoids Stripe-side price changes that bypass Discount validation.
+
+**After payment:** Stripe webhooks update `Customer.subscriptions[]` (business fields + sync fields + discount grant fields). SPA refetches Customer; do not treat success URL as proof of payment.
 
 ---
 
@@ -126,7 +167,7 @@ Examples from CONTRIBUTING: `F-RS05` = 5th Mentor SPA; `F-EA04` = 4th Mentee API
 | `F-CA` | `F-CA03` ([customer_api#4](https://github.com/mentor-forge/mentorhub_customer_api/issues/4)) | **F-CA04** | Also open: F-CA01, F-CA02 |
 | `F-CS` | `F-CS01` ([customer_spa#3](https://github.com/mentor-forge/mentorhub_customer_spa/issues/3)) | **F-CS02** | |
 | `F-D` | `F-D20` | **F-D21** for net-new | Open after F-W02: [F-D14 Subscription](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/35), [F-D15 Dashboard](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/36), [F-D16 Card](https://github.com/mentor-forge/mentorhub_mongodb_api/issues/37) — **repurpose these for cleanup drops**, do not invent parallel drop tickets |
-| `F-W` | `F-W08` | **F-W09** | |
+| `F-W` | `F-W09` | **F-W10** | F-W09 = E0 Coordinator removal; F-W10 = local dev mocks |
 | `F-S` | — | **F-S01** | `mentorhub_cloudformation` — Cognito pool (R071) |
 
 Provisional numbers below assume filing in the order listed; adjust if issues land out of order.
@@ -137,7 +178,7 @@ Provisional numbers below assume filing in the order listed; adjust if issues la
 | --- | --- | --- |
 | **Customer** | `configurator/dictionaries/Customer.0.1.0.yaml` | `_id`, `name`, `description`, `created`, `saved`, `status` — add `stripe_customer_id`, `subscriptions[]` per [locked shape](#product--subscription-data-shape-locked) |
 | **Product** | *(new — F-D22)* | `minimum_members`, `subscription`, `unit_price`, `stripe_price_id` (+ standard dictionary metadata) |
-| **Discount** | *(new — F-D28)* | `code`, `free_encounters` (+ optional status, expires_at, max_redemptions) |
+| **Discount** | *(new — F-D28)* | `code`, `free_encounters`, `status`, `description`, `expires_at`, `max_redemptions` |
 | **Profile** | `configurator/dictionaries/Profile.0.1.0.yaml` | `_id`, `name` (IdP username), `status` (`profile_status`), `description`, `full_name`, `email`, `email_verified`, `mentor_id`, `goals`, `interests`, `experience[]`, `created`, `saved`, `customer_id`, `roles` (`user_roles`: mentor/mentee/customer/coordinator/admin) |
 | **Encounter** | `configurator/dictionaries/Encounter.0.1.0.yaml` | `_id`, `mentor_id`, `mentee_id`, `date`, `plan_id`, `agenda[]`, `status`, **`transcript`**, **`summary`**, **`tldr`**, `created`, `saved` |
 | **Subscription** | `configurator/dictionaries/Subscription.0.1.0.yaml` | Stub: `_id`, `name`, `description`, `created`, `saved`, `status` — **drop** (embed on Customer) |
@@ -444,34 +485,48 @@ configurator/dictionaries/Customer.0.1.0.yaml; Profile.0.1.0.yaml
 ### Issue text — API (`F-CA05`)
 
 ```text
-Title: F-CA05: E1 Primary self-registration — Cognito Post Confirmation callback
+Title: F-CA05: E1 Primary self-registration — Cognito Post Confirmation callback + dev routes
+
+Repository: mentor-forge/mentorhub_customer_api
+Task file: tasks/PENDING.F-CA05.primary_registration_callback.md
 
 Description:
 Service-authenticated endpoint invoked by Post Confirmation Lambda after Hosted UI sign-up.
-Creates a new Customer org and new Profile (owner); sets Cognito custom attributes so JWTs
-include profile_id, customer_id, mentor_id (empty), roles. Not an end-user or SPA endpoint.
+Creates a new Customer org and new Profile (owner); sets Cognito custom attributes when
+COGNITO_ENABLED=true so JWTs include profile_id, customer_id, mentor_id (empty), roles.
+Not an end-user or SPA endpoint in production.
+
+Local dev (locked — Research/local_dev_mocks.md L3–L4, L6):
+- Extract registration_service: provision_primary, provision_invited_member, update_claims.
+- Dev routes mounted only when REGISTRATION_DEV_MODE=true (never in prod):
+    POST /api/dev/register/primary — email, name, organization_name
+    POST /api/dev/register/invite — customer_id, email, name
+    PATCH /api/dev/profile/{profile_id}/claims — roles, customer_id, mentor_id
+- login.html (F-W10) calls dev routes then mints JWT client-side.
+- COGNITO_ENABLED=false in Developer Edition — skip AdminUpdateUserAttributes locally.
 
 Goals:
-- POST primary registration callback (service credential): input Cognito sub, email, name attrs;
-  atomically create Customer + Profile; AdminUpdateUserAttributes for custom:profile_id,
+- POST /api/internal/cognito/post-confirmation (service credential): input Cognito sub, email,
+  name attrs; atomically create Customer + Profile via registration_service.
+- When COGNITO_ENABLED=true: AdminUpdateUserAttributes for custom:profile_id,
   custom:customer_id, custom:mentor_id (""), custom:roles (["customer"]).
 - Idempotent on Cognito sub and/or email — Lambda retries must not duplicate org/user.
 - On MongoDB failure after Cognito user exists: return 5xx for retry; do not leave user with
   usable API access without profile_id claim.
 - Do not implement password reset, MFA, or login APIs — Cognito owns those.
-- Document request/response contract for F-S01 Post Confirmation Lambda.
+- Document request/response contract for F-S01 Post Confirmation Lambda and dev route shapes.
 
-Prerequisites / decisions:
-- Requires F-S01 pool + Lambdas deployed in target environment.
-- Trigger: Post Confirmation (not Post Authentication) unless load testing proves otherwise.
+Prerequisites / decisions (locked):
+- Post Confirmation trigger (not Post Authentication).
 - customer_id on Profile must equal newly created Customer._id.
-- Invited members use F-CA08 (AdminCreateUser) — this endpoint must reject or no-op emails
+- Invited members use F-CA08 (AdminCreateUser) in prod — primary callback must reject emails
   that already have a Profile under a different customer (invite path).
+- Dev routes return Profile + claim fields for welcome-auth JWT minting.
 
-Depends on: F-S01; F-D21.
+Depends on: F-S01 (prod Cognito); F-D21.
 
 Context: Workshops/customer_journey_issues.md E1; Research/cognito.md Path A;
-api_utils JWT claim expectations
+Research/local_dev_mocks.md; api_utils JWT claim expectations
 ```
 
 ### Issue text — SPA (`F-CS03`)
@@ -492,9 +547,10 @@ Goals:
 - Do NOT rework existing AWS Cognito auth guardrail.
 
 Prerequisites:
-- F-S01 + F-CA05 working in dev so JWT carries profile_id and customer_id after sign-up.
+- F-S01 + F-CA05 in prod; locally F-W10 + F-CA05 dev routes so JWT carries profile_id
+  and customer_id after register tab sign-up (no Hosted UI in Developer Edition).
 
-Depends on: E0 SPA cleanup; F-CA05.
+Depends on: E0 SPA cleanup; F-CA05 (prod callback; dev routes for local testing).
 
 Context: Workshops/customer_journey_issues.md E1; Research/cognito.md
 ```
@@ -526,14 +582,20 @@ Goals:
 - Add Product dictionary (Configuration + Dictionary + Test Data):
     minimum_members, subscription, unit_price, stripe_price_id.
 - Add Payment dictionary for webhook payloads (Configuration + Dictionary + Test Data).
+  Derive fields from Stripe Event / object payloads — research in this issue using:
+  - [Event object](https://docs.stripe.com/api/events/object)
+  - [Event types](https://docs.stripe.com/api/events/types)
+  - [Checkout Session object](https://docs.stripe.com/api/checkout/sessions/object) (`checkout.session.completed`)
+  - [Subscription object](https://docs.stripe.com/api/subscriptions/object) (`customer.subscription.*`)
+  - Capture sample fixtures via [Stripe CLI](https://docs.stripe.com/stripe-cli) (`stripe listen`, `stripe trigger`).
 - Seed unsubscribed vs active Customers with sample subscriptions[] using locked fields;
   seed Products with minimum_members / unit_price; do not reintroduce Card fields.
 - Fetch/update via running configurator; prefer delete+create over rename.
 
-Depends on: F-D14 drop complete or same coordinated PR. Payment shape still follows Do This First R1.
+Depends on: F-D14 drop complete or same coordinated PR.
 
 Context: Workshops/customer_journey_issues.md E2 / Product & Subscription data shape;
-Research/stripe_research.md; configurator/dictionaries/Customer.0.1.0.yaml
+configurator/dictionaries/Customer.0.1.0.yaml
 ```
 
 ### Issue text — Data (`F-D28`)
@@ -547,14 +609,16 @@ encounters on subscribe — not Stripe billing coupons. See customer_journey_iss
 Discount codes & free encounters (locked).
 
 Goals:
-- Add Discount dictionary (Configuration + Dictionary + Test Data):
-    code (unique), free_encounters (required).
-- Optional fields (defaults unless Mike overrides): status (active/inactive), description,
-  expires_at, max_redemptions — document chosen shape in dictionary.
-- Extend Customer.subscriptions[] embedded shape with:
-    discount_code, free_encounters_granted, free_encounters_remaining (see journey doc).
-- Seed examples: retail trial code (small free_encounters), partner/sponsored code (large
-  free_encounters e.g. hundreds).
+- Add Discount dictionary (Configuration + Dictionary + Test Data) — locked fields:
+    code (unique, required), free_encounters (integer ≥ 0, required),
+    status (active | inactive, default active),
+    description (string, ops label),
+    expires_at (ISO datetime, optional),
+    max_redemptions (integer, optional — null/unset = unlimited).
+- Customer.subscriptions[] already includes discount_code, free_encounters_granted,
+  free_encounters_remaining in F-D22 shape — ensure test data sets all three (zeros when no code).
+- Seed examples: retail trial (small free_encounters, expires_at), partner code (large
+  free_encounters, max_redemptions), inactive code for negative tests.
 - Fetch/update via running configurator; prefer delete+create over rename.
 
 Depends on: F-D22 subscriptions[] shape (same PR or immediately after).
@@ -591,7 +655,15 @@ Decisions still open (detail in task file):
 - Stripe Customer creation on first checkout (default: first checkout).
 - encounters_mo source at purchase (copy from Product extension vs plan config — default: Product field when added).
 
-Depends on: F-D22; Do This First R1 for Payment webhook schema only.
+Stripe webhook research (in task file — use these docs when implementing):
+- [Webhooks overview](https://docs.stripe.com/webhooks)
+- [Signature verification](https://docs.stripe.com/webhooks/signatures)
+- [Event types](https://docs.stripe.com/api/events/types) — MVP handlers: checkout.session.completed,
+  customer.subscription.created/updated, invoice.paid
+- [Checkout Session create](https://docs.stripe.com/api/checkout/sessions/create)
+- [Stripe CLI testing](https://docs.stripe.com/stripe-cli)
+
+Depends on: F-D22.
 
 Context: Workshops/customer_journey_issues.md E2; Product & Subscription data shape (locked)
 ```
@@ -759,9 +831,12 @@ use public Hosted UI self-sign-up.
 
 Goals:
 - POST invite: require JWT customer_id; accept name + email only; create Profile with
-  customer_id = inviter’s, roles ["customer"], mentor_id "".
-- AdminCreateUser + invite message; set custom:profile_id, custom:customer_id, custom:mentor_id,
-  custom:roles before or at first token (same attribute names as F-S01).
+  customer_id = inviter’s, roles ["customer"], mentor_id "" via same registration_service as F-CA05.
+- When COGNITO_ENABLED=true: AdminCreateUser + invite message; set custom:profile_id,
+  custom:customer_id, custom:mentor_id, custom:roles before or at first token (F-S01).
+- When COGNITO_ENABLED=false (Developer Edition): Profile create only — no AdminCreateUser;
+  invitee first login simulated by login.html "Join as invited member" tab (F-W10) or
+  POST /api/dev/register/invite.
 - GET list invites; PATCH revoke if supported.
 - Idempotent re-invite same email under same customer: resend message, no duplicate Profile/Cognito user.
 - Reject invite if email already has Profile under another customer_id (direct to support/E1 conflict message).
@@ -885,6 +960,10 @@ Renewal success/failure documents + past_due on Customer.subscriptions[] (F-D22 
 
 Goals:
 - Payment schema supports Invoice webhook shapes; link by customer_id / stripe ids.
+  Derive fields from:
+  - [Invoice object](https://docs.stripe.com/api/invoices/object)
+  - [Event types](https://docs.stripe.com/api/events/types) — invoice.paid, invoice.payment_failed
+  - Sample payloads via [Stripe CLI](https://docs.stripe.com/stripe-cli) (`stripe trigger invoice.paid`, etc.).
 - Seed past_due Customer + failed/successful Payment docs.
 - No Card collection; no GDPR fields.
 
@@ -907,9 +986,14 @@ Goals:
 - Set past_due on payment failure for SPA banner (F-CS08).
 - Idempotent; no MentorHub charge API.
 
-Decisions required (detail in task file):
+Decisions required (defaults in task file):
 - past_due as subscriptions[].status (default).
 - Invoice fields stored on Payment doc (follow F-D26).
+
+Stripe webhook research (in task file):
+- [Invoice object](https://docs.stripe.com/api/invoices/object)
+- [Event types](https://docs.stripe.com/api/events/types) — invoice.paid, invoice.payment_failed
+- [Stripe CLI](https://docs.stripe.com/stripe-cli) — `stripe trigger invoice.payment_failed`
 
 Depends on: F-CA06; F-D26 fixtures.
 
@@ -973,6 +1057,10 @@ Decisions required (detail in task file):
 - MVP single subscription per Customer (default).
 
 Depends on: F-CA06, F-CA09; F-D27 test data.
+
+Stripe webhook research (in task file):
+- [Subscription object](https://docs.stripe.com/api/subscriptions/object)
+- [Event types](https://docs.stripe.com/api/events/types) — customer.subscription.updated, customer.subscription.deleted
 
 Context: Workshops/customer_journey_issues.md E7
 ```
@@ -1049,16 +1137,61 @@ Context: Workshops/customer_journey_issues.md E8
 
 ## Suggested implementation order
 
-1. **Do This First** R1–R2 (Stripe webhook Payment schema + rename umbrellas).
-2. **E0 Cleanup** — SPA nav/pages → API endpoint removal → Data drops (F-D14/15/16) → F-W09 Coordinator removal.
-3. **E1** Cognito CloudFormation **F-S01** (`mentorhub_cloudformation` R071) → Data (F-D21) → API callback (F-CA05) → SPA post-auth (F-CS03).
-4. **E2** Subscribe — F-D22 + **F-D28** → F-CA06 + **F-CA13** → F-CS04.
-5. **E3** Fixed home.
-6. **E4** Invites (F-D24 → F-CA08 → F-CS06) — after E1 provisioning works.
-7. **E5–E7** Billing change / renew / cancel.
-8. **E8** GDPR — **F-CA12 + F-CS10 only** (no F-D property ticket).
+1. **E0 Cleanup** — SPA nav/pages → API endpoint removal → Data drops (F-D14/15/16) → F-W09 Coordinator removal.
+2. **E1** Data (F-D21) → API **F-CA05** (registration_service + dev routes first for local testing) → **F-W10** login.html tabs → F-CS03. Prod Cognito **F-S01** (R071) can ship in parallel; not required for Developer Edition.
+3. **E2** Subscribe — F-D22 + **F-D28** → F-CA06 + **F-CA13** → F-CS04.
+4. **E3** Fixed home.
+5. **E4** Invites (F-D24 → F-CA08 → F-CS06) — after E1 provisioning works.
+6. **E5–E7** Billing change / renew / cancel.
+7. **E8** GDPR — **F-CA12 + F-CS10 only** (no F-D property ticket).
+8. **F-W10** — compose env (partially done) + login.html tabs; depends on F-CA05 dev route contract.
 
 When creating tasks in a repo, copy Issue text into that repo’s `_PLANNING.md` workflow → `PENDING.*.md` per local planning layout.
+
+---
+
+## F-W10 — Local dev: Cognito & Stripe mocks (locked)
+
+### Actions
+
+1. **stripe-mock** in `DeveloperEdition/docker-compose.yaml` — done; env vars documented (L7–L8).
+2. **Keep** `login.html` persona picker for returning users.
+3. **Add tabs** on welcome dev IdP: Register organization, Join as invited member, Update profile claims.
+4. **Coordinate F-CA05** — dev routes call same `registration_service`; welcome page mints JWT after API response.
+5. **No cognito-local** for MVP (deferred per `Research/local_dev_mocks.md`).
+
+### Issue text — Welcome / platform (`F-W10`)
+
+```text
+Title: F-W10: Local dev — Stripe mock + login.html register, invite, update (locked design)
+
+Repository: mentor-forge/mentorhub
+
+Description:
+Developer Edition tests Cognito-shaped and Stripe flows without AWS/Stripe credentials.
+Locked design: Research/local_dev_mocks.md (L1–L9). Production Hosted UI unchanged.
+
+Goals:
+- docker-compose.yaml: mock_stripe_api enabled; customer_api env:
+    COGNITO_ENABLED=false, REGISTRATION_DEV_MODE=true,
+    STRIPE_API_BASE=http://mock_stripe_api:12111, STRIPE_WEBHOOK_VERIFY=false
+  (compose changes may already be partial — verify and document).
+- login.html + welcome-auth.js — four flows:
+    Sign in (existing persona picker).
+    Register organization → POST Customer API /api/dev/register/primary → mint JWT.
+    Join as invited member → POST /api/dev/register/invite → mint JWT.
+    Update profile claims → PATCH /api/dev/profile/{id}/claims → re-mint JWT.
+- Do NOT add cognito-local, LocalStack, or Hosted UI locally.
+- Pointer in DeveloperEdition/README or api_standards to Research/local_dev_mocks.md.
+
+Prerequisites:
+- F-CA05 implements registration_service + dev routes (customer_api repo).
+- JWT_SECRET / iss / aud unchanged (local-dev-jwt-secret-fixed, dev-idp, dev-api).
+
+Depends on: F-CA05 dev route contract (can stub until shipped).
+
+Context: Research/local_dev_mocks.md; Research/cognito.md Path A/B; E1, E4, E2
+```
 
 ---
 
@@ -1077,3 +1210,4 @@ When creating tasks in a repo, copy Issue text into that repo’s `_PLANNING.md`
 - Stripe Coupon/Promotion codes for price discounts (MVP uses MentorHub Discount for free encounters only)
 - Mentee “pick up studies” and non-Customer tooling
 - Live Stripe round-trip on every home page paint
+- Requiring real AWS Cognito or Stripe credentials for Developer Edition (F-W10 mocks; cognito-local out of scope for MVP)

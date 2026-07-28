@@ -118,9 +118,18 @@ services:
       MONGO_DB_NAME: mentor_hub
       LOGGING_LEVEL: "INFO"
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      JWT_ISSUER: ${JWT_ISSUER:-dev-idp}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-dev-api}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       API_PORT: 8387
       SAMPLE_API_PORT: 8387
       SAMPLE_SPA_PORT: 8388
+      # Local dev mocks — Research/local_dev_mocks.md (locked L2, L4, L7, L8)
+      COGNITO_ENABLED: ${COGNITO_ENABLED:-false}
+      REGISTRATION_DEV_MODE: ${REGISTRATION_DEV_MODE:-true}
+      STRIPE_API_BASE: ${STRIPE_API_BASE:-http://mock_stripe_api:12111}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_local_dev}
+      STRIPE_WEBHOOK_VERIFY: ${STRIPE_WEBHOOK_VERIFY:-false}
     depends_on:
       mongodb_api:
         condition: service_started
@@ -128,6 +137,18 @@ services:
       - all
       - customer
       - customer-api
+
+  mock_stripe_api:
+    image: stripe/stripe-mock:latest
+    restart: no
+    ports:
+      - "127.0.0.1:12111:12111"
+    profiles:
+      - all
+      - customer-api
+      - customer
+
+# stripe-mock: Research/local_dev_mocks.md
 
   customer_spa:
     image: ghcr.io/mentor-forge/mentorhub_customer_spa:latest
@@ -144,17 +165,6 @@ services:
     profiles:
       - all
       - customer
-
-# mock_stripe_api:
-#   image: stripe/strip-mock:latest
-#   restart: no
-#   ports:
-#     - "127.0.0.1:12111:12111"
-#   environment:
-#   profiles:
-#     - all
-#     - customer-api
-#     - customer
 
   coordinator_api:
     image: ghcr.io/mentor-forge/mentorhub_coordinator_api:latest
