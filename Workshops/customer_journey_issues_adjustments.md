@@ -62,7 +62,7 @@ These should be created from [F-W13](https://github.com/mentor-forge/mentorhub/i
 
 | Proposed ID | Repo | Title (short) | Notes |
 | --- | --- | --- | --- |
-| **F-W18** | `mentorhub` | Bootstrap Admin + Discovery repos in Developer Edition | Filed [mentorhub#52](https://github.com/mentor-forge/mentorhub/issues/52) — F-W15 was already taken |
+| **F-W18** | `mentorhub` | Bootstrap Admin + Discovery repos (copy + refactor) | [mentorhub#52](https://github.com/mentor-forge/mentorhub/issues/52) — copy sources in admin_journey_issues.md |
 | **F-AA-L001** | `mentorhub_admin_api` | Admin API — planning pass | Per `_PLANNING.md`; ingress routes only for MVP |
 | **F-AS-L001** | `mentorhub_admin_spa` | Admin SPA — planning pass | Products, Config, notification create (admin scope) |
 | **F-DA-L001** | `mentorhub_discovery_api` *(or `discover_api`)* | Discovery API — planning pass | Align repo name with F-W14 before filing |

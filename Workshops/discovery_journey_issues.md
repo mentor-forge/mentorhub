@@ -16,7 +16,7 @@ Sources:
 
 **Related journeys:** [admin_journey_issues.md](./admin_journey_issues.md), [customer_journey_issues.md](./customer_journey_issues.md).
 
----
+**Repo bootstrap:** Discovery repos are **created in F-W18** by copying **`mentorhub_customer_api`** (API) and **`mentorhub_mentee_spa`** (SPA) — see [admin_journey_issues.md — Copy sources](./admin_journey_issues.md#copy-sources-locked). Discovery API inherits customer/profile routes but must plan **api-utils 0.2→0.5** migration during strip.
 
 ## Naming (CONTRIBUTING.md)
 
@@ -32,7 +32,7 @@ Discovery API/SPA use the **D**iscovery user letter (`F-DA`, `F-DS`). Dictionary
 
 ## Suggested implementation order
 
-1. **F-W18** — Bootstrap Discovery (+ Admin) repos in Developer Edition ([admin_journey_issues.md](./admin_journey_issues.md)).
+1. **F-W18** — Copy, strip, rename four repos + Developer Edition wiring ([admin_journey_issues.md](./admin_journey_issues.md) — **copy sources table**).
 2. **F-D29** — Notification, card schemas, event_types extension.
 3. **F-UA12**, **F-US09** — RBAC + cross-repo linking prerequisites.
 4. **F-DA-L001** / **F-DS-L001** — planning passes.
