@@ -6,7 +6,7 @@ services:
   welcome:
     image: ghcr.io/mentor-forge/mentorhub:latest
     ports:
-      - "127.0.0.1:8080:80"
+      - "0.0.0.0:8080:80"
     profiles:
       - all
       - mongodb
@@ -22,10 +22,14 @@ services:
   ##################################
   # Backing Services
   ##################################
+  # SECURITY (Developer Edition only): all ports bind to 0.0.0.0 so the stack is
+  # reachable over the team Tailscale VPN. MongoDB runs with --bind_ip_all and NO
+  # authentication, so tailnet ACLs are the only access control. Never use these
+  # bindings outside local / tailnet development. See CONTRIBUTING.md (VPN access).
   mongodb:
     image: mongo:7.0.5
     ports:
-      - "127.0.0.1:27017:27017"
+      - "0.0.0.0:27017:27017"
     extra_hosts:
       - "mongodb:127.0.0.1"
     healthcheck:
@@ -54,7 +58,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_mongodb_api:latest
     restart: no
     ports:
-      - "127.0.0.1:8383:8383"
+      - "0.0.0.0:8383:8383"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
@@ -84,7 +88,7 @@ services:
     image: ghcr.io/agile-learning-institute/mongodb_configurator_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:8384:8384"
+      - "0.0.0.0:8384:8384"
     environment:
       API_HOST: mongodb_api
       API_PORT: 8383
@@ -111,7 +115,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_customer_api:latest
     restart: no
     ports:
-      - "127.0.0.1:8387:8387"
+      - "0.0.0.0:8387:8387"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
@@ -142,7 +146,7 @@ services:
     image: stripe/stripe-mock:latest
     restart: no
     ports:
-      - "127.0.0.1:12111:12111"
+      - "0.0.0.0:12111:12111"
     profiles:
       - all
       - customer-api
@@ -154,7 +158,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_customer_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:8388:80"
+      - "0.0.0.0:8388:80"
     environment:
       API_HOST: customer_api
       API_PORT: 8387
@@ -170,7 +174,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_coordinator_api:latest
     restart: no
     ports:
-      - "127.0.0.1:8389:8389"
+      - "0.0.0.0:8389:8389"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
@@ -192,7 +196,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_coordinator_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:8390:80"
+      - "0.0.0.0:8390:80"
     environment:
       API_HOST: coordinator_api
       API_PORT: 8389
@@ -208,7 +212,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_mentor_api:latest
     restart: no
     ports:
-      - "127.0.0.1:8391:8391"
+      - "0.0.0.0:8391:8391"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
@@ -230,7 +234,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_mentor_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:8392:80"
+      - "0.0.0.0:8392:80"
     environment:
       API_HOST: mentor_api
       API_PORT: 8391
@@ -246,7 +250,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_mentee_api:latest
     restart: no
     ports:
-      - "127.0.0.1:8393:8393"
+      - "0.0.0.0:8393:8393"
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
       MONGODB_REQUIRE_TLS: False
@@ -268,7 +272,7 @@ services:
     image: ghcr.io/mentor-forge/mentorhub_mentee_spa:latest
     restart: no
     ports:
-      - "127.0.0.1:8394:80"
+      - "0.0.0.0:8394:80"
     environment:
       API_HOST: mentee_api
       API_PORT: 8393

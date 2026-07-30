@@ -40,4 +40,13 @@ Description: Expose all Developer Edition services on every network interface (`
 
 ## Execution Notes
 
-_(reserved for the execution agent: plan, commands run, test results, follow-ups)_
+**Summary of changes**
+- Changed all published port bindings in `DeveloperEdition/docker-compose.yaml` from `127.0.0.1:` to `0.0.0.0:`. This branch's compose (from `origin/main`) had **13** active bindings — the 12 listed services plus a now-active `mock_stripe_api` (`12111`) that wasn't present in the stale local `main`. All 13 were updated.
+- Left the `extra_hosts` mapping (`mongodb:127.0.0.1`) and the three `IDP_LOGIN_URI` fallbacks (`http://127.0.0.1:8080/login.html`) unchanged — S41 drives the login URI via `mh`.
+- Added a Developer-Edition security note above the `mongodb` service documenting the 0.0.0.0 exposure, MongoDB's `--bind_ip_all` + no-auth posture, and tailnet-ACL reliance.
+
+**Verification results**
+- `docker compose -f DeveloperEdition/docker-compose.yaml --profile all config` → `rc=0`, parses cleanly; every service renders `host_ip: 0.0.0.0`; `extra_hosts` shows `mongodb=127.0.0.1`; `IDP_LOGIN_URI` defaults to `http://127.0.0.1:8080/login.html` (as expected without `mh`).
+
+**Follow-up tasks**
+- None. S41 handles the `IDP_LOGIN_URI` / magic-host wiring.
