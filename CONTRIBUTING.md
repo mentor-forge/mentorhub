@@ -128,21 +128,29 @@ make update
 
 We utilize an Issue-Feature–Branch pattern for the developer workflow. Our issue naming standards have a prefix to help with organization in the form of 
 
-Type-UserLayerNumber where:
+**Type-UserLayerNumber** where:
 
-- Type is *F*eature or *D*efect
-- User is mento*R*, mente*E*, *C*ustomer, co*O*rdinator (for api/spa repo's)
-- User for overall components are *W*elcome/Login, or *D*ata, or *U*tils
-- Layer is *A*pi, *S*pa, SR*E* 
-- Number is a 2-digit number for the issue.
+- **Type** is *F*eature or *D*efect
+- **User** identifies the bounded domain or platform component:
+  - Journey domains (API/SPA repos): mento**R**, ment**E**, **C**ustomer, co**O**rdinator, **D**iscovery, **A**dmin
+  - Platform: **W**elcome/Login (mentorhub), **U**tils (api_utils, spa_utils)
+  - **S**RE (cloudformation / infra)
+- **Layer** is **A**pi, **S**pa, or SR**E** (omit layer for Data-only tickets — see below)
+- **Number** is a serial issue number (typically two digits)
+
+**Data dictionary tickets** (`mentorhub_mongodb_api`) use **F-D##** with **no layer letter** — the second **D** means **Data** (configurator / schema), not Discovery. Example: **F-D29** = event type schemas. Do not confuse with **F-DA##** (Discovery Api).
 
 For Example:
-- Filter to F-R for all the Mentor API/SPA features
-- Filter to F-RS for all the SPA features in mentor_spa
-- F-RS05 would be the 5th Feature for the Mentor SPA
-- F-EA04 would be the 4th feature of the Mentee API
-- F-D01 would be the first ever Data feature
-- F-S01 would be the first ever SRE feature
+- Filter to **F-R** for all Mentor API/SPA features
+- Filter to **F-RS** for all SPA features in `mentorhub_mentor_spa`
+- **F-RS05** = 5th Feature for the Mentor SPA
+- **F-EA04** = 4th feature of the Mentee API
+- **F-CA05** = 5th feature of the Customer API
+- **F-DA01** = 1st feature of the Discovery API (`mentorhub_discovery_api`)
+- **F-DS01** = 1st feature of the Discovery SPA (`mentorhub_discovery_spa`)
+- **F-AA01** = 1st feature of the Admin API (`mentorhub_admin_api`)
+- **F-D29** = 29th Data (mongodb configurator) feature — not Discovery
+- **F-S01** = 1st SRE feature (e.g. Cognito in cloudformation)
 
 ### Workflow
 
