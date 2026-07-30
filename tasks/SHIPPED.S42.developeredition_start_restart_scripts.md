@@ -48,4 +48,15 @@ Description: Provide two thin wrapper scripts in `DeveloperEdition/` so the Spar
 
 ## Execution Notes
 
-_(reserved for the execution agent: plan, commands run, test results, follow-ups)_
+**Summary of changes**
+- Added `DeveloperEdition/mh-start.sh`: `set -euo pipefail`, `cd "$(dirname "$0")"`, optional non-fatal GHCR login from `~/.mentorhub/GITHUB_TOKEN`, then `docker compose --profile all up --detach`.
+- Added `DeveloperEdition/mh-restart.sh`: same header/login, then `stop` → `pull` → `up --detach` (comment notes `up --detach`, not `start`, applies freshly pulled images).
+- Both created with `#!/usr/bin/env bash` and marked executable (`chmod +x`).
+
+**Verification results**
+- `ls -l` → both files are `-rwxr-xr-x` (executable; git records mode 100755).
+- `bash -n` on both scripts → no syntax errors.
+- `shellcheck` → not installed on this host, skipped (task says "if available").
+
+**Follow-up tasks**
+- `mh-restart.sh` pulls the published welcome image; for local testing of unreleased `welcome-auth.js` changes use `make container` + `mh up` instead (documented for developers in S43 / earlier guidance).
