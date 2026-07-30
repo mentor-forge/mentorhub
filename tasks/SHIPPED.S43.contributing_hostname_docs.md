@@ -32,4 +32,14 @@ Description: Document how developers configure `~/.mentorhub/HOST_NAME` with the
 
 ## Execution Notes
 
-_(reserved for the execution agent: plan, commands run, test results, follow-ups)_
+**Summary of changes**
+- Added a `## Local testing over the VPN (Tailscale)` section to `CONTRIBUTING.md` (between Step 4 and Development Standards). It explains the `0.0.0.0` bindings / tailnet reachability, gives the manual opt-in `~/.mentorhub/HOST_NAME` setup (with both a standard and a WSL/Windows `tailscale.exe` command), notes `mh` builds `IDP_LOGIN_URI` from it and to set it before `mh up`, and states it's localhost-only when unset.
+- Included a security callout (Developer-Edition only; tailnet ACLs are the sole control; MongoDB `--bind_ip_all` + no auth) and a broadcast note telling existing developers to re-run `make update` and add `HOST_NAME`.
+
+**Verification results**
+- `ReadLints` on `CONTRIBUTING.md` → no linter errors.
+- Referenced relative links (`DeveloperEdition/standards/*.md`) confirmed present on disk.
+- Markdown lint via `markdownlint-cli2` → not installed / no network to fetch; skipped.
+
+**Follow-up tasks**
+- None.

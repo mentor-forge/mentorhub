@@ -109,6 +109,41 @@ make update
 
 
 
+## Local testing over the VPN (Tailscale)
+
+Developer Edition services bind to `0.0.0.0`, so a running stack is reachable by
+teammates on the team **Tailscale** tailnet (handy for cross-device testing of
+the journey SPAs and the mock IdP).
+
+This is a **manual, opt-in** step. To enable it, tell `mh` your machine's
+Tailscale [MagicDNS](https://tailscale.com/kb/1081/magicdns) name by creating
+`~/.mentorhub/HOST_NAME`:
+
+```sh
+# macOS / Linux (Tailscale CLI installed locally)
+tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
+
+# WSL (Tailscale runs on the Windows host)
+"/mnt/c/Program Files/Tailscale/tailscale.exe" status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
+
+cat ~/.mentorhub/HOST_NAME   # e.g. my-box.tailXXXX.ts.net
+```
+
+`mh` reads this file at launch and sets `IDP_LOGIN_URI` to
+`http://<HOST_NAME>:8080/login.html` so the journey SPAs redirect sign-in to the
+mock IdP on your host instead of `127.0.0.1`. Set `HOST_NAME` **before**
+`mh up`; if you change it later, `mh down` and `mh up` again. Without the file,
+behavior is unchanged (localhost only).
+
+> **Security — Developer Edition only.** `0.0.0.0` bindings mean **Tailscale ACLs
+> are the only access control**, and MongoDB (`27017`) runs with `--bind_ip_all`
+> and **no authentication**. Never use these bindings outside local / tailnet
+> development.
+
+> **Existing developers:** when you next refresh your local instance, re-run
+> `make update` (to pick up the new `mh`) and add `~/.mentorhub/HOST_NAME` as
+> above to enable VPN access.
+
 ## Development Standards
 
 - Understand a few simple [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
