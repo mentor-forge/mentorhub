@@ -159,7 +159,13 @@ function isAllowedReturnTo(urlString) {
   try {
     const url = new URL(urlString)
     if (url.protocol !== 'http:') return false
-    return url.hostname === '127.0.0.1' || url.hostname === 'localhost'
+    // Local development, plus Tailscale MagicDNS hosts (*.ts.net) so journey
+    // SPAs opened over the team VPN can redirect back after dev sign-in.
+    return (
+      url.hostname === '127.0.0.1' ||
+      url.hostname === 'localhost' ||
+      url.hostname.endsWith('.ts.net')
+    )
   } catch {
     return false
   }

@@ -50,4 +50,16 @@ Description: Make the Developer Edition mock IdP work when journey SPAs are open
 
 ## Execution Notes
 
-_(reserved for the execution agent: plan, commands run, test results, follow-ups)_
+**Summary of changes**
+- `DeveloperEdition/mh`: added a HOST_NAME block alongside the existing `~/.mentorhub/*` sourcing. When `IDP_LOGIN_URI` is unset and `~/.mentorhub/HOST_NAME` exists, it exports `IDP_LOGIN_URI="http://<HOST_NAME>:8080/login.html"`; otherwise the compose default (`http://127.0.0.1:8080/login.html`) applies.
+- `welcome-auth.js`: broadened `isAllowedReturnTo()` to also accept hostnames ending in `.ts.net` (Tailscale MagicDNS), keeping the `http:`-only protocol check.
+- `login.html`: no change required — it only loads `welcome-auth.js`; the allowlist lives entirely in the script.
+
+**Verification results**
+- `isAllowedReturnTo` (real function extracted from `welcome-auth.js`, run under node): all 8 cases pass —
+  `127.0.0.1`/`localhost`/`*.ts.net` allowed; `evil.example.com`, the spoof `notreally-ts.net.evil.com`, `https://`, and a malformed URL all rejected.
+- `zsh -n DeveloperEdition/mh` → syntax OK.
+- Sourcing the real `mh` config block: with `HOST_NAME` present → `IDP_LOGIN_URI=http://curttuff.tailb0d293.ts.net:8080/login.html`; with it absent → unset (compose default used).
+
+**Follow-up tasks**
+- `welcome-auth.js` change requires rebuilding the welcome image (`make container`) to take effect locally; the published image updates via CI / `make push`.
