@@ -14,6 +14,13 @@ if [[ -f "$HOME/.mentorhub/aws-platform.local.env" ]]; then
   source "$HOME/.mentorhub/aws-platform.local.env"
 fi
 
+# Tailscale VPN access: point journey SPAs at the mock IdP on this host's magic
+# name. Opt-in via ~/.mentorhub/HOST_NAME; unset falls back to the compose
+# default (http://127.0.0.1:8080/login.html). See CONTRIBUTING.md (VPN access).
+if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/HOST_NAME" ]]; then
+  export IDP_LOGIN_URI="http://$(<"$HOME/.mentorhub/HOST_NAME"):8080/login.html"
+fi
+
 # Compose-only default; shell profile may already export JWT_SECRET.
 if [[ -z "${JWT_SECRET:-}" ]]; then
   if [[ -f "$HOME/.mentorhub/JWT_DEV_SECRET" ]]; then

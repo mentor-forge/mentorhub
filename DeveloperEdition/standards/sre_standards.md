@@ -362,9 +362,11 @@ SPA containers use an NGINX configuration template (`nginx.conf.template`) that 
 
 - **`API_HOST`**: Hostname of the API server (default: `localhost`)
 - **`API_PORT`**: Port of the API server (default: `8083`)
-- **`IDP_LOGIN_URI`**: Full URL for login redirect after logout, on `401`, or when the SPA is not authenticated (Developer Edition default: `http://127.0.0.1:8080/login.html`; production: IdP or gateway login entry)
+- **`IDP_LOGIN_URI`**: Full URL for login redirect after logout, on `401`, or when the SPA is not authenticated (Developer Edition default: `http://127.0.0.1:8080/login.html`; production: IdP or gateway login entry). Compose passes this env var into journey SPA containers; **`mh`** sets it from `~/.mentorhub/HOST_NAME` when present (see [CONTRIBUTING.md](../../../CONTRIBUTING.md)).
 
-Build-time SPA env (**`VITE_IDP_LOGIN_URI`**) should match the same logical URL so the client can redirect without relying on NGINX-only rewrites.
+At **container startup**, journey SPAs also run `envsubst` on `runtime-config.js.template` to write `/runtime-config.js`, setting `window.__MENTORHUB_RUNTIME__.IDP_LOGIN_URI` from **`IDP_LOGIN_URI`**. NGINX serves that file with **`Cache-Control: no-store`**. The SPA loads it before the app bundle so `getIdpLoginBaseUrl()` in `@mentor-forge/mentorhub_spa_utils` reads the runtime value — **same container image** in local dev, Tailscale VPN, and cloud (where production sets Cognito or gateway URL).
+
+Build-time SPA env (**`VITE_IDP_LOGIN_URI`**) applies to **`npm run dev`** only (typically `http://127.0.0.1:8080/login.html`). Resolution order in spa_utils: runtime **`IDP_LOGIN_URI`** → **`VITE_IDP_LOGIN_URI`** → Developer Edition fallback. Do not rely on client-side loopback hostname rewrites.
 
 ### Reverse Proxy Routes
 
@@ -376,7 +378,7 @@ Proxy only **`/api/*`** (and static assets) through this SPA NGINX layer; do not
 
 ### Authentication Redirect Pattern
 
-Protected routes and the API client redirect the browser to the configured **login base URL** (`getIdpLoginBaseUrl()` / `VITE_IDP_LOGIN_URI`) when the user is unauthenticated or tokens are cleared:
+Protected routes and the API client redirect the browser to the configured **login base URL** (`getIdpLoginBaseUrl()` from `@mentor-forge/mentorhub_spa_utils`) when the user is unauthenticated or tokens are cleared:
 
 - **Developer Edition:** Points at the umbrella developer sign-in page (`login.html`) so developers pick a persona and land in the SPA with hash bootstrap.
 - **Production:** Points at the commercial IdP (or gateway-hosted login) with TLS.
