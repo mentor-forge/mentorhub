@@ -187,8 +187,6 @@ clone-all:
 		mentorhub_spa_utils \
 		mentorhub_customer_api \
 		mentorhub_customer_spa \
-		mentorhub_coordinator_api \
-		mentorhub_coordinator_spa \
 		mentorhub_mentor_api \
 		mentorhub_mentor_spa \
 		mentorhub_mentee_api \

@@ -65,31 +65,54 @@ architecture:
           publish: npm
           type: spa
           port: 8388
-    - name: coordinator
-      description: The Coordinator User Journey is responsible for matching mentors with craftsperson.
+    - name: admin
+      description: Platform operators and ingress automation (Stripe, Cognito, external webhooks).
       is_journey: true
       data_domains:
         controls:
-          - Customer 
-          - Identity
-          - Profile
-          - Login
-        creates:
+          - ExternalEvent
           - Event
-        consumes: []
+        creates:
+          - Notification
+        consumes:
+          - Profile
+          - Customer
       repos:
-        - name: coordinator_api
-          description: Coordinator API
+        - name: admin_api
+          description: Admin API
           template: agile-learning-institute/stage0_template_flask_mongo
           publish: pipenv
           type: api
           port: 8389
-        - name: coordinator_spa
-          description: Coordinator SPA
+        - name: admin_spa
+          description: Admin SPA
           template: agile-learning-institute/stage0_template_vue_vuetify
           publish: npm
           type: spa
           port: 8390
+    - name: discovery
+      description: Universal landing, notifications UX, and cross-SPA discovery.
+      is_journey: true
+      data_domains:
+        controls:
+          - Notification
+        creates: []
+        consumes:
+          - Profile
+          - Customer
+      repos:
+        - name: discovery_api
+          description: Discovery API
+          template: agile-learning-institute/stage0_template_flask_mongo
+          publish: pipenv
+          type: api
+          port: 8397
+        - name: discovery_spa
+          description: Discovery SPA
+          template: agile-learning-institute/stage0_template_vue_vuetify
+          publish: npm
+          type: spa
+          port: 8398
     - name: mentor
       description: Mentor User Journey Domain
       is_journey: true

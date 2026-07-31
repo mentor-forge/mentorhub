@@ -8,6 +8,3 @@ journeys:
   - name: Customer Journey
     description: The Customer Journey is the journey of a customer as they learn from a mentor.
     actor: Carol the Customer
-  - name: Coordinator Journey
-    description: The Coordinator Journey is the journey of a coordinator as they match mentors with mentees.
-    actor: Cat the Coordinator

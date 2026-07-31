@@ -86,6 +86,20 @@ We publish `**api-utils**` (PyPI) and `**@mentor-forge/mentorhub_spa_utils**` (n
 
 To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 
+### HOST_NAME (optional)
+
+`mh` reads `~/.mentorhub/HOST_NAME` at launch and sets `IDP_LOGIN_URI` to `http://<HOST_NAME>:8080/login.html` so journey SPA containers redirect sign-in to the mock IdP on your host instead of `127.0.0.1`. Without this file, behavior is unchanged (localhost only). Set **before** `mh up`; after changing it, run `mh down` then `mh up` again.
+
+```sh
+# Tailscale MagicDNS (optional one-liner)
+tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
+
+# Or set any reachable hostname manually
+echo 'my-hostname.example' > ~/.mentorhub/HOST_NAME
+```
+
+Developer Edition binds services to `0.0.0.0`; see compose comments and [SRE Standards](./DeveloperEdition/standards/sre_standards.md).
+
 ### CodeArtifact (private packages)
 
 After [Step 2](#step-2-of-4---install-the-cli), run **once** to configure package-registry access:
@@ -104,50 +118,6 @@ After GITHUB_TOKEN and `make aws-setup` are in place, run update to finish the i
 ## Update Developer Edition configurations
 make update
 ```
-
----
-
-
-
-## Local testing over the VPN (Tailscale)
-
-Developer Edition services bind to `0.0.0.0`, so a running stack is reachable by
-teammates on the team **Tailscale** tailnet (handy for cross-device testing of
-the journey SPAs and the mock IdP).
-
-This is a **manual, opt-in** step. To enable it, tell `mh` your machine's
-Tailscale [MagicDNS](https://tailscale.com/kb/1081/magicdns) name by creating
-`~/.mentorhub/HOST_NAME`:
-
-```sh
-# macOS / Linux (Tailscale CLI installed locally)
-tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
-
-# WSL (Tailscale runs on the Windows host)
-"/mnt/c/Program Files/Tailscale/tailscale.exe" status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
-
-cat ~/.mentorhub/HOST_NAME   # e.g. my-box.tailXXXX.ts.net
-```
-
-`mh` reads this file at launch and sets `IDP_LOGIN_URI` to
-`http://<HOST_NAME>:8080/login.html` so journey SPA **containers** redirect sign-in to the
-mock IdP on your host instead of `127.0.0.1`. The compose env is injected at **container
-startup** into `/runtime-config.js` (see [SPA Standards](./DeveloperEdition/standards/spa_standards.md#authentication-pattern)).
-Set `HOST_NAME` **before** `mh up`; if you change it later, `mh down` and `mh up` again.
-Without the file, behavior is unchanged (localhost only).
-
-**`npm run dev`** (Vite on localhost) does not use compose `IDP_LOGIN_URI`; it reads
-**`VITE_IDP_LOGIN_URI`** from `.env.development` (`http://127.0.0.1:8080/login.html`) so
-same-machine development is unchanged.
-
-> **Security — Developer Edition only.** `0.0.0.0` bindings mean **Tailscale ACLs
-> are the only access control**, and MongoDB (`27017`) runs with `--bind_ip_all`
-> and **no authentication**. Never use these bindings outside local / tailnet
-> development.
-
-> **Existing developers:** when you next refresh your local instance, re-run
-> `make update` (to pick up the new `mh`) and add `~/.mentorhub/HOST_NAME` as
-> above to enable VPN access.
 
 ## Development Standards
 
