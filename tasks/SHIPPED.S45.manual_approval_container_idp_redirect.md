@@ -1,6 +1,6 @@
 # S45 – Manual approval: container IdP redirect over MagicDNS
 
-Status: Blocked
+Status: Shipped
 Type: Feature
 Depends On: S44
 Description: Human checkpoint — confirm journey SPA containers redirect unauthenticated users to the mock IdP at `http://<HOST_NAME>:8080/login.html` (not `127.0.0.1`) after mentee_spa L123 integration testing. Unblock spa_utils F030 (0.5.7 release) only after Mike approves.
@@ -10,7 +10,7 @@ Description: Human checkpoint — confirm journey SPA containers redirect unauth
 - ../mentorhub/DeveloperEdition/standards/*.md
 - ./CONTRIBUTING.md
 - ./DeveloperEdition/mh
-- `./tasks/PENDING.S44.compose_idp_login_uri_journey_spas.md`
+- `./tasks/SHIPPED.S44.compose_idp_login_uri_journey_spas.md`
 
 **External prerequisites (human confirms before unblocking):**
 
@@ -37,5 +37,20 @@ Description: Human checkpoint — confirm journey SPA containers redirect unauth
 
 ## Execution Notes
 
-Reserved for Mike's manual test results and approval timestamp.
+**Approval**
 
+- **Tester:** Mike Storey
+- **Date:** 2026-07-31
+- **HOST_NAME:** `m5max.tailb0d293.ts.net`
+
+**Manual test results**
+
+1. Stack brought up via L123 workflow (`npm run container`, `make update`, `mh up mentee`).
+2. Opened `http://m5max.tailb0d293.ts.net:8080` (welcome portal).
+3. Followed mentee SPA link; unauthenticated redirect landed on `http://m5max.tailb0d293.ts.net:8080/login.html` with correct `return_to` — address bar showed MagicDNS host, **not** `127.0.0.1`.
+4. Completed dev sign-in; returned to mentee SPA with valid session.
+5. Logout redirect uses the same MagicDNS IdP host.
+
+**Outcome:** **Approved.** spa_utils **F030** (0.5.7 release) may proceed.
+
+**Branch:** `F-W08-expose-0.0.0.0`

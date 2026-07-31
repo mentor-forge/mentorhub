@@ -15,7 +15,7 @@ Description: Master index for the F-W08 SPA login guardrails fix. Execution task
 - ../mentorhub_spa_utils/tasks/SHIPPED.F031.wait_codeartifact_0_5_7_publish.md
 - ../mentorhub_mentee_spa/tasks/SHIPPED.L122.runtime_idp_login_container_wiring.md
 - ../mentorhub_mentee_spa/tasks/SHIPPED.L123.integration_test_idp_redirect.md
-- ../mentorhub_mentee_spa/tasks/PENDING.L125.adopt_spa_utils_0_5_7_codeartifact.md
+- ../mentorhub_mentee_spa/tasks/SHIPPED.L125.adopt_spa_utils_0_5_7_codeartifact.md
 - ../mentorhub_mentee_spa/tasks/BLOCKED.L126.manual_approval_codeartifact_build.md
 - ../mentorhub_mentor_spa/tasks/PENDING.R146.runtime_idp_login_container_wiring.md
 - ../mentorhub_mentor_spa/tasks/BLOCKED.R147.manual_approval_mentor_spa.md
@@ -39,7 +39,7 @@ Same SPA container image honors **`IDP_LOGIN_URI`** at runtime in every environm
 | 5 | **mentorhub** | `SHIPPED.S45` | **Mike:** manual redirect test over MagicDNS |
 | 6 | **spa_utils** | `SHIPPED.F030` | Bump **0.5.7**, commit, push, open PR |
 | 7 | **spa_utils** | `SHIPPED.F031` | **Mike:** merge, tag, confirm CodeArtifact publish |
-| 8 | **mentee_spa** | `PENDING.L125` | Switch to CodeArtifact `@mentor-forge/mentorhub_spa_utils@0.5.7`; test dev + container |
+| 8 | **mentee_spa** | `SHIPPED.L125` | Switch to CodeArtifact `@mentor-forge/mentorhub_spa_utils@0.5.7`; test dev + container |
 | 9 | **mentee_spa** | `BLOCKED.L126` | **Mike:** re-test and merge mentee PR |
 | 10 | **mentor_spa** | `PENDING.R146` | Same runtime wiring + spa_utils 0.5.7 (CodeArtifact) |
 | 11 | **mentor_spa** | `BLOCKED.R147` | **Mike:** re-test and merge mentor PR |
@@ -62,4 +62,4 @@ Same SPA container image honors **`IDP_LOGIN_URI`** at runtime in every environm
 
 ## Execution Notes
 
-**Progress (2026-07-31):** Steps 1–7 shipped (F031: PR #28 merged, tag `v0.5.7`, CodeArtifact publish confirmed). **Next:** mentee_spa L125.
+**Progress (2026-07-31):** Steps 1–8 shipped (L125: CodeArtifact `0.5.7`, container build verified). **Next:** L126 manual approval, then R146.
