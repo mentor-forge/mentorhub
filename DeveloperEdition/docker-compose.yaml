@@ -230,6 +230,9 @@ services:
       - mentor
       - mentor-api
 
+  # Journey SPAs: IDP_LOGIN_URI is exported by `mh` from ~/.mentorhub/HOST_NAME
+  # when set; otherwise compose defaults to http://127.0.0.1:8080/login.html.
+  # Consumed at container runtime (not baked into SPA images). See CONTRIBUTING.md.
   mentor_spa:
     image: ghcr.io/mentor-forge/mentorhub_mentor_spa:latest
     restart: no
