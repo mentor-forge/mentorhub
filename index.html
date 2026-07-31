@@ -108,8 +108,10 @@
                     <button class="section-toggle" type="button" aria-expanded="true" aria-controls="spa-links">Single Page Applications</button>
                 </h2>
                 <div id="spa-links" class="section-content">
+                    <a href="#" id="discovery-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Discovery SPA (default landing)</a>
                     <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
                     <a href="#" id="customer-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer SPA</a>
+                    <a href="#" id="admin-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Admin SPA</a>
                     <a href="#" id="mentor-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor SPA</a>
                     <a href="#" id="mentee-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentee SPA</a>
                 </div>
@@ -121,6 +123,8 @@
                 <div id="api-links" class="section-content" hidden>
                     <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Schema API</a>
                     <a href="#" id="customer-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Customer API</a>
+                    <a href="#" id="admin-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Admin API</a>
+                    <a href="#" id="discovery-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Discovery API</a>
                     <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Mentor API</a>
                     <a href="#" id="mentee-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Mentee API</a>
                 </div>
@@ -131,6 +135,10 @@
                 </h2>
                 <div id="github-links" class="section-content" hidden>
                     <a href="https://github.com/mentor-forge/mentorhub_mongodb_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mongodb_api source">mentorhub_mongodb_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_admin_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="admin_api source">mentorhub_admin_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_admin_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="admin_spa source">mentorhub_admin_spa</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_discovery_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="discovery_api source">mentorhub_discovery_api</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_discovery_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="discovery_spa source">mentorhub_discovery_spa</a>
                     <a href="https://github.com/mentor-forge/mentorhub_customer_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_api source">mentorhub_customer_api</a>
                     <a href="https://github.com/mentor-forge/mentorhub_customer_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_spa source">mentorhub_customer_spa</a>
                     <a href="https://github.com/mentor-forge/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
@@ -146,8 +154,12 @@
 
         document.getElementById('schema-api-docs-link').href = `http://${hostname}:8383/docs/index.html`;
         document.getElementById('schema-spa-link').href = `http://${hostname}:8384`;
+        document.getElementById('discovery-spa-link').href = `http://${hostname}:8398/`;
+        document.getElementById('discovery-api-docs-link').href = `http://${hostname}:8397/docs/explorer.html`;
         document.getElementById('customer-spa-link').href = `http://${hostname}:8388/`;
         document.getElementById('customer-api-docs-link').href = `http://${hostname}:8387/docs/explorer.html`;
+        document.getElementById('admin-spa-link').href = `http://${hostname}:8390/`;
+        document.getElementById('admin-api-docs-link').href = `http://${hostname}:8389/docs/explorer.html`;
         document.getElementById('mentor-spa-link').href = `http://${hostname}:8392/`;
         document.getElementById('mentor-api-docs-link').href = `http://${hostname}:8391/docs/explorer.html`;
         document.getElementById('mentee-spa-link').href = `http://${hostname}:8394/`;

@@ -12,6 +12,10 @@ services:
       - mongodb
       - customer
       - customer-api
+      - admin
+      - admin-api
+      - discovery
+      - discovery-api
       - mentor
       - mentor-api
       - mentee
@@ -42,6 +46,10 @@ services:
       - mongodb
       - customer
       - customer-api
+      - admin
+      - admin-api
+      - discovery
+      - discovery-api
       - mentor
       - mentor-api
       - mentee
@@ -72,6 +80,10 @@ services:
       - mongodb
       - customer
       - customer-api
+      - admin
+      - admin-api
+      - discovery
+      - discovery-api
       - mentor
       - mentor-api
       - mentee
@@ -95,6 +107,10 @@ services:
       - mongodb
       - customer
       - customer-api
+      - admin
+      - admin-api
+      - discovery
+      - discovery-api
       - mentor
       - mentor-api
       - mentee
@@ -240,3 +256,87 @@ services:
     profiles:
       - all
       - mentee
+
+  # Admin + Discovery (F-W18): images from mentorhub_admin_* / mentorhub_discovery_* GHCR
+  # builds (local docker build acceptable before first publish).
+  admin_api:
+    image: ghcr.io/mentor-forge/mentorhub_admin_api:latest
+    restart: no
+    ports:
+      - "0.0.0.0:8389:8389"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: mentor_hub
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      JWT_ISSUER: ${JWT_ISSUER:-dev-idp}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-dev-api}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      API_PORT: 8389
+      SAMPLE_API_PORT: 8389
+      SAMPLE_SPA_PORT: 8390
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - admin
+      - admin-api
+
+  admin_spa:
+    image: ghcr.io/mentor-forge/mentorhub_admin_spa:latest
+    restart: no
+    ports:
+      - "0.0.0.0:8390:80"
+    environment:
+      API_HOST: admin_api
+      API_PORT: 8389
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://127.0.0.1:8080/login.html}
+    depends_on:
+      admin_api:
+        condition: service_started
+    profiles:
+      - all
+      - admin
+
+  discovery_api:
+    image: ghcr.io/mentor-forge/mentorhub_discovery_api:latest
+    restart: no
+    ports:
+      - "0.0.0.0:8397:8397"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
+      MONGODB_REQUIRE_TLS: False
+      MONGO_DB_NAME: mentor_hub
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      JWT_ISSUER: ${JWT_ISSUER:-dev-idp}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-dev-api}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      API_PORT: 8397
+      SAMPLE_API_PORT: 8397
+      SAMPLE_SPA_PORT: 8398
+    depends_on:
+      mongodb_api:
+        condition: service_started
+    profiles:
+      - all
+      - discovery
+      - discovery-api
+
+  discovery_spa:
+    image: ghcr.io/mentor-forge/mentorhub_discovery_spa:latest
+    restart: no
+    ports:
+      - "0.0.0.0:8398:80"
+    environment:
+      API_HOST: discovery_api
+      API_PORT: 8397
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://127.0.0.1:8080/login.html}
+    depends_on:
+      discovery_api:
+        condition: service_started
+    profiles:
+      - all
+      - discovery

@@ -23,10 +23,14 @@ Applies to all mentor-forge repositories on the `main` branch:
 |------------|------|
 | `mentorhub` | Umbrella / Developer Edition |
 | `mentorhub_api_utils` | Shared Python library |
+| `mentorhub_admin_api` | Domain API |
+| `mentorhub_discovery_api` | Domain API |
 | `mentorhub_customer_api` | Domain API |
 | `mentorhub_mentor_api` | Domain API |
 | `mentorhub_craftsperson_api` | Domain API |
 | `mentorhub_spa_utils` | Shared SPA library |
+| `mentorhub_admin_spa` | Domain SPA |
+| `mentorhub_discovery_spa` | Domain SPA |
 | `mentorhub_customer_spa` | Domain SPA |
 | `mentorhub_mentor_spa` | Domain SPA |
 | `mentorhub_craftsperson_spa` | Domain SPA |
@@ -70,10 +74,14 @@ Branch protection can only require checks that run on **open** pull requests. Ex
 | Repository | Required checks (initial) | Follow-up checks |
 |------------|---------------------------|------------------|
 | `mentorhub_api_utils` | `CI / test` | `CI / lint` |
+| `mentorhub_admin_api` | `CI / test` | `CI / lint` |
+| `mentorhub_discovery_api` | `CI / test` | `CI / lint` |
 | `mentorhub_customer_api` | `CI / test` | `CI / lint` |
 | `mentorhub_mentor_api` | `CI / test` | `CI / lint` |
 | `mentorhub_craftsperson_api` | `CI / test` | `CI / lint` |
 | `mentorhub_spa_utils` | `CI / test` | `CI / lint` |
+| `mentorhub_admin_spa` | `CI / test` | `CI / build` (optional) |
+| `mentorhub_discovery_spa` | `CI / test` | `CI / build` (optional) |
 | `mentorhub_customer_spa` | `CI / test` | `CI / build` (optional) |
 | `mentorhub_mentor_spa` | `CI / test` | `CI / build` (optional) |
 | `mentorhub_craftsperson_spa` | `CI / test` | `CI / build` (optional) |

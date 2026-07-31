@@ -178,3 +178,15 @@ architecture:
           description: Runbook Automation SPA (utility container, not a real repository)
           type: spa_ref
           port: 8396
+  # F-US09 cross-repo SPA base URLs (Developer Edition). Replace <host> with
+  # 127.0.0.1 or ~/.mentorhub/HOST_NAME (Tailscale MagicDNS). See CONTRIBUTING.md.
+  cross_repo_spa_urls:
+    default_post_login: discovery_spa
+    host_resolution: "<host> from window.location.hostname locally, or mh-exported HOST_NAME over VPN"
+    spas:
+      configurator_spa: "http://<host>:8384"
+      customer_spa: "http://<host>:8388/"
+      admin_spa: "http://<host>:8390/"
+      discovery_spa: "http://<host>:8398/"
+      mentor_spa: "http://<host>:8392/"
+      mentee_spa: "http://<host>:8394/"
