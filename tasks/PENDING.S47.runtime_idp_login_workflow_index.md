@@ -7,14 +7,14 @@ Description: Master index for the F-W08 SPA login guardrails fix. Execution task
 
 ## Context
 
-- ./tasks/PENDING.S44.compose_idp_login_uri_journey_spas.md
-- ./tasks/BLOCKED.S45.manual_approval_container_idp_redirect.md
+- ./tasks/SHIPPED.S44.compose_idp_login_uri_journey_spas.md
+- ./tasks/SHIPPED.S45.manual_approval_container_idp_redirect.md
 - ./tasks/BLOCKED.S46.document_runtime_idp_login_uri.md
-- ../mentorhub_spa_utils/tasks/PENDING.F029.runtime_idp_login_uri_resolution.md
-- ../mentorhub_spa_utils/tasks/PENDING.F030.bump_patch_release_0_5_7.md
-- ../mentorhub_spa_utils/tasks/BLOCKED.F031.wait_codeartifact_0_5_7_publish.md
-- ../mentorhub_mentee_spa/tasks/PENDING.L122.runtime_idp_login_container_wiring.md
-- ../mentorhub_mentee_spa/tasks/PENDING.L123.integration_test_idp_redirect.md
+- ../mentorhub_spa_utils/tasks/SHIPPED.F029.runtime_idp_login_uri_resolution.md
+- ../mentorhub_spa_utils/tasks/SHIPPED.F030.bump_patch_release_0_5_7.md
+- ../mentorhub_spa_utils/tasks/SHIPPED.F031.wait_codeartifact_0_5_7_publish.md
+- ../mentorhub_mentee_spa/tasks/SHIPPED.L122.runtime_idp_login_container_wiring.md
+- ../mentorhub_mentee_spa/tasks/SHIPPED.L123.integration_test_idp_redirect.md
 - ../mentorhub_mentee_spa/tasks/PENDING.L125.adopt_spa_utils_0_5_7_codeartifact.md
 - ../mentorhub_mentee_spa/tasks/BLOCKED.L126.manual_approval_codeartifact_build.md
 - ../mentorhub_mentor_spa/tasks/PENDING.R146.runtime_idp_login_container_wiring.md
@@ -32,13 +32,13 @@ Same SPA container image honors **`IDP_LOGIN_URI`** at runtime in every environm
 
 | Step | Repo | Task file | What changes |
 |------|------|-----------|--------------|
-| 1 | **mentorhub** | `PENDING.S44` | Confirm compose passes `IDP_LOGIN_URI`; `make update` |
-| 2 | **spa_utils** | `PENDING.F029` | Runtime `IDP_LOGIN_URI` in `idpRedirect.ts`; remove 0.5.6 hostname rewrite |
-| 3 | **mentee_spa** | `PENDING.L122` | Local `file:../mentorhub_spa_utils`; Dockerfile/nginx runtime config injection |
-| 4 | **mentee_spa** | `PENDING.L123` | Integration test: `npm run container` + `mh up mentee` |
-| 5 | **mentorhub** | `BLOCKED.S45` | **Mike:** manual redirect test over MagicDNS |
-| 6 | **spa_utils** | `PENDING.F030` | Bump **0.5.7**, commit, push, open PR |
-| 7 | **spa_utils** | `BLOCKED.F031` | **Mike:** merge, tag, confirm CodeArtifact publish |
+| 1 | **mentorhub** | `SHIPPED.S44` | Confirm compose passes `IDP_LOGIN_URI`; `make update` |
+| 2 | **spa_utils** | `SHIPPED.F029` | Runtime `IDP_LOGIN_URI` in `idpRedirect.ts`; remove 0.5.6 hostname rewrite |
+| 3 | **mentee_spa** | `SHIPPED.L122` | Local `file:../mentorhub_spa_utils`; Dockerfile/nginx runtime config injection |
+| 4 | **mentee_spa** | `SHIPPED.L123` | Integration test: `npm run container` + `mh up mentee` |
+| 5 | **mentorhub** | `SHIPPED.S45` | **Mike:** manual redirect test over MagicDNS |
+| 6 | **spa_utils** | `SHIPPED.F030` | Bump **0.5.7**, commit, push, open PR |
+| 7 | **spa_utils** | `SHIPPED.F031` | **Mike:** merge, tag, confirm CodeArtifact publish |
 | 8 | **mentee_spa** | `PENDING.L125` | Switch to CodeArtifact `@mentor-forge/mentorhub_spa_utils@0.5.7`; test dev + container |
 | 9 | **mentee_spa** | `BLOCKED.L126` | **Mike:** re-test and merge mentee PR |
 | 10 | **mentor_spa** | `PENDING.R146` | Same runtime wiring + spa_utils 0.5.7 (CodeArtifact) |
@@ -62,4 +62,4 @@ Same SPA container image honors **`IDP_LOGIN_URI`** at runtime in every environm
 
 ## Execution Notes
 
-Reserved for workflow progress notes (which steps are shipped, PR links, etc.).
+**Progress (2026-07-31):** Steps 1–7 shipped (F031: PR #28 merged, tag `v0.5.7`, CodeArtifact publish confirmed). **Next:** mentee_spa L125.
