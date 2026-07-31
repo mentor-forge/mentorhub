@@ -185,6 +185,10 @@ clone-all:
 		mentorhub_mongodb_api \
 		mentorhub_api_utils \
 		mentorhub_spa_utils \
+		mentorhub_admin_api \
+		mentorhub_admin_spa \
+		mentorhub_discovery_api \
+		mentorhub_discovery_spa \
 		mentorhub_customer_api \
 		mentorhub_customer_spa \
 		mentorhub_mentor_api \

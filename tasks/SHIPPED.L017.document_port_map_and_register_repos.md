@@ -1,6 +1,6 @@
 # L017 – Document port map and register Admin + Discovery repos in platform docs
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L016.wire_welcome_portal_and_login
 Description: F-W18 — Finalize platform registration for the four new repos: confirm `architecture.yaml` port map for **F-US09** cross-repo linking, update `Makefile clone-all`, branch protection standards, and umbrella docs so developers can discover and clone Admin + Discovery domains.
@@ -57,3 +57,10 @@ Description: F-W18 — Finalize platform registration for the four new repos: co
 - `Workshops/README.md` — journey doc index (if missing links).
 
 ## Execution Notes
+
+- Added `cross_repo_spa_urls` block to `Specifications/architecture.yaml` with F-US09 Developer Edition SPA base URLs; `default_post_login: discovery_spa`.
+- `Makefile clone-all` — four new repos added.
+- `branch_protection_standards.md` — admin/discovery API and SPA rows added.
+- `README.md` — default post-login Discovery SPA note.
+- `Workshops/README.md` — admin and discovery journey doc links.
+- `yq '.' Specifications/architecture.yaml` — pass; ports unique.

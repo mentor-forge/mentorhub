@@ -1,6 +1,6 @@
 # L013 – Bootstrap mentorhub_discovery_spa from mentorhub_mentee_spa
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: F-W18 — Copy `mentorhub_mentee_spa` into the empty `mentorhub_discovery_spa` repo, strip mentee domain pages/nav, keep minimal auth shell with spa_utils **0.5.5**, and rename to `discovery-spa` (port **8398**).
@@ -57,3 +57,12 @@ Description: F-W18 — Copy `mentorhub_mentee_spa` into the empty `mentorhub_dis
   - `README.md`
 
 ## Execution Notes
+
+- **Branch:** `F-W18-Discover-Admin-Bootstrap` in `mentor-forge/mentorhub_discovery_spa`
+- **Commit:** `5aa67c54c6b57b92d63f9ee9ce4f567f9f7b00f4`
+- **Source:** Copied `mentorhub_mentee_spa` (excluded `.git`, `tasks/`); stripped Journey/Path/Resource pages, components, API methods, and domain Cypress specs.
+- **Kept:** Auth shell (`initAuth`, router guards, `useAuth`, 401→IdP redirect), `AdminPage`, `useConfig`/`useRoles`, CardGrid stub on `/discovery`.
+- **Renamed:** package `mentorhub_discovery_spa`, dev port **8398**, API proxy **8397**, GHCR `ghcr.io/mentor-forge/mentorhub_discovery_spa:latest`, Docker `API_HOST=mentorhub_discovery_api`.
+- **spa_utils:** pinned `@mentor-forge/mentorhub_spa_utils` **0.5.5**; added `lint` (`vue-tsc --noEmit`) and `test:unit` scripts.
+- **Tests (2026-07-31):** `npm run lint` ✓, `npm run test:unit` ✓ (17 tests), `npm run build` ✓.
+- **Grep:** no `8394`, `mentorhub_mentee_spa`, or stripped page names in `src/` or active config (README cites copy source only).

@@ -1,6 +1,6 @@
 # L012 – Bootstrap mentorhub_discovery_api from mentorhub_customer_api
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: F-W18 — Copy `mentorhub_customer_api` into the empty `mentorhub_discovery_api` repo, strip card/dashboard/subscription/journey/rating/note domains, plan **api-utils 0.2→0.5** upgrade path, keep **customer + profile** routes as the F-DA01 starting point, and rename to `discovery-api` (port **8397**).
@@ -63,3 +63,13 @@ Description: F-W18 — Copy `mentorhub_customer_api` into the empty `mentorhub_d
   - `README.md` (includes api-utils migration notes)
 
 ## Execution Notes
+
+**Completed 2026-07-31 (F-W18, branch `F-W18-Discover-Admin-Bootstrap`, commit `5e077c3`).**
+
+- Copied `mentorhub_customer_api/` → `mentorhub_discovery_api/` (excluded `.git`).
+- Stripped routes/services/tests/e2e/OpenAPI for: card, dashboard, subscription, journey, rating, note, event.
+- Kept: `customer_routes`, `profile_routes`, `CustomerService`, `ProfileService`, config/explorer/metrics shell.
+- Bumped `api-utils` **0.2.1 → 0.5.2**; services remain local (list/get infinite-scroll pattern differs from `api_utils.services.ProfileService` mentor-dashboard API). Migration debt documented in `README.md`.
+- Renamed: port **8397** (`API_PORT` / `DISCOVERY_API_PORT`), GHCR `ghcr.io/mentor-forge/mentorhub_discovery_api:latest`, Pipfile profiles `discovery-api` / `discovery`.
+- No Stripe/Cognito webhook env in bootstrap (ingress deferred to Admin F-AA01).
+- **Tests:** `pipenv run lint` ✅ | `pipenv run test` ✅ (51 passed, 8 e2e deselected).

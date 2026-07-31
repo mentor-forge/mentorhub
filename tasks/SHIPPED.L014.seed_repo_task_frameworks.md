@@ -1,6 +1,6 @@
 # L014 – Seed task automation frameworks in four new repos
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L013.bootstrap_discovery_spa
 Description: F-W18 — Confirm each new Admin/Discovery repo has `tasks/_PLANNING.md` and `tasks/_ORCHESTRATE.md` adapted from live journey repo templates so F-AA-L001, F-AS-L001, F-DA-L001, and F-DS-L001 planning agents can run in-repo.
@@ -54,3 +54,8 @@ Description: F-W18 — Confirm each new Admin/Discovery repo has `tasks/_PLANNIN
 - `../mentorhub_discovery_spa/tasks/_ORCHESTRATE.md`
 
 ## Execution Notes
+
+- Seeded `tasks/_PLANNING.md` and `tasks/_ORCHESTRATE.md` in all four repos from mentee API/SPA templates.
+- API repos: ports **8389** / **8397** in OpenAPI curl examples; workshop links to `admin_journey_issues.md` / `discovery_journey_issues.md`.
+- Commits pushed: `mentorhub_admin_api` `9715556`, `mentorhub_admin_spa` `d4d0151`, `mentorhub_discovery_api` `248a1c4`, `mentorhub_discovery_spa` `1fda127`.
+- Verified each repo contains both framework files; no wrong `mentorhub_mentee_*` anchors in path sections.

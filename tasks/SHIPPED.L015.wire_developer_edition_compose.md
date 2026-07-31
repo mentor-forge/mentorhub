@@ -1,6 +1,6 @@
 # L015 – Wire Admin + Discovery services in Developer Edition compose
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L014.seed_repo_task_frameworks
 Description: F-W18 — Add `admin_api`, `admin_spa`, `discovery_api`, and `discovery_spa` services to `DeveloperEdition/docker-compose.yaml` with correct ports, env, profiles, and `IDP_LOGIN_URI` wiring (stub images until F-AA01 / F-DA01 feature work).
@@ -51,3 +51,9 @@ Description: F-W18 — Add `admin_api`, `admin_spa`, `discovery_api`, and `disco
 - `DeveloperEdition/docker-compose.yaml` — four new services, profiles, and `all` profile wiring.
 
 ## Execution Notes
+
+- Added `admin_api`, `admin_spa`, `discovery_api`, `discovery_spa` services with ports 8389/8390/8397/8398.
+- Added profiles `admin`, `admin-api`, `discovery`, `discovery-api`; wired into `all`, `welcome`, `mongodb`, `mongodb_api`, `mongodb_spa`.
+- `docker compose -f DeveloperEdition/docker-compose.yaml config` — pass.
+- Profile spot-checks: `admin` and `discovery` services render with correct ports and `IDP_LOGIN_URI`.
+- `make update` — success; `~/.mentorhub/docker-compose.yaml` updated.

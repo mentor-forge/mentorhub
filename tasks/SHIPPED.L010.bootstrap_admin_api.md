@@ -1,6 +1,6 @@
 # L010 – Bootstrap mentorhub_admin_api from mentorhub_mentee_api
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: F-W18 — Copy `mentorhub_mentee_api` into the empty `mentorhub_admin_api` repo, strip mentee domain routes/services/tests/OpenAPI, and rename ports, images, and scripts to `admin-api` (port **8389**).
@@ -54,3 +54,13 @@ Description: F-W18 — Copy `mentorhub_mentee_api` into the empty `mentorhub_adm
   - `README.md`
 
 ## Execution Notes
+
+- **Branch:** `F-W18-Discover-Admin-Bootstrap` in `mentorhub_admin_api`
+- **Commit:** `e2532bc246b23ec28b0e4dc3e9ee2e796bc18d7f`
+- **Copied** `mentorhub_mentee_api` → `mentorhub_admin_api` (excluded `.git`, `tasks/`)
+- **Stripped** route modules: `journey`, `path`, `resource`, `aggregation`, `note`, `event`; matching `test/routes/*`, `test/e2e/*` (kept empty package `__init__.py` files)
+- **Shell routes only:** `/api/config`, `/docs`, `/metrics` in `server.py` and trimmed `docs/openapi.yaml`
+- **Renamed:** port 8389 (`COORDINATOR_API_PORT` in api-utils 0.5.2), GHCR image `mentorhub_admin_api`, Pipfile compose profiles `admin-api` / `admin`
+- **Tests:** `pipenv run lint` — pass; `pipenv run test` — 13 passed
+- **Manual:** `pipenv run dev` on port 8389; `/api/config` returns 401 (route live, auth required); `/docs/openapi.yaml` has no stripped domain paths; `/metrics` returns Prometheus output
+- **Note:** api-utils 0.5.2 has no `ADMIN_API_PORT` yet; server uses `COORDINATOR_API_PORT` (default 8389) until api-utils adds admin port key

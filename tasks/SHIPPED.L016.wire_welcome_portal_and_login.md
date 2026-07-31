@@ -1,6 +1,6 @@
 # L016 – Wire welcome portal and login.html for Admin + Discovery
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L015.wire_developer_edition_compose
 Description: F-W18 — Add Admin and Discovery links to the developer portal (`index.html`), wire `login.html` / `welcome-auth.js` so default post-login navigation targets **Discovery SPA** (`8398`), and preserve per-SPA `return_to` deep links.
@@ -54,3 +54,9 @@ Description: F-W18 — Add Admin and Discovery links to the developer portal (`i
 - `welcome-auth.js` — default `return_to` → Discovery SPA base URL when param absent.
 
 ## Execution Notes
+
+- **Portal:** Discovery SPA listed first as default landing; added Admin/Discovery SPA, API explorer, and GitHub links with JS href wiring.
+- **login default:** `welcome-auth.js` sets `return_to` to `http://${hostname}:8398/` when query param absent.
+- Explicit `return_to` override preserved (e.g. Customer SPA 8388).
+- `rg coordinator index.html` — no matches (S50 regression check).
+- Discovery SPA placed before Customer in portal list to signal default post-login landing.

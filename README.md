@@ -17,7 +17,7 @@ A platform to connect mentors with engineers engaged in a life long learning jou
 - Run the command ``docker compose --profile=all up -d``
 - Visit [http://localhost:8080](http://localhost:8080)
 - To Shutdown (all data lost) ``docker compose --profile=all down``
-NOTE: Uses ports: 8080, 27017, 8383-8398, 12111 (stripe-mock)
+NOTE: Uses ports: 8080, 27017, 8383-8398, 12111 (stripe-mock). Default post-login landing is **Discovery SPA** (8398); see `login.html`.
 
 ## Development Team 
 - Daniel Dissler: Primary SPA Engineering, Secondary SPA Engineering
