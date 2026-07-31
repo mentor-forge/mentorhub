@@ -12,8 +12,6 @@ services:
       - mongodb
       - customer
       - customer-api
-      - coordinator
-      - coordinator-api
       - mentor
       - mentor-api
       - mentee
@@ -25,7 +23,7 @@ services:
   # SECURITY (Developer Edition only): all ports bind to 0.0.0.0 so the stack is
   # reachable over the team Tailscale VPN. MongoDB runs with --bind_ip_all and NO
   # authentication, so tailnet ACLs are the only access control. Never use these
-  # bindings outside local / tailnet development. See CONTRIBUTING.md (VPN access).
+  # bindings outside local / tailnet development. See CONTRIBUTING.md (HOST_NAME).
   mongodb:
     image: mongo:7.0.5
     ports:
@@ -44,8 +42,6 @@ services:
       - mongodb
       - customer
       - customer-api
-      - coordinator
-      - coordinator-api
       - mentor
       - mentor-api
       - mentee
@@ -76,8 +72,6 @@ services:
       - mongodb
       - customer
       - customer-api
-      - coordinator
-      - coordinator-api
       - mentor
       - mentor-api
       - mentee
@@ -101,8 +95,6 @@ services:
       - mongodb
       - customer
       - customer-api
-      - coordinator
-      - coordinator-api
       - mentor
       - mentor-api
       - mentee
@@ -169,44 +161,6 @@ services:
     profiles:
       - all
       - customer
-
-  coordinator_api:
-    image: ghcr.io/mentor-forge/mentorhub_coordinator_api:latest
-    restart: no
-    ports:
-      - "0.0.0.0:8389:8389"
-    environment:
-      MONGO_CONNECTION_STRING: mongodb://mongodb:27017/
-      MONGODB_REQUIRE_TLS: False
-      MONGO_DB_NAME: mentor_hub
-      LOGGING_LEVEL: "INFO"
-      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
-      API_PORT: 8389
-      SAMPLE_API_PORT: 8389
-      SAMPLE_SPA_PORT: 8390
-    depends_on:
-      mongodb_api:
-        condition: service_started
-    profiles:
-      - all
-      - coordinator
-      - coordinator-api
-
-  coordinator_spa:
-    image: ghcr.io/mentor-forge/mentorhub_coordinator_spa:latest
-    restart: no
-    ports:
-      - "0.0.0.0:8390:80"
-    environment:
-      API_HOST: coordinator_api
-      API_PORT: 8389
-      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://127.0.0.1:8080/login.html}
-    depends_on:
-      coordinator_api:
-        condition: service_started
-    profiles:
-      - all
-      - coordinator
 
   mentor_api:
     image: ghcr.io/mentor-forge/mentorhub_mentor_api:latest

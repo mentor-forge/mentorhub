@@ -1,9 +1,9 @@
 # S49 – Remove Coordinator services from docker-compose.yaml
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: S48
-Description: F-W09 E0 — Strip `coordinator_api` and `coordinator_spa` from Developer Edition compose and align remaining services with `architecture.yaml` (Admin/Discovery compose services land in BLOCKED.S53 when F-W18 repos exist).
+Description: F-W09 E0 — Strip `coordinator_api` and `coordinator_spa` from Developer Edition compose and align remaining services with `architecture.yaml`.
 
 ## Context
 
@@ -27,7 +27,7 @@ Description: F-W09 E0 — Strip `coordinator_api` and `coordinator_spa` from Dev
 - Preserve mentor/mentee journey SPA `IDP_LOGIN_URI` wiring from S44.
 - Update inline comments that reference coordinator or the removed VPN subsection in CONTRIBUTING (e.g. MongoDB security note — point to Step 3 `HOST_NAME` after S52, or a neutral “see CONTRIBUTING.md” reference).
 - Run `make update` so `~/.mentorhub/docker-compose.yaml` matches the repo file.
-- Do **not** add Admin/Discovery compose services in this task (F-W18 — see BLOCKED.S53).
+- Do **not** add Admin/Discovery compose services in this task (F-W18 follow-on).
 
 ## Testing Expectations
 
@@ -42,3 +42,7 @@ Description: F-W09 E0 — Strip `coordinator_api` and `coordinator_spa` from Dev
 - `DeveloperEdition/docker-compose.yaml` — remove coordinator services and profile entries; adjust comments as needed.
 
 ## Execution Notes
+
+**Summary:** Removed coordinator_api/coordinator_spa services and coordinator/coordinator-api profiles from all shared services. Updated MongoDB security comment to reference CONTRIBUTING.md HOST_NAME.
+
+**Verification:** `docker compose config` OK; no coordinator in config output; `make update` succeeded.
