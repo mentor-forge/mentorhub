@@ -1,6 +1,6 @@
 # S47 – Cross-repo workflow index: runtime `IDP_LOGIN_URI`
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: Master index for the F-W08 SPA login guardrails fix. Execution tasks live in each repository's `tasks/` folder; this file is the single place in **mentorhub** to see the full serial workflow across `mentorhub`, `mentorhub_spa_utils`, `mentorhub_mentee_spa`, and `mentorhub_mentor_spa`.
@@ -9,7 +9,7 @@ Description: Master index for the F-W08 SPA login guardrails fix. Execution task
 
 - ./tasks/SHIPPED.S44.compose_idp_login_uri_journey_spas.md
 - ./tasks/SHIPPED.S45.manual_approval_container_idp_redirect.md
-- ./tasks/BLOCKED.S46.document_runtime_idp_login_uri.md
+- ./tasks/SHIPPED.S46.document_runtime_idp_login_uri.md
 - ../mentorhub_spa_utils/tasks/SHIPPED.F029.runtime_idp_login_uri_resolution.md
 - ../mentorhub_spa_utils/tasks/SHIPPED.F030.bump_patch_release_0_5_7.md
 - ../mentorhub_spa_utils/tasks/SHIPPED.F031.wait_codeartifact_0_5_7_publish.md
@@ -18,7 +18,7 @@ Description: Master index for the F-W08 SPA login guardrails fix. Execution task
 - ../mentorhub_mentee_spa/tasks/SHIPPED.L125.adopt_spa_utils_0_5_7_codeartifact.md
 - ../mentorhub_mentee_spa/tasks/SHIPPED.L126.manual_approval_codeartifact_build.md
 - ../mentorhub_mentor_spa/tasks/SHIPPED.R146.runtime_idp_login_container_wiring.md
-- ../mentorhub_mentor_spa/tasks/BLOCKED.R147.manual_approval_mentor_spa.md
+- ../mentorhub_mentor_spa/tasks/SHIPPED.R147.manual_approval_mentor_spa.md
 
 ## Why tasks are split across repos
 
@@ -42,13 +42,13 @@ Same SPA container image honors **`IDP_LOGIN_URI`** at runtime in every environm
 | 8 | **mentee_spa** | `SHIPPED.L125` | Switch to CodeArtifact `@mentor-forge/mentorhub_spa_utils@0.5.7`; test dev + container |
 | 9 | **mentee_spa** | `SHIPPED.L126` | **Mike:** re-test and merge mentee PR |
 | 10 | **mentor_spa** | `SHIPPED.R146` | Same runtime wiring + spa_utils 0.5.7 (CodeArtifact) |
-| 11 | **mentor_spa** | `BLOCKED.R147` | **Mike:** re-test and merge mentor PR |
-| 12 | **mentorhub** | `BLOCKED.S46` | Update `sre_standards.md`, `spa_standards.md`, `CONTRIBUTING.md` |
+| 11 | **mentor_spa** | `SHIPPED.R147` | **Mike:** re-test and merge mentor PR |
+| 12 | **mentorhub** | `SHIPPED.S46` | Update `sre_standards.md`, `spa_standards.md`, `CONTRIBUTING.md` |
 
 ## Branches
 
-- **mentorhub**, **mentee_spa**, **mentor_spa:** continue existing **F-W08** branches.
-- **spa_utils:** branch **`0.5.8-IDP-Login`** for F029–F031.
+- **mentorhub**, **mentee_spa**, **mentor_spa:** **F-W08** branches (merge PRs to `main` when ready).
+- **spa_utils:** **0.5.7** on `main` (F029–F031).
 
 ## Testing Expectations
 
@@ -57,9 +57,14 @@ Same SPA container image honors **`IDP_LOGIN_URI`** at runtime in every environm
 
 ## Outputs
 
-- This file only (`tasks/PENDING.S47.runtime_idp_login_workflow_index.md`).
-- Rename to `SHIPPED.S47...` when step 12 (S46) completes.
+- This file only (`tasks/SHIPPED.S47.runtime_idp_login_workflow_index.md`).
 
 ## Execution Notes
 
-**Progress (2026-07-31):** Steps 1–10 shipped (L126 approved; R146 runtime IDP wiring on mentor_spa). **Next:** R147 manual approval, then S46 docs.
+**Completed (2026-07-31):** All 12 steps shipped. F-W08 runtime `IDP_LOGIN_URI` workflow complete.
+
+- spa_utils **0.5.7** on CodeArtifact; mentee + mentor SPAs inject runtime config at container startup.
+- Developer Edition: `mh` + `HOST_NAME` → MagicDNS IdP; `npm run dev` uses `.env.development` (`127.0.0.1`).
+- Docs: S46 updated standards + CONTRIBUTING.
+
+**PRs:** mentee_spa #27, mentor_spa #32, spa_utils #28 (merged).

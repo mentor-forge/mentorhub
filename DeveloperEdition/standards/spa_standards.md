@@ -59,9 +59,11 @@ All journey domain SPAs use CodeArtifact. Canonical package names and registry v
 
 ## Authentication Pattern
 - JWT tokens stored in localStorage (`access_token`, `token_expires_at`, `user_roles` when present)
-- `useAuth()` composable manages authentication state
-- **URL bootstrap:** Call **`bootstrapAuthFromUrl()`** from `spa_utils` once before the router mounts. Hash `#access_token=...&expires_at=...&roles=...` seeds localStorage (Developer Edition welcome page / IdP-style callback). Query `?clear_stored_auth=1` clears stored tokens when needed.
-- Router guards protect authenticated routes; unauthenticated users redirect using **`VITE_IDP_LOGIN_URI`** / runtime login base URL (Developer Edition: `http://127.0.0.1:8080/login.html`; production: commercial IdP)
+- `useAuth()` composable manages authentication state (re-export from `@mentor-forge/mentorhub_spa_utils`)
+- **URL bootstrap:** Call **`bootstrapAuthFromUrl()`** from `spa_utils` once before the router mounts. Hash `#access_token=...&expires_at=...&roles=...` seeds localStorage (Developer Edition welcome page / IdP-style callback). Query `?clear_stored_auth=1` clears stored tokens when needed. Call **`syncAuthFromStorage()`** after bootstrap (and after clearing tokens on `401`).
+- Router guards and logout use **`redirectToIdpLogin()`** / **`getIdpLoginBaseUrl()`** from `spa_utils` — do not implement per-SPA hostname rewrite logic.
+- **IdP login URL resolution** (spa_utils **0.5.7+**): explicit override → runtime **`window.__MENTORHUB_RUNTIME__.IDP_LOGIN_URI`** (container) → build-time **`VITE_IDP_LOGIN_URI`** (`npm run dev`) → Developer Edition fallback (`http://127.0.0.1:8080/login.html`).
+- **Container runtime config:** Journey SPA Dockerfiles generate `/runtime-config.js` at startup from compose **`IDP_LOGIN_URI`** (via `envsubst` on `runtime-config.js.template`). Load that script in **`index.html` before the app bundle** (Vite `transformIndexHtml` plugin) so guards read the injected URL. Same image in every environment.
 - Config is loaded when the app runs; it does not depend on a backend-issued “login” exchange in the SPA product flow
 
 ## Component Patterns

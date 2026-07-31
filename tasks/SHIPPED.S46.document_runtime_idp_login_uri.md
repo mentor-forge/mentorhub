@@ -1,6 +1,6 @@
 # S46 – Document runtime `IDP_LOGIN_URI` for journey SPAs
 
-Status: Blocked
+Status: Shipped
 Type: Feature
 Depends On: S44
 Description: Update Developer Edition standards and contributor docs so journey SPAs document the runtime `IDP_LOGIN_URI` contract (container env → client redirect) and retire the spa_utils 0.5.6 loopback-host rewrite workaround (issue F-W08). Run after mentor_spa R147 approval.
@@ -43,5 +43,15 @@ Description: Update Developer Edition standards and contributor docs so journey 
 
 ## Execution Notes
 
-**Branch:** Continue on the F-W08 branch in this repo.
+**Summary of changes**
+- `spa_standards.md` — Authentication Pattern: `redirectToIdpLogin` / `getIdpLoginBaseUrl`, runtime `__MENTORHUB_RUNTIME__.IDP_LOGIN_URI`, container `runtime-config.js` + Vite load order, resolution order (spa_utils 0.5.7+); no per-SPA hostname rewrite.
+- `sre_standards.md` — NGINX env vars: container startup `envsubst` → `/runtime-config.js`, `Cache-Control: no-store`, same-image contract; resolution order; retired loopback rewrite guidance.
+- `CONTRIBUTING.md` — VPN section: containers vs `npm run dev` (`VITE_IDP_LOGIN_URI`); link to SPA standards.
 
+**Verification**
+- Cross-checked against mentee_spa / mentor_spa Dockerfile CMD + `nginx.conf.template` + `public/runtime-config.js.template` (L122 / R146).
+- No remaining references to `adaptIdpLoginUriToCurrentHost` as primary fix in updated standards or CONTRIBUTING.
+
+**Branch:** `F-W08-expose-0.0.0.0`
+
+**Follow-up:** Rename `PENDING.S47` workflow index to `SHIPPED.S47` — F-W08 serial workflow complete.

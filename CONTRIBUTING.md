@@ -130,10 +130,15 @@ cat ~/.mentorhub/HOST_NAME   # e.g. my-box.tailXXXX.ts.net
 ```
 
 `mh` reads this file at launch and sets `IDP_LOGIN_URI` to
-`http://<HOST_NAME>:8080/login.html` so the journey SPAs redirect sign-in to the
-mock IdP on your host instead of `127.0.0.1`. Set `HOST_NAME` **before**
-`mh up`; if you change it later, `mh down` and `mh up` again. Without the file,
-behavior is unchanged (localhost only).
+`http://<HOST_NAME>:8080/login.html` so journey SPA **containers** redirect sign-in to the
+mock IdP on your host instead of `127.0.0.1`. The compose env is injected at **container
+startup** into `/runtime-config.js` (see [SPA Standards](./DeveloperEdition/standards/spa_standards.md#authentication-pattern)).
+Set `HOST_NAME` **before** `mh up`; if you change it later, `mh down` and `mh up` again.
+Without the file, behavior is unchanged (localhost only).
+
+**`npm run dev`** (Vite on localhost) does not use compose `IDP_LOGIN_URI`; it reads
+**`VITE_IDP_LOGIN_URI`** from `.env.development` (`http://127.0.0.1:8080/login.html`) so
+same-machine development is unchanged.
 
 > **Security — Developer Edition only.** `0.0.0.0` bindings mean **Tailscale ACLs
 > are the only access control**, and MongoDB (`27017`) runs with `--bind_ip_all`
