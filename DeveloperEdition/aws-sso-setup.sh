@@ -37,8 +37,21 @@ if grep -q '\[profile '"${MH_AWS_PROFILE_SHARED}"'\]' "$AWS_CONFIG" 2>/dev/null;
     found && /^\[/ { exit }
     found && /^sso_account_id/ { print $3; exit }
   ' "$AWS_CONFIG")
+  current_role=$(awk -v p="[profile ${MH_AWS_PROFILE_SHARED}]" '
+    $0 == p { found=1; next }
+    found && /^\[/ { exit }
+    found && /^sso_role_name/ { print $3; exit }
+  ' "$AWS_CONFIG")
+  needs_rewrite=false
   if [[ -n "$current_account" && "$current_account" != "${AWS_SHARED_SERVICES_ACCOUNT_ID}" ]]; then
     echo "Fixing ${MH_AWS_PROFILE_SHARED}: was account ${current_account}, need Shared-Services ${AWS_SHARED_SERVICES_ACCOUNT_ID}"
+    needs_rewrite=true
+  fi
+  if [[ -n "$current_role" && "$current_role" != "${MH_AWS_SSO_ROLE_SHARED}" ]]; then
+    echo "Fixing ${MH_AWS_PROFILE_SHARED}: was role ${current_role}, need ${MH_AWS_SSO_ROLE_SHARED}"
+    needs_rewrite=true
+  fi
+  if [[ "$needs_rewrite" == true ]]; then
     awk -v p="[profile ${MH_AWS_PROFILE_SHARED}]" '
       $0 == p { skip=1; next }
       skip && /^\[/ { skip=0 }
@@ -48,7 +61,7 @@ if grep -q '\[profile '"${MH_AWS_PROFILE_SHARED}"'\]' "$AWS_CONFIG" 2>/dev/null;
     printf '%s\n\n' "$profile_block" >> "$AWS_CONFIG"
     echo "Updated profile ${MH_AWS_PROFILE_SHARED} in ${AWS_CONFIG}"
   else
-    echo "Profile ${MH_AWS_PROFILE_SHARED} already targets Shared-Services in ${AWS_CONFIG}"
+    echo "Profile ${MH_AWS_PROFILE_SHARED} already targets Shared-Services / ${MH_AWS_SSO_ROLE_SHARED} in ${AWS_CONFIG}"
   fi
 else
   if ! grep -q '\[sso-session '"${SSO_SESSION_NAME}"'\]' "$AWS_CONFIG" 2>/dev/null; then
@@ -80,3 +93,18 @@ aws codeartifact login --tool npm \
   --region "${AWS_REGION}"
 
 echo "AWS SSO and CodeArtifact setup complete for ${MH_AWS_PROFILE_SHARED}."
+
+if [[ -n "${MH_AWS_PROFILE_SHARED_SRE:-}" && -n "${MH_AWS_SSO_ROLE_SHARED_SRE:-}" ]]; then
+  sre_block="[profile ${MH_AWS_PROFILE_SHARED_SRE}]
+sso_session = ${SSO_SESSION_NAME}
+sso_account_id = ${AWS_SHARED_SERVICES_ACCOUNT_ID}
+sso_role_name = ${MH_AWS_SSO_ROLE_SHARED_SRE}
+region = ${AWS_REGION}
+output = json"
+  if grep -q '\[profile '"${MH_AWS_PROFILE_SHARED_SRE}"'\]' "$AWS_CONFIG" 2>/dev/null; then
+    echo "Profile ${MH_AWS_PROFILE_SHARED_SRE} already in ${AWS_CONFIG} (SRE on Shared-Services)"
+  else
+    printf '%s\n\n' "$sre_block" >> "$AWS_CONFIG"
+    echo "Added optional SRE profile ${MH_AWS_PROFILE_SHARED_SRE} for platform IAM/CFN work"
+  fi
+fi
