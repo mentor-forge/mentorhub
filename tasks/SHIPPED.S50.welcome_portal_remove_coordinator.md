@@ -1,9 +1,9 @@
 # S50 – Strip Coordinator links from welcome portal (index.html)
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: S48
-Description: F-W09 E0 — Remove Coordinator SPA/API/GitHub links from the welcome page; Admin + Discovery portal links are added when F-W18 lands (BLOCKED.S53).
+Description: F-W09 E0 — Remove Coordinator SPA/API/GitHub links from the welcome page.
 
 ## Context
 
@@ -22,7 +22,6 @@ Description: F-W09 E0 — Remove Coordinator SPA/API/GitHub links from the welco
 - Remove GitHub source links for `mentorhub_coordinator_api` and `mentorhub_coordinator_spa`.
 - Remove JavaScript that sets coordinator hrefs (ports 8389/8390).
 - Keep Customer, Mentor, Mentee, and Schema configurator links and port wiring intact.
-- Do **not** add Admin/Discovery links yet (placeholder comment optional — full wiring is BLOCKED.S53).
 - Do **not** change `login.html` or `welcome-auth.js` mock personas — `coordinator` remains a valid Profile `user_roles` value for local IdP testing.
 
 ## Testing Expectations
@@ -37,3 +36,7 @@ Description: F-W09 E0 — Remove Coordinator SPA/API/GitHub links from the welco
 - `index.html` — remove coordinator links and script lines.
 
 ## Execution Notes
+
+**Summary:** Removed coordinator SPA/API/GitHub links and JS href assignments from index.html.
+
+**Verification:** `rg coordinator index.html` — no matches; remaining link IDs have matching script assignments.
