@@ -135,7 +135,8 @@ AWS Access Portal
 ```
 
 Recommended local AWS CLI profile names:
-- `mentorhub-shared` — `Shared-Services` (CodeArtifact). **All developers** — configured by `make aws-setup`.
+- `mentorhub-shared` — `Shared-Services` + **`Developer-Packages`**. **All developers** — configured by `make aws-setup`; used by `mh` for CodeArtifact.
+- `mentorhub-shared-sre` — `Shared-Services` + **`SRE`**. **Platform/SRE only** — IAM OIDC trust, CloudFormation on Shared-Services; not used by `mh`.
 - `mentorhub-dev` — `MentorHub-Dev` (application infrastructure). **SRE/platform only** — not required for local Developer Edition.
 
 Do not ask team members to use root-account sign-in or IAM-user sign-in for normal work.
