@@ -31,8 +31,7 @@
 | **Do not change schemas yet** | Research workflows and data structures first. Schema + test-data changes become tickets after Mike reflects on ERD / journey boundaries. |
 | **Cognito (related)** | Login redirect / mock login is largely done. Still research **create account** and **update account** payloads so Profile has the fields those calls need. |
 | **Configurator hygiene** | Prefer **delete + create** over rename when replacing collections (rename touches many places). Manual delete is often easiest. |
-
-**Under reflection (no action yet):** Mike is considering whether Customer and Coordinator journeys share one UI/API (likely named coordinator). **Customer role would still own subscriptions; Coordinator would not.** Final naming/repo boundaries TBD — do not delete customer SPA/API until that decision lands.
+| **Coordinator microservice removed (locked — F-W09)** | Coordinator API + SPA repos deleted. **Customer API/SPA** remain; Customer role owns subscriptions. Admin + Discovery domains replace Coordinator in architecture (F-W18). |
 
 ---
 
