@@ -1,6 +1,6 @@
 # S48 – Refactor architecture.yaml: remove Coordinator, add Admin + Discovery
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: F-W09 E0 — Remove the Coordinator journey domain from platform architecture specs and document Admin + Discovery as the replacement journey domains (GitHub coordinator repos deleted; Customer API/SPA unchanged).
@@ -42,3 +42,7 @@ Description: F-W09 E0 — Remove the Coordinator journey domain from platform ar
 - `Specifications/journeys.yaml` — remove Coordinator Journey entry.
 
 ## Execution Notes
+
+**Summary:** Removed coordinator domain; added admin (8389/8390) and discovery (8397/8398) journey domains. Removed Coordinator Journey from journeys.yaml.
+
+**Verification:** `yq` parse OK; grep confirms no coordinator_api/spa or Coordinator Journey in spec files; ports unique.
