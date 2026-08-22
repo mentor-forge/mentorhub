@@ -404,3 +404,42 @@ services:
     profiles:
       - all
       - discovery
+
+  ##################################
+  # Runbook Automation
+  ##################################
+  runbook_api:
+    image: ghcr.io/mentor-forge/mentorhub_runbook_api:latest
+    restart: no
+    ports:
+      - "0.0.0.0:8395:8395"
+    environment:
+      API_PORT: 8395
+      ENABLE_LOGIN: "true"
+      LOGGING_LEVEL: "INFO"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-fixed}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      MOUNT_DIR: /runbooks
+      UI_HEADER: "Mentor Hub Runbooks"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    profiles:
+      - all
+      - runbook
+
+  runbook_spa:
+    # spa_ref (runbook_spa): fixed utility image, not mentorhub_…
+    image: ghcr.io/agile-learning-institute/stage0_runbook_spa:latest
+    restart: no
+    ports:
+      - "0.0.0.0:8396:80"
+    environment:
+      API_HOST: runbook_api
+      API_PORT: 8395
+      IDP_LOGIN_URI: ${IDP_LOGIN_URI:-http://127.0.0.1:8080/login.html}
+    depends_on:
+      runbook_api:
+        condition: service_started
+    profiles:
+      - all
+      - runbook

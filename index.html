@@ -32,6 +32,13 @@
             margin-bottom: 10px;
             font-size: 2em;
         }
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+        }
+        h1 a:hover {
+            color: #667eea;
+        }
         .subtitle {
             color: #666;
             margin-bottom: 30px;
@@ -99,21 +106,33 @@
 </head>
 <body>
     <div class="container">
-        <h1>Mentor Hub</h1>
+        <h1><a href="https://github.com/mentor-forge/mentorhub" id="repo-link" target="_blank" rel="noopener noreferrer">Mentor Hub</a></h1>
         <p class="subtitle">Welcome to the Development Environment</p>
 
         <ul class="links">
             <li class="service-block">
                 <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="true" aria-controls="spa-links">Single Page Applications</button>
+                    <button class="section-toggle" type="button" aria-expanded="true" aria-controls="app-links">Applications</button>
                 </h2>
-                <div id="spa-links" class="section-content">
-                    <a href="#" id="discovery-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Discovery SPA (default landing)</a>
+                <div id="app-links" class="section-content">
+                    <a href="#" id="discovery-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Discovery (default landing)</a>
+                    <a href="#" id="customer-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer</a>
+                    <a href="#" id="admin-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Admin</a>
+                    <a href="#" id="mentor-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor</a>
+                    <a href="#" id="mentee-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentee</a>
+                </div>
+            </li>
+            <li class="service-block">
+                <h2 class="service-title">
+                    <button class="section-toggle" type="button" aria-expanded="true" aria-controls="tool-links">Tools</button>
+                </h2>
+                <div id="tool-links" class="section-content">
                     <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
-                    <a href="#" id="customer-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer SPA</a>
-                    <a href="#" id="admin-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Admin SPA</a>
-                    <a href="#" id="mentor-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor SPA</a>
-                    <a href="#" id="mentee-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentee SPA</a>
+                    <a href="#" id="runbook-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Runbook</a>
+                    <a href="#" id="mailhog-link" class="cell-link" target="_blank" rel="noopener noreferrer">MailHog</a>
+                    <a href="#" id="stripe-mock-link" class="cell-link" target="_blank" rel="noopener noreferrer">Stripe mock</a>
+                    <a href="#" id="cognito-mock-link" class="cell-link" target="_blank" rel="noopener noreferrer">Cognito mock</a>
+                    <a href="#" id="stage0-launch-link" class="cell-link" target="_blank" rel="noopener noreferrer">Stage0 Launch</a>
                 </div>
             </li>
             <li class="service-block">
@@ -124,27 +143,10 @@
                     <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Schema API</a>
                     <a href="#" id="customer-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Customer API</a>
                     <a href="#" id="admin-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Admin API</a>
-                    <a href="#" id="discovery-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Discovery API</a>
                     <a href="#" id="mentor-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Mentor API</a>
                     <a href="#" id="mentee-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Mentee API</a>
-                </div>
-            </li>
-            <li class="service-block">
-                <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="github-links">GitHub</button>
-                </h2>
-                <div id="github-links" class="section-content" hidden>
-                    <a href="https://github.com/mentor-forge/mentorhub_mongodb_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mongodb_api source">mentorhub_mongodb_api</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_admin_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="admin_api source">mentorhub_admin_api</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_admin_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="admin_spa source">mentorhub_admin_spa</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_discovery_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="discovery_api source">mentorhub_discovery_api</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_discovery_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="discovery_spa source">mentorhub_discovery_spa</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_customer_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_api source">mentorhub_customer_api</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_customer_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="customer_spa source">mentorhub_customer_spa</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_mentor_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_api source">mentorhub_mentor_api</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_mentor_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentor_spa source">mentorhub_mentor_spa</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_mentee_api" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentee_api source">mentorhub_mentee_api</a>
-                    <a href="https://github.com/mentor-forge/mentorhub_mentee_spa" class="cell-link" target="_blank" rel="noopener noreferrer" title="mentee_spa source">mentorhub_mentee_spa</a>
+                    <a href="#" id="discovery-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Discovery API</a>
+                    <a href="#" id="runbook-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Runbook API</a>
                 </div>
             </li>
         </ul>
@@ -152,18 +154,26 @@
     <script>
         const hostname = window.location.hostname || 'localhost';
 
+        document.getElementById('discovery-app-link').href = `http://${hostname}:8080/discovery/`;
+        document.getElementById('customer-app-link').href = `http://${hostname}:8080/customer/`;
+        document.getElementById('admin-app-link').href = `http://${hostname}:8080/admin/`;
+        document.getElementById('mentor-app-link').href = `http://${hostname}:8080/mentor/`;
+        document.getElementById('mentee-app-link').href = `http://${hostname}:8080/mentee/`;
+
+        document.getElementById('schema-spa-link').href = `http://${hostname}:8384/`;
+        document.getElementById('runbook-spa-link').href = `http://${hostname}:8396/`;
+        document.getElementById('mailhog-link').href = `http://${hostname}:8025/`;
+        document.getElementById('stripe-mock-link').href = `http://${hostname}:12111/`;
+        document.getElementById('cognito-mock-link').href = `http://${hostname}:9229/`;
+        document.getElementById('stage0-launch-link').href = `http://${hostname}:8081/`;
+
         document.getElementById('schema-api-docs-link').href = `http://${hostname}:8383/docs/index.html`;
-        document.getElementById('schema-spa-link').href = `http://${hostname}:8384`;
-        document.getElementById('discovery-spa-link').href = `http://${hostname}:8398/`;
-        document.getElementById('discovery-api-docs-link').href = `http://${hostname}:8397/docs/explorer.html`;
-        document.getElementById('customer-spa-link').href = `http://${hostname}:8388/`;
         document.getElementById('customer-api-docs-link').href = `http://${hostname}:8387/docs/explorer.html`;
-        document.getElementById('admin-spa-link').href = `http://${hostname}:8390/`;
         document.getElementById('admin-api-docs-link').href = `http://${hostname}:8389/docs/explorer.html`;
-        document.getElementById('mentor-spa-link').href = `http://${hostname}:8392/`;
         document.getElementById('mentor-api-docs-link').href = `http://${hostname}:8391/docs/explorer.html`;
-        document.getElementById('mentee-spa-link').href = `http://${hostname}:8394/`;
         document.getElementById('mentee-api-docs-link').href = `http://${hostname}:8393/docs/explorer.html`;
+        document.getElementById('discovery-api-docs-link').href = `http://${hostname}:8397/docs/explorer.html`;
+        document.getElementById('runbook-api-docs-link').href = `http://${hostname}:8395/docs/explorer.html`;
 
         document.querySelectorAll('.section-toggle').forEach((toggle) => {
             toggle.addEventListener('click', () => {
