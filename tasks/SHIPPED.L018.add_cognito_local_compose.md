@@ -1,6 +1,6 @@
 # L018 – Add cognito-local mock service to Developer Edition compose
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: Follow-on to F-W10 **L5** — add a `jagregory/cognito-local` container to `DeveloperEdition/docker-compose.yaml` that exposes the AWS Cognito Identity Provider API on host port **9229**, so Customer/Admin APIs can target a local IdP endpoint without AWS credentials.
@@ -77,3 +77,30 @@ Description: Follow-on to F-W10 **L5** — add a `jagregory/cognito-local` conta
 - `Makefile` — copy `DeveloperEdition/cognito-local/` to `~/.mentorhub/cognito-local/` on `make update` (and install if compose is copied there).
 
 ## Execution Notes
+
+### Plan
+- Mirror `mock_stripe_api` block: image, `restart: no`, `0.0.0.0` port bind, profiles, trailing comment.
+- Add `COGNITO_ENDPOINT` default on `customer_api` / `admin_api` only; leave `COGNITO_ENABLED` false on customer.
+- Commit minimal `cognito-local/.cognito/config.json` (no user-pool seed — L019).
+- Extend `make update` to `cp -R DeveloperEdition/cognito-local` → `~/.mentorhub/cognito-local`.
+
+### Results (2026-08-22)
+All tests **PASS**.
+
+| Test | Result |
+| --- | --- |
+| `docker compose -f DeveloperEdition/docker-compose.yaml config` | PASS |
+| `--profile customer` → `mock_cognito` published 9229, `host_ip: 0.0.0.0` | PASS |
+| `--profile admin-api` includes `mock_cognito` | PASS |
+| `--profile mentee` excludes `mock_cognito` | PASS |
+| `customer_api`: `COGNITO_ENDPOINT: http://mock_cognito:9229`, `COGNITO_ENABLED: "false"` | PASS |
+| `admin_api`: `COGNITO_ENDPOINT: http://mock_cognito:9229` | PASS |
+| Port 9229 unique (no collision with 8080, 27017, 8383–8398, 12111) | PASS |
+| `make update` | PASS |
+| `~/.mentorhub/docker-compose.yaml` contains `mock_cognito` | PASS |
+| `~/.mentorhub/cognito-local/.cognito/config.json` exists | PASS |
+| Smoke: `curl http://127.0.0.1:9229/` → HTTP 404 (listener up) | PASS |
+
+**Files changed:** `DeveloperEdition/docker-compose.yaml`, `DeveloperEdition/cognito-local/.cognito/config.json`, `Makefile`.
+
+**Blockers:** none.

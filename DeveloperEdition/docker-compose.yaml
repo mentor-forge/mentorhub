@@ -138,6 +138,7 @@ services:
       SAMPLE_SPA_PORT: 8388
       # Local dev mocks — Research/local_dev_mocks.md (locked L2, L4, L7, L8)
       COGNITO_ENABLED: ${COGNITO_ENABLED:-false}
+      COGNITO_ENDPOINT: ${COGNITO_ENDPOINT:-http://mock_cognito:9229}
       REGISTRATION_DEV_MODE: ${REGISTRATION_DEV_MODE:-true}
       STRIPE_API_BASE: ${STRIPE_API_BASE:-http://mock_stripe_api:12111}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_local_dev}
@@ -161,6 +162,22 @@ services:
       - customer
 
 # stripe-mock: Research/local_dev_mocks.md
+
+  mock_cognito:
+    image: jagregory/cognito-local:latest
+    restart: no
+    ports:
+      - "0.0.0.0:9229:9229"
+    volumes:
+      - ./cognito-local/.cognito:/app/.cognito
+    profiles:
+      - all
+      - customer
+      - customer-api
+      - admin
+      - admin-api
+
+# cognito-local: Research/local_dev_mocks.md
 
   customer_spa:
     image: ghcr.io/mentor-forge/mentorhub_customer_spa:latest
@@ -276,6 +293,7 @@ services:
       API_PORT: 8389
       SAMPLE_API_PORT: 8389
       SAMPLE_SPA_PORT: 8390
+      COGNITO_ENDPOINT: ${COGNITO_ENDPOINT:-http://mock_cognito:9229}
     depends_on:
       mongodb_api:
         condition: service_started
