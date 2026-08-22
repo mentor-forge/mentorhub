@@ -136,6 +136,7 @@ update: verify
 	cp ./DeveloperEdition/scripts/codeartifact-pypi-auth.sh ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	chmod +x ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
+	cp ./nginx.conf ~/.mentorhub/nginx.conf && \
 	rm -rf ~/.mentorhub/cognito-local && \
 	cp -R ./DeveloperEdition/cognito-local ~/.mentorhub/cognito-local && \
 	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \

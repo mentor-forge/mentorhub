@@ -1,6 +1,6 @@
 # L022 – Welcome nginx path proxy for journey SPAs
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L021.add_mailhog_compose
 Description: Make the existing welcome nginx on **:8080** the local twin of cloud ALB path routing — `/{journey}/*` reverse-proxies to each journey SPA container — without a second proxy port and without putting routing inside Discovery SPA.
@@ -63,3 +63,39 @@ Description: Make the existing welcome nginx on **:8080** the local twin of clou
 - `Makefile` — copy `nginx.conf` on `make update` if bind-mounting from `~/.mentorhub/`.
 
 ## Execution Notes
+
+### Plan
+
+1. Add Docker DNS resolution and five exact journey-prefix proxy locations to the welcome nginx configuration, using variable `proxy_pass` values so unavailable SPA services do not prevent nginx startup.
+2. Bind-mount the configuration beside the Developer Edition compose file and copy it into `~/.mentorhub/` during `make update`, without changing welcome dependencies or published ports.
+3. Rebuild the welcome image, validate compose and nginx configuration, exercise portal/login/journey routes, confirm direct SPA ports, and record all results and blockers here.
+
+### Implementation
+
+- Added `resolver 127.0.0.11 valid=10s ipv6=off` and `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` locations. Each location sets its service URL in `$upstream` and uses `proxy_pass $upstream;`, preserving the complete request URI.
+- Added the required forwarding and WebSocket headers, with a journey-specific `X-Forwarded-Prefix`.
+- Bind-mounted `./nginx.conf` read-only into the welcome service. `DeveloperEdition/nginx.conf` is a symlink to the repository configuration, while `make update` copies the repository configuration to `~/.mentorhub/nginx.conf`.
+- Kept welcome on port 8080, retained all direct SPA port publications, and added no dependencies or welcome-level API/webhook proxies.
+
+### Test Results
+
+- `docker compose -f DeveloperEdition/docker-compose.yaml --profile all config`: passed; welcome publishes `0.0.0.0:8080:80`, uses the read-only nginx bind mount, and has no SPA `depends_on`.
+- Installed compose (`~/.mentorhub/docker-compose.yaml`) config: passed and resolves the bind source to `~/.mentorhub/nginx.conf`.
+- Static nginx checks: resolver and all five journey locations present; no `rewrite`, trailing-slash upstream URI, or `location /api/`.
+- `make container`: passed; rebuilt `ghcr.io/mentor-forge/mentorhub:latest` with the updated nginx configuration.
+- `make update`: passed; copied the compose file and nginx configuration into `~/.mentorhub`.
+- `nginx -t`: passed both in a one-off image container and inside the running welcome container.
+- `GET http://127.0.0.1:8080/`: 200, welcome portal body.
+- `GET http://127.0.0.1:8080/login.html`: 200.
+- Journey proxy checks against each directly published SPA path:
+  - discovery: proxy 200, direct port 8398 returned 200, bodies matched.
+  - customer: proxy 200, direct port 8388 returned 200, bodies matched.
+  - admin: proxy 200, direct port 8390 returned 200, bodies matched.
+  - mentor: proxy 200, direct port 8392 returned 200, bodies matched.
+  - mentee: proxy 200, direct port 8394 returned 200, bodies matched.
+- The discovery proxy body hash differed from the welcome portal hash and exactly matched the direct discovery SPA response, confirming the request reached `discovery_spa`.
+- Direct journey SPA ports 8388, 8390, 8392, 8394, and 8398 remain published.
+
+### Blockers
+
+None.
