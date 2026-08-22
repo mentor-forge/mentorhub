@@ -1,6 +1,6 @@
 # L019 – Seed cognito-local user pool and app client
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L018.add_cognito_local_compose
 Description: Commit a Developer Edition Cognito user pool + app client under `DeveloperEdition/cognito-local/` so every `mh up` starts with a shared pool that already defines MentorHub `custom:*` attributes — no per-developer `aws cognito-idp create-user-pool` step.
@@ -77,3 +77,22 @@ Description: Commit a Developer Edition Cognito user pool + app client under `De
 - `DeveloperEdition/docker-compose.yaml` — `COGNITO_USER_POOL_ID` and `COGNITO_CLIENT_ID` on `customer_api` and `admin_api`.
 
 ## Execution Notes
+
+- Plan:
+  1. Generate the user pool and app client through cognito-local with stable local names, email usernames, and the four mutable string custom attributes.
+  2. Add the generated empty pool/client database files and export their stable IDs to `customer_api` and `admin_api`, preserving disabled-by-default Cognito.
+  3. Validate the seed JSON, compose rendering, live Cognito discovery/description/client APIs, and the existing recursive `make update` copy behavior.
+
+- Implemented:
+  - Generated the empty `mentorhub-local` pool (`local_2LcVdLgK`) and `mentorhub-local-client` (`34g5holmfkd8emq7v6vldbubg`) through cognito-local.
+  - Added mutable string attributes `custom:profile_id`, `custom:customer_id`, `custom:mentor_id`, and `custom:roles`; retained email usernames and the trigger-free L018 config.
+  - Added default pool/client IDs to `customer_api` and `admin_api`; `customer_api` retains `COGNITO_ENABLED: ${COGNITO_ENABLED:-false}`.
+
+- Verification:
+  - Required `mock_cognito` compose startup succeeded.
+  - AWS CLI `list-user-pools`, `describe-user-pool`, and `list-user-pool-clients` returned the seeded pool, all four mutable string custom attributes, and the matching client.
+  - AWS CLI `list-users` returned zero users.
+  - Compose config rendered the IDs for `customer_api`; because Compose filters inactive profiles, a combined `customer` + `admin` config invocation verified both APIs.
+  - `jq` parsed all seed/config JSON and asserted the empty pool, pool identity, email username policy, and single client.
+  - `make update` still removes the installed `cognito-local` directory and recursively copies the expanded source tree with `cp -R`.
+  - No linter errors or blockers.
