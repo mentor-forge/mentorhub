@@ -121,7 +121,7 @@ make update
 
 ## Development Standards
 
-- Local API mocks (`mock_stripe_api`, `mock_cognito`) — see [Research/local_dev_mocks.md](./Research/local_dev_mocks.md) for ports and env vars.
+- Local API mocks (`mock_stripe_api`, `mock_cognito`, `mock_mailhog`) — see [Research/local_dev_mocks.md](./Research/local_dev_mocks.md) for ports and env vars.
 - Understand a few simple [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
 - Review the [Data Standards](./DeveloperEdition/standards/data_standards.md).
 - Review the [SRE Standards](./DeveloperEdition/standards/sre_standards.md).

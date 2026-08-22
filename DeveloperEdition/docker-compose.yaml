@@ -145,6 +145,12 @@ services:
       STRIPE_API_BASE: ${STRIPE_API_BASE:-http://mock_stripe_api:12111}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_local_dev}
       STRIPE_WEBHOOK_VERIFY: ${STRIPE_WEBHOOK_VERIFY:-false}
+      SMTP_HOST: ${SMTP_HOST:-mock_mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_FROM: ${SMTP_FROM:-noreply@mentorhub.local}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
     depends_on:
       mongodb_api:
         condition: service_started
@@ -180,6 +186,19 @@ services:
       - admin-api
 
 # cognito-local: Research/local_dev_mocks.md
+
+  mock_mailhog:
+    image: mailhog/mailhog:latest
+    restart: no
+    ports:
+      - "0.0.0.0:1025:1025"
+      - "0.0.0.0:8025:8025"
+    profiles:
+      - all
+      - customer
+      - customer-api
+
+# mailhog: Research/local_dev_mocks.md
 
   customer_spa:
     image: ghcr.io/mentor-forge/mentorhub_customer_spa:latest

@@ -1,6 +1,6 @@
 # L021 – Add MailHog SMTP mock for Customer API
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L020.document_cognito_local_mock
 Description: Add a `mailhog/mailhog` container to Developer Edition compose (SMTP **1025**, Web UI **8025**) and point **Customer API** at it so invite and other outbound mail can be captured locally without a real SMTP provider.
@@ -75,3 +75,30 @@ Description: Add a `mailhog/mailhog` container to Developer Edition compose (SMT
 - `CONTRIBUTING.md` — only if a mocks cross-reference needs MailHog.
 
 ## Execution Notes
+
+### Plan
+
+1. Add `mock_mailhog` service after `mock_cognito` in `DeveloperEdition/docker-compose.yaml` — mirror stripe/cognito pattern (`restart: no`, `0.0.0.0` binds, profiles `all`/`customer`/`customer-api`, trailing comment).
+2. Add six `SMTP_*` env vars on `customer_api` only (no `depends_on`, no admin wiring — admin_api has no SMTP today).
+3. Document in `Research/local_dev_mocks.md` (new MailHog section + env table + testing matrix row).
+4. Update `README.md` port note and `CONTRIBUTING.md` mocks one-liner.
+5. Run `make update`; validate compose config, profiles, port collision, optional MailHog smoke.
+
+### Results
+
+| Test | Result |
+| --- | --- |
+| `docker compose config` parses | PASS |
+| `--profile customer` → `mock_mailhog` ports 1025/8025, `host_ip: 0.0.0.0` | PASS |
+| `--profile customer-api` → `mock_mailhog` + `SMTP_*` defaults on `customer_api` | PASS (`SMTP_HOST: mock_mailhog`, `SMTP_PORT: "1025"`, `SMTP_FROM: noreply@mentorhub.local`, empty user/password, `SMTP_STARTTLS: "false"`) |
+| `--profile mentee` excludes `mock_mailhog` | PASS |
+| Ports 1025/8025 no collision with 8080, 27017, 8383–8398, 9229, 12111 | PASS |
+| `make update` succeeds; `~/.mentorhub/docker-compose.yaml` contains `mock_mailhog` | PASS |
+| Smoke: `up -d mock_mailhog`; `curl http://127.0.0.1:8025/` → 200 | PASS (image pulls as linux/amd64 on arm64 host — runs via emulation) |
+| Markdown lint (`npx markdownlint-cli2` on touched docs) | Pre-existing MD013/MD012 issues in all three files; no new structural errors from L021 edits |
+
+**Blockers:** None.
+
+**Admin profiles:** Skipped — `admin_api` has no SMTP env in compose; no invented admin mail wiring per task spec.
+
+**Not changed:** `index.html` (portal links deferred to L025).
