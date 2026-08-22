@@ -1,6 +1,6 @@
 # L020 – Document cognito-local Developer Edition mock
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L019.seed_cognito_local_user_pool
 Description: Record the new cognito-local compose service (port **9229**, env vars, how it relates to `login.html`) in living Developer Edition docs, and supersede F-W10 locked decision **L5** now that the follow-on container exists.

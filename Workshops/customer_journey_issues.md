@@ -39,7 +39,7 @@ Sources (Mike PR #31 review prompts + research):
 
 **Cognito infra:** Requirements in `Research/cognito.md`. Post Confirmation Lambda → **Admin ingress** (not Customer API directly). Implementation **F-S01** in `mentorhub_cloudformation`.
 
-**Local dev mocks (locked — 2026-07-28):** `Research/local_dev_mocks.md` — **F-W10** (`login.html` tabs + stripe-mock in compose); **F-CA05** dev routes (`REGISTRATION_DEV_MODE`); **`COGNITO_ENABLED=false`** locally (no Cognito container); webhook fixtures with **`STRIPE_WEBHOOK_VERIFY=false`** → **Admin ingress** URL. cognito-local explicitly deferred.
+**Local dev mocks (locked — 2026-07-28; L5 superseded L018–L020):** `Research/local_dev_mocks.md` — **F-W10** (`login.html` tabs + stripe-mock + cognito-local in compose); **F-CA05** dev routes (`REGISTRATION_DEV_MODE`); **`COGNITO_ENABLED=false`** locally (daily login via welcome page; `mock_cognito` on 9229 for wire protocol); webhook fixtures with **`STRIPE_WEBHOOK_VERIFY=false`** → **Admin ingress** URL.
 
 **Task automation (bootstrap before E0):** **F-CA-L001** and **F-CS-L001** — planning agents in each repo create journey `tasks/` files from this document. `_PLANNING.md` / `_ORCHESTRATE.md` are maintained separately; do not edit sibling repos from `mentorhub`.
 
