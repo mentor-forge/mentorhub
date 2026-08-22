@@ -10,7 +10,8 @@
 ## Summary
 
 Mount Mentee SPA at **`/mentee/`**. Welcome/ALB forward the **full URI**; SPA nginx
-proxies API calls to `mentee_api`.
+proxies API calls to `mentee_api` (`API_HOST` / `API_PORT`). Local twin: welcome
+`:8080/mentee/*` → `mentee_spa:80`.
 
 ## Goals
 

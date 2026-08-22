@@ -10,7 +10,8 @@
 ## Summary
 
 Mount Mentor SPA at **`/mentor/`**. Welcome/ALB forward the **full URI**; SPA nginx
-proxies API calls to `mentor_api`.
+proxies API calls to `mentor_api` (`API_HOST` / `API_PORT`). Local twin: welcome
+`:8080/mentor/*` → `mentor_spa:80`.
 
 ## Goals
 

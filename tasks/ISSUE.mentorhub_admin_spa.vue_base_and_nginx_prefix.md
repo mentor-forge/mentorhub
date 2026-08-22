@@ -9,8 +9,11 @@
 
 ## Summary
 
-Mount Admin SPA at **`/admin/`**. Admin **webhook ingress** (F-AA01) stays a **separate
-URL** — do not serve Stripe/Cognito webhooks under this browser prefix.
+Mount Admin SPA at **`/admin/`**. Welcome and cloud ALB forward the **full URI**; do not
+rely on welcome `rewrite` hacks. SPA nginx proxies API traffic to `admin_api`
+(`API_HOST` / `API_PORT`). Local twin: welcome `:8080/admin/*` → `admin_spa:80`.
+Admin **webhook ingress** (F-AA01) stays a **separate URL** — do not serve Stripe/Cognito
+webhooks under this browser prefix.
 
 ## Goals
 

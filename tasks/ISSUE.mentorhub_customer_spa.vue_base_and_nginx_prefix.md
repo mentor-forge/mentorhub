@@ -11,7 +11,8 @@
 
 Mount Customer SPA at **`/customer/`**. Welcome and cloud ALB forward the **full URI**;
 do not rely on welcome `rewrite` hacks. SPA nginx continues to proxy API traffic to
-`customer_api` (`API_HOST` / `API_PORT`).
+`customer_api` (`API_HOST` / `API_PORT`). Local twin: welcome `:8080/customer/*` →
+`customer_spa:80`.
 
 ## Goals
 
