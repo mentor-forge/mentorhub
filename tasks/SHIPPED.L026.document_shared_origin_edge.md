@@ -1,6 +1,6 @@
 # L026 – Document shared-origin welcome vs direct-port debugging
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L025.welcome_portal_applications
 Description: Document Developer Edition’s two entry modes: **one origin on :8080** for auth/`localStorage`, and **direct service ports** for OpenAPI, Cypress, and mocks — and that this nginx is not a substitute for the AWS ALB.
@@ -54,3 +54,34 @@ Description: Document Developer Edition’s two entry modes: **one origin on :80
 - `Research/local_dev_mocks.md` — portal vs mock-port note only if missing after L020/L021.
 
 ## Execution Notes
+
+### Plan
+
+1. **README Quick Start** — Replace single “visit :8080” line with portal/login/default-app URLs; expand port NOTE to include 8081, mocks, and 8383–8398 with Discovery examples; add shared-origin sentence; remove “default landing Discovery SPA (8398)”.
+2. **CONTRIBUTING** — Add “Developer Edition — portal vs direct ports” (prefer Applications on :8080; Cypress/docs on direct ports); add Stage0 Launch subsection (`MENTORHUB_PATH`, `LAUNCHPAD_HOST`, `/Launchpad`, `mh up stage0`/`all`, 8081, `DELETE_ENABLED`); leave existing `HOST_NAME` / `IDP_LOGIN_URI` block unchanged.
+3. **sre_standards.md** — Under Production alignment, add “Developer Edition welcome nginx” subsection: local ALB-intent path router, CloudFormation ALB out of scope, F-AA01 webhook exclusion, ISSUE SPA base/prefix dependency.
+4. **local_dev_mocks.md** — One line after Related: mock UIs on portal Tools at direct ports, not under `/{journey}/`.
+
+### Implementation
+
+| File | Change |
+|------|--------|
+| `README.md` | Quick Start: portal `:8080`, login `:8080/login.html`, default app `:8080/discovery/`; port NOTE lists 8080, 8081, 27017, 8383–8398 (8397/8398 called out), 9229, 1025/8025, 12111; shared-origin + direct-port debugging sentence |
+| `CONTRIBUTING.md` | New § before Development Standards: portal vs direct ports + Stage0 Launch (`MENTORHUB_PATH`, `/Launchpad`, `mh up stage0`/`all`, 8081, optional `DELETE_ENABLED=True`) |
+| `DeveloperEdition/standards/sre_standards.md` | New § “Developer Edition welcome nginx (local path router)” under Production alignment |
+| `Research/local_dev_mocks.md` | Portal Tools mock-UI port note (was missing after L020/L021) |
+
+No CloudFormation edits.
+
+### Testing
+
+| Check | Result |
+|-------|--------|
+| README mentions `:8080/discovery/` | PASS |
+| README lists direct API/SPA ports (8383–8398, 8397, 8398) | PASS |
+| CONTRIBUTING does not recommend `:8398` as primary Discovery URL | PASS — explicitly warns against bookmarking `:8398` |
+| `npx markdownlint-cli2` on touched files | Ran — 271 pre-existing MD013/MD012 issues across files; no new structural errors from L026 edits (same pattern as L021/S43) |
+
+### Blockers
+
+None. Full same-origin in-app navigation under `/{journey}/` remains blocked until ISSUE SPA Vue `base` + nginx prefix tasks ship (documented, not in L026 scope).

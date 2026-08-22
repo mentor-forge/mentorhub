@@ -119,6 +119,20 @@ After GITHUB_TOKEN and `make aws-setup` are in place, run update to finish the i
 make update
 ```
 
+## Developer Edition — portal vs direct ports
+
+After sign-in at `http://<HOST_NAME>:8080/login.html`, prefer the **Applications** links on the welcome portal (`http://localhost:8080`) so journey SPAs load on the shared **8080** origin — do not bookmark direct SPA ports (e.g. `:8398` for Discovery) as your primary app URL.
+
+Direct service ports are supported on purpose for **Cypress** (per-repo `npm run cypress:run` against `:8388`, `:8390`, etc.) and **API `/docs/` explorers** on each API port (e.g. `:8397/docs/explorer.html`).
+
+### Stage0 Launch
+
+`make update` writes the absolute path of this umbrella repo to `~/.mentorhub/MENTORHUB_PATH`. `mh` sets **`LAUNCHPAD_HOST`** to that path's **parent** so Stage0 Launch mounts the launchpad directory at **`/Launchpad`** (sibling repos plus `mentorhub/Specifications`).
+
+- Start Launch: `mh up stage0` or `mh up all` (profile **`stage0`** / **`all`**)
+- Launch UI: [http://localhost:8081](http://localhost:8081) — see [system tour](./DeveloperEdition/standards/system_tour.md) for clone workflow
+- Optional: export `DELETE_ENABLED=True` before `mh up` to enable destructive Launch actions (off by default)
+
 ## Development Standards
 
 - Local API mocks (`mock_stripe_api`, `mock_cognito`, `mock_mailhog`) — see [Research/local_dev_mocks.md](./Research/local_dev_mocks.md) for ports and env vars.

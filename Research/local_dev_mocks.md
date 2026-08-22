@@ -10,6 +10,8 @@
 
 **Related:** `Research/cognito.md`, `Research/stripe_research.md`, `DeveloperEdition/docker-compose.yaml`, `login.html`, `welcome-auth.js`.
 
+Mock **UIs** (MailHog **8025**, Stripe mock **12111**, Cognito mock **9229**) are linked from the welcome portal **Tools** section on their own ports — not under `/{journey}/` on **8080**.
+
 ---
 
 ## Locked decisions (2026-07-28)
