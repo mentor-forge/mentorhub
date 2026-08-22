@@ -1,6 +1,6 @@
 # L024 – Add Stage0 Launch to Developer Edition compose
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: L023.login_shared_origin_return_to
 Description: Run Stage0 Launch beside welcome so the developer portal can link to it. Follow **stage0_launch README** mounts and env — do not invent a Specifications-only bind that the Launch image does not use.
@@ -64,3 +64,23 @@ Description: Run Stage0 Launch beside welcome so the developer portal can link t
 - `Makefile` — `make update` writes `MENTORHUB_PATH`; `stage0-launch-ui` aligned or delegated.
 
 ## Execution Notes
+
+- Added `stage0_launch` to Developer Edition compose with profiles `all` and
+  `stage0`, host port `${LAUNCH_HOST_PORT:-8081}`, the launchpad parent mounted
+  at `/Launchpad`, and the Docker socket. The service does not set
+  `LAUNCHPAD_DIR` or mount `Specifications` separately.
+- `make update` now records the absolute umbrella path in
+  `~/.mentorhub/MENTORHUB_PATH`. `mh` reads that file and exports
+  `LAUNCHPAD_HOST` as the path's parent.
+- Replaced the obsolete `docker run` implementation of
+  `make stage0-launch-ui` with the compose service and updated Launch
+  documentation to use port 8081.
+- Validation: the `stage0` compose config rendered host `0.0.0.0:8081` to
+  container port `8080`, `/Launchpad` and Docker socket binds,
+  `DELETE_ENABLED=""`, and
+  `STAGE0_LAUNCH_CONTAINER_NAME=stage0_launch`, with no `LAUNCHPAD_DIR`.
+  `zsh -n DeveloperEdition/mh`, `make help`, and `git diff --check` passed.
+- Smoke test: `/api/status` returned `delete_enabled=false`,
+  `launchpad=/Launchpad`, `specs_dir=/Launchpad/mentorhub/Specifications`,
+  `discovery_ok=true`, `interactive_mode=true`, and no discovery error.
+  No follow-up ISSUE was needed.

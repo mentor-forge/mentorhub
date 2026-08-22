@@ -7,6 +7,12 @@ export INSTALL_PATH=$(dirname "$0")
 if [[ -z "${GITHUB_TOKEN:-}" && -f "$HOME/.mentorhub/GITHUB_TOKEN" ]]; then
   export GITHUB_TOKEN=$(<"$HOME/.mentorhub/GITHUB_TOKEN")
 fi
+if [[ -z "${MENTORHUB_PATH:-}" && -f "$HOME/.mentorhub/MENTORHUB_PATH" ]]; then
+  export MENTORHUB_PATH=$(<"$HOME/.mentorhub/MENTORHUB_PATH")
+fi
+if [[ -n "${MENTORHUB_PATH:-}" ]]; then
+  export LAUNCHPAD_HOST="${MENTORHUB_PATH:h}"
+fi
 if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
   source "$HOME/.mentorhub/aws-platform.env"
 fi

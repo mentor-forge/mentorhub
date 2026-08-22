@@ -211,7 +211,7 @@ make schemas
 # Build the welcome page container
 make container
 
-# Open the Stage0 Launch Utility
+# Open the Stage0 Launch Utility on http://localhost:8081
 make stage0-launch-ui
 ```
 
