@@ -8,9 +8,9 @@ If you haven't already installed the Developer Edition cli ``mh`` you should do 
 
 ``mh`` is just a bash script - that largely just wraps some ``docker compose`` commands. You should browse that script, and the [docker-compose.yaml](../docker-compose.yaml) to understand how the application is divided into services, and how they are run altogether or one at a time. 
 
-Now - let's use ``mh`` to pull the latest containers from our GitHub Container Registry. Use 
+Now - let's use ``mh`` to synchronize the Developer Edition sources and pull the latest containers from our GitHub Container Registry. With the `all` profile, `mh` reads the real repositories from `Specifications/architecture.yaml`, runs `git fetch && git pull` in each cloned sibling folder named `mentorhub_<name>`, and then pulls the compose images for profile `all`. Use
 ```sh
-# pull all of the latest containers from GitHub
+# sync architecture repos, then pull all latest profile images
 mh pull all  
 ``` 
 
@@ -127,6 +127,16 @@ npm run container
 # run the Database + API + SPA containers
 npm run service
 ```
+
+### Run all journey end-to-end suites
+After touring the per-repository API e2e and SPA Cypress commands, you can run every journey suite sequentially from any directory:
+```sh
+# The Developer Edition stack must already be running
+mh up all
+mh e2e all
+```
+
+`mh e2e all` uses the repository types in `Specifications/architecture.yaml` to run `pipenv run e2e` for each journey API and `npm run cypress:run` for each journey SPA. It excludes `mongodb_api`, `runbook_api`, `api_utils`, `spa_utils`, and all `spa_ref` entries. The command does not start the stack, so `mh up all` (or an equivalent set of already-running per-repository servers) is required first. A pass/fail report, including skipped suites and totals, is printed at the end.
 
 ## Schema editor
 As we work on this system we will be using the Schema Configurator tool to describe data structures, generate JSON Schema for use with Task Automation, and configure MongoDB for use with the system. From the launchpad folder run 
