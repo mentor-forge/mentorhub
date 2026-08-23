@@ -78,6 +78,11 @@ COMMANDS
         With profile "all", first sync architecture repositories with
         git fetch and git pull, then pull all container images.
 
+    e2e all
+        Run journey API and SPA end-to-end suites sequentially.
+        The Developer Edition stack (or per-repo servers) must already be
+        running; this command does not start services.
+
     clean
         Delete all Mentor Hub specific containers, volumes, and images
 
@@ -103,7 +108,7 @@ END
 usage() {
   cat <<END
 
-Usage: mhCOMMAND
+Usage: mh COMMAND [argument]
 
 Commands:
   up             Launch containers from a profile
@@ -113,6 +118,7 @@ Commands:
   tail           Tail a service log
   prune          Prune all orphaned images and volumes
   pull           Pull latest images for a profile; "all" also syncs architecture repos
+  e2e all        Run all journey API/SPA e2e suites sequentially
   clean          Delete all Mentor Hub specific containers, volumes, and images
   version        Print the Mentor Hub Developers Edition version
   list-profiles  List all available profiles
@@ -120,6 +126,8 @@ Commands:
   manual         Show the manual
 
 Run mh with no command to refresh registry logins (GHCR, CodeArtifact).
+For "mh e2e all", the Developer Edition stack (or per-repo servers) must
+already be running; the command does not start services.
 END
 }
 
@@ -293,6 +301,113 @@ function listArchitectureRepos {
 
     yq -r '.architecture.["journey-domains"][].repos[] | select(.type != "spa_ref") | [.name, .type] | @tsv' \
         "$MENTORHUB_PATH/Specifications/architecture.yaml"
+}
+
+################################################################################
+# Run journey API and SPA end-to-end suites
+################################################################################
+function e2eAll {
+    if [[ "$NEW_PROFILE" != "all" ]]; then
+        echo "Error: Use 'mh e2e all' to run the end-to-end suites." >&2
+        usage >&2
+        return 1
+    fi
+
+    typeset architecture_repo_output
+    typeset -a architecture_repos passed_repos failed_repos skipped_repos
+    typeset repo_entry repo_name repo_type repo_path tool
+    typeset -a test_command
+
+    architecture_repo_output=$(listArchitectureRepos) || return 1
+    architecture_repos=("${(@f)architecture_repo_output}")
+    passed_repos=()
+    failed_repos=()
+    skipped_repos=()
+
+    for repo_entry in "${architecture_repos[@]}"; do
+        repo_name="${repo_entry%%$'\t'*}"
+        repo_type="${repo_entry#*$'\t'}"
+
+        case "$repo_name" in
+          mongodb_api|runbook_api|api_utils|spa_utils)
+            continue
+            ;;
+        esac
+
+        case "$repo_name:$repo_type" in
+          customer_api:api|admin_api:api|discovery_api:api|mentor_api:api|mentee_api:api)
+            tool="pipenv"
+            test_command=(pipenv run e2e)
+            ;;
+          customer_spa:spa|admin_spa:spa|discovery_spa:spa|mentor_spa:spa|mentee_spa:spa)
+            tool="npm"
+            test_command=(npm run cypress:run)
+            ;;
+          *)
+            continue
+            ;;
+        esac
+
+        repo_path="$LAUNCHPAD_HOST/mentorhub_$repo_name"
+        echo
+        echo "========================================================================"
+        echo "E2E: mentorhub_$repo_name ($repo_type)"
+        echo "Path: $repo_path"
+        echo "========================================================================"
+
+        if [[ ! -d "$repo_path" ]]; then
+            echo "FAIL: $repo_name — included repository folder is missing"
+            failed_repos+=("$repo_name (missing folder)")
+            continue
+        fi
+
+        if ! git -C "$repo_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            echo "SKIP: $repo_name — folder is not a git worktree"
+            skipped_repos+=("$repo_name (not a git worktree)")
+            continue
+        fi
+
+        if ! command -v "$tool" >/dev/null 2>&1; then
+            echo "SKIP: $repo_name — required tool '$tool' is not installed"
+            skipped_repos+=("$repo_name ($tool unavailable)")
+            continue
+        fi
+
+        if (cd "$repo_path" && "${test_command[@]}"); then
+            echo "PASS: $repo_name"
+            passed_repos+=("$repo_name")
+        else
+            echo "FAIL: $repo_name — test command exited non-zero"
+            failed_repos+=("$repo_name")
+        fi
+    done
+
+    echo
+    echo "========================================================================"
+    echo "E2E REPORT"
+    echo "========================================================================"
+    echo "Success:"
+    if (( ${#passed_repos[@]} == 0 )); then
+        echo "  (none)"
+    else
+        printf '  %s\n' "${passed_repos[@]}"
+    fi
+    echo "Failure:"
+    if (( ${#failed_repos[@]} == 0 )); then
+        echo "  (none)"
+    else
+        printf '  %s\n' "${failed_repos[@]}"
+    fi
+    echo "Skipped:"
+    if (( ${#skipped_repos[@]} == 0 )); then
+        echo "  (none)"
+    else
+        printf '  %s\n' "${skipped_repos[@]}"
+    fi
+    echo
+    echo "Counts: passed=${#passed_repos[@]} failed=${#failed_repos[@]} skipped=${#skipped_repos[@]}"
+
+    (( ${#failed_repos[@]} == 0 ))
 }
 
 ################################################################################
@@ -535,6 +650,11 @@ case $COMMAND in
   "pull")
 
     pull
+    ;;
+
+  "e2e")
+
+    e2eAll || exit $?
     ;;
 
   "man")
