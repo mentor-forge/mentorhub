@@ -4,22 +4,29 @@ The Mentor Hub Developer Edition system provides a `mh` Command Line Interface t
 
 ## Step 1 of 4 - Install Prerequisites
 
-Run `make verify` to check that all prerequisites are installed. If any fail, install them using the links below.
+Run `make install` to install Homebrew when needed and then install the brew-backed CLI prerequisites on macOS or Linux (including WSL). Run `make verify` afterward to check the complete development environment.
+
+Native Windows is unsupported; use WSL. Homebrew installation details are available for [macOS](https://docs.brew.sh/Installation) and [Linux](https://docs.brew.sh/Homebrew-on-Linux). After a first Linux install, add Homebrew to the current shell with:
+
+```sh
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+```
 
 ### Build tools
 
+- **Homebrew** - Package manager used by `make install` on macOS and Linux
 - **make** - usually pre-installed - [https://www.gnu.org/software/make/](https://www.gnu.org/software/make/)
 - **Node.js** (v24+) - [https://nodejs.org/en/download](https://nodejs.org/en/download)
 - **npm** (v11.5+) - Bundled with Node.js
-- **cypress** (v)
 - **Vite** - `npm install -g vite` or use via `npx vite`. [https://vitejs.dev/guide/](https://vitejs.dev/guide/)
 
+Cypress is not a host prerequisite. Each SPA installs and runs it through its repository's `npx`/npm scripts.
 
 
 ### Python tools
 
 - **Python 3.12+** - [https://www.python.org/downloads/](https://www.python.org/downloads/)
-- **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/) (`pip install pipenv`)
+- **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/)
 
 
 
@@ -45,14 +52,14 @@ git config --global user.email yourname@example.com
 
 ### AWS CLI (CodeArtifact packages)
 
-- **AWS CLI v2** - [https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) (macOS: `brew install awscli`)
+- **AWS CLI v2** - [https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
 
 
 ### Utilities
 
-- **jq** - [https://jqlang.github.io/jq/download/](https://jqlang.github.io/jq/download/) (macOS: `brew install jq`)
-- **yq** - [https://mikefarah.gitbook.io/yq](https://mikefarah.gitbook.io/yq) (macOS: `brew install yq`)
+- **jq** - [https://jqlang.github.io/jq/download/](https://jqlang.github.io/jq/download/)
+- **yq** - [https://mikefarah.gitbook.io/yq](https://mikefarah.gitbook.io/yq)
 - **curl** - Usually pre-installed. [https://curl.se/download.html](https://curl.se/download.html)
 
 
@@ -67,7 +74,7 @@ git config --global user.email yourname@example.com
 
 ## Step 2 of 4 - Install the CLI
 
-Use these commands to install the Developer Edition `mh` command line utility. 
+Use this command to install the brew-backed tools (`git`, Node.js, Python 3.12, Pipenv, `jq`, `yq`, AWS CLI, and `curl`), Vite, and the Developer Edition `mh` command line utility. It installs `make` only when it is missing. Docker Desktop and Mongo Compass remain manual installs using the vendor links above.
 
 ```sh
 ## Install Developer Edition 

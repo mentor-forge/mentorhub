@@ -6,7 +6,7 @@ ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
 	@echo ""
-	@echo "  make install        - Install mentorhub CLI tools to ~/.mentorhub"
+	@echo "  make install        - Install Homebrew prerequisites and mentorhub CLI tools"
 	@echo "  make verify        - Verify build tools and prerequisites"
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
@@ -88,6 +88,7 @@ verify:
 	echo "=== All prerequisites verified ==="
 
 install:
+	@./scripts/install-prereqs.sh
 	@echo "Installing mentorhub CLI..."
 	@mkdir -p ~/.mentorhub
 	@cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env
