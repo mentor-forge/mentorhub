@@ -1,7 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify container push build-package publish-package stage0-launch-ui clone-all aws-setup
+.PHONY: help install update verify container push build-package publish-package clone-all aws-setup
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -12,7 +12,6 @@ help:
 	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
 	@echo "  make clone-all     - Clone missing architecture.yaml sibling repos via SSH (skip existing)"
-	@echo "  make stage0-launch-ui - Stage0 Launch web UI on localhost:8081, detached (optional LAUNCH_HOST_PORT/DELETE_ENABLED=True)"
 	@echo ""
 	@echo "For more information, see ./CONTRIBUTING.md"
 
@@ -196,12 +195,6 @@ clone-all:
 		exit $$fail; \
 	fi; \
 	echo "Clone complete."
-
-stage0-launch-ui:
-	@[ -n "$$GITHUB_TOKEN" ] || (echo "Error: export GITHUB_TOKEN first (never commit tokens)."; exit 1)
-	@echo "Starting Stage0 Launch: http://localhost:$${LAUNCH_HOST_PORT:-8081}"
-	@LAUNCHPAD_HOST="$(abspath $(CURDIR)/..)" \
-		docker compose -f DeveloperEdition/docker-compose.yaml --profile stage0 up --detach stage0_launch
 
 delete-package:
 	@gh api -X DELETE /orgs/mentor-forge/packages/container/mentorhub
