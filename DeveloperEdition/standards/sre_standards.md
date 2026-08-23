@@ -295,6 +295,13 @@ mh up all
 
 **API gateway and commercial IdP:** In production, traffic is intended to sit behind an **API gateway** (or edge proxy) with **TLS**, routing to SPA static assets and API services. **Authentication** uses a **commercial IdP** (OAuth2/OIDC). Access tokens are issued by the IdP (or a BFF); applications do not use APIs as a substitute IdP. APIs validate JWTs (shared secret or JWKS) with the same claim expectations as in Developer Edition. SPAs redirect to the real IdP login/authorize entry via the configured login base URL—preserving a single auth story from the local welcome page through to production IdP.
 
+### Developer Edition welcome nginx (local path router)
+
+The welcome container on **:8080** path-proxies journey SPAs at `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` — the **local twin** of cloud ALB path routing intent ([mentorhub_cloudformation/ARCHITECTURE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)). **CloudFormation** still deploys the real ALB in AWS; this nginx layer is Developer Edition only and is out of scope for IaC changes here.
+
+- **Not proxied on :8080:** `/api/*` (APIs stay on direct ports), `/runbook/` (Runbook tools use **8395** / **8396**), and **Admin Stripe/Cognito webhooks** — do **not** route webhook ingress through the welcome nginx (**F-AA01**); use direct Admin API port or production ingress.
+- **Same-origin navigation:** Full in-app routing under `/{journey}/` requires each journey SPA's Vue **`base`** and nginx prefix configuration — tracked in `tasks/ISSUE.mentorhub_*_spa.vue_base_and_nginx_prefix.md` until shipped.
+
 ## Continuous Integration
 
 The developer workflow follows the feature branch pattern. A developer creates a branch to work on a feature and submits a pull request (PR) when the feature is ready to be deployed. When a PR is approved by a reviewer and **merged to `main`**, CI builds and pushes a new container with a `:latest` tag to the system's container registry. Those images are deployed to a cloud DEV environment and are available for developers to use locally.

@@ -34,7 +34,7 @@ mh down
 # to start the launch tools
 make stage0-launch-ui
 ```
-Now open your browser to [localhost:8080](http://localhost:8080/) and click the "all" checkbox, and click the "Clone" button. When you are done, click **Exit** and the launch utility container will stop automatically.
+Now open your browser to [localhost:8081](http://localhost:8081/) and click the "all" checkbox, and click the "Clone" button. Override the port with `LAUNCH_HOST_PORT` if needed.
 
 ## Tour common code libraries
 With the Backend for Frontend pattern, all of our services consist of a single API that supports a single SPA. Common code that is used by multiple API's or SPA's is shared in utility repo's. Review these repo's to see the overall patterns used.

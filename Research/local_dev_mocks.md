@@ -1,4 +1,4 @@
-# Local Development — Cognito & Stripe Mocks
+# Local Development — Cognito, Stripe & MailHog Mocks
 
 **Context:** Production uses **AWS Cognito** (Hosted UI + Admin API) and **Stripe** (Checkout, Portal, webhooks). Developer Edition must support local work **without AWS or Stripe accounts** for:
 
@@ -10,11 +10,13 @@
 
 **Related:** `Research/cognito.md`, `Research/stripe_research.md`, `DeveloperEdition/docker-compose.yaml`, `login.html`, `welcome-auth.js`.
 
+Mock **UIs** (MailHog **8025**, Stripe mock **12111**, Cognito mock **9229**) are linked from the welcome portal **Tools** section on their own ports — not under `/{journey}/` on **8080**.
+
 ---
 
 ## Locked decisions (2026-07-28)
 
-These choices prioritize **best practice for local dev** (real API + MongoDB paths, no cloud credentials) with **minimal moving parts** (no extra IdP containers, no Lambda in compose).
+These choices prioritize **best practice for local dev** (real API + MongoDB paths, no cloud credentials) with **minimal moving parts** (official API mocks in compose where justified; no Lambda in compose).
 
 | # | Decision | Rationale |
 | --- | --- | --- |
@@ -22,13 +24,13 @@ These choices prioritize **best practice for local dev** (real API + MongoDB pat
 | **L2** | **`COGNITO_ENABLED=false`** in Developer Edition | Customer API skips boto3 Admin calls; MongoDB Profile/Customer is source of truth locally |
 | **L3** | **Shared registration service** — production Post Confirmation callback and dev routes call the same functions | One code path for E1/E4 provisioning; dev does not fork business logic |
 | **L4** | **Dev-only HTTP routes** on Customer API, guarded by **`REGISTRATION_DEV_MODE=true`** | Routes are not mounted in production (404). Never ship dev mode to prod stacks |
-| **L5** | **No cognito-local, LocalStack, or Cognito container** for MVP local dev | Admin API contract tests use unit mocks; optional cognito-local is a **future** follow-on only if boto3 integration tests justify it |
+| **L5** | **`mock_cognito` (cognito-local) in compose** — Cognito Admin / IDP wire protocol on port **9229** | Seeded user pool for boto3 integration tests and future `COGNITO_ENABLED=true` opt-in; **does not** replace `login.html` for daily SPA sign-in while **L2** holds |
 | **L6** | **No Post Confirmation Lambda in compose** | `login.html` → dev register route → same service as F-CA05 production callback |
 | **L7** | **`stripe-mock`** in compose for Stripe API calls | Official stub; `STRIPE_API_BASE` points at container |
 | **L8** | **Webhook testing:** fixture POST in e2e + **`STRIPE_WEBHOOK_VERIFY=false`** in dev; Stripe CLI on host optional for manual test-mode runs | No `stripe listen` service in compose; daily dev does not need Stripe CLI |
 | **L9** | **JWT unchanged:** HS256 minted client-side after API returns claims — `JWT_SECRET=local-dev-jwt-secret-fixed`, `iss: dev-idp`, `aud: dev-api` | Aligns with `DeveloperEdition/standards/api_standards.md` |
 
-**Explicitly not doing locally (MVP):** Cognito Hosted UI, real Cognito Admin API, production Stripe keys, webhook signature verification in automated dev/e2e (still required in prod).
+**Explicitly not doing locally (MVP):** Cognito Hosted UI, **real AWS Cognito** (cloud credentials), production Stripe keys, webhook signature verification in automated dev/e2e (still required in prod).
 
 ---
 
@@ -41,7 +43,7 @@ These choices prioritize **best practice for local dev** (real API + MongoDB pat
 | Primary self-reg | Hosted UI → Post Confirmation Lambda → F-CA05 | Register tab → **`POST /api/dev/register/primary`** → mint JWT |
 | Invited member | F-CA08 AdminCreateUser + invite email | Join tab → **`POST /api/dev/register/invite`** → mint JWT (simulates invitee first login) |
 | Update claims | AdminUpdateUserAttributes + Pre Token Gen | Update tab → **`PATCH /api/dev/profile/{id}/claims`** → re-mint JWT |
-| Customer API → Cognito | Real `cognito-idp` when `COGNITO_ENABLED=true` | **Skipped** — no boto3 calls |
+| Customer API → Cognito | Real `cognito-idp` when `COGNITO_ENABLED=true` | **`COGNITO_ENDPOINT` wired** to `mock_cognito`; boto3 **skipped** while `COGNITO_ENABLED=false` |
 | Customer API → Stripe | `api.stripe.com` | **`http://mock_stripe_api:12111`** via `STRIPE_API_BASE` |
 | Stripe webhooks | Verified signatures | Dev/e2e: fixture POST; verify off when `STRIPE_WEBHOOK_VERIFY=false` |
 
@@ -71,9 +73,82 @@ These choices prioritize **best practice for local dev** (real API + MongoDB pat
 
 ---
 
+## Cognito mock (cognito-local)
+
+**Image:** [`jagregory/cognito-local`](https://github.com/jagregory/cognito-local) — local AWS Cognito Identity Provider API (Admin + IDP wire protocol).
+
+**Compose:** `mock_cognito` on `127.0.0.1:9229` (profiles `all`, `customer`, `customer-api`, `admin`, `admin-api`). Persistent seed data in `DeveloperEdition/cognito-local/.cognito/`.
+
+**Seeded user pool (L019):**
+
+| Item | Value |
+| --- | --- |
+| Pool Id | `local_2LcVdLgK` (`mentorhub-local`) |
+| App client Id | `34g5holmfkd8emq7v6vldbubg` (`mentorhub-local-client`) |
+| Custom attributes | `custom:profile_id`, `custom:customer_id`, `custom:mentor_id`, `custom:roles` |
+
+**API env (wired on `customer_api` and `admin_api`; boto3 not active until a later task sets `COGNITO_ENABLED=true`):**
+
+| Variable | Local value |
+| --- | --- |
+| `COGNITO_ENDPOINT` | `http://mock_cognito:9229` (compose network) or `http://127.0.0.1:9229` from host / AWS CLI |
+| `COGNITO_USER_POOL_ID` | `local_2LcVdLgK` |
+| `COGNITO_CLIENT_ID` | `34g5holmfkd8emq7v6vldbubg` |
+| `COGNITO_ENABLED` | `false` on `customer_api` (default) — daily login stays `login.html` + HS256 JWT (**L1**, **L2**, **L9**) |
+
+**Host vs compose network:**
+
+- From your machine or AWS CLI: `--endpoint-url http://127.0.0.1:9229`
+- From API containers on the compose network: `http://mock_cognito:9229`
+
+**AWS CLI smoke (dummy credentials — cognito-local accepts any):**
+
+```sh
+export AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local AWS_DEFAULT_REGION=us-east-1
+
+aws --endpoint-url http://127.0.0.1:9229 cognito-idp list-user-pools --max-results 10
+
+aws --endpoint-url http://127.0.0.1:9229 cognito-idp admin-create-user \
+  --user-pool-id local_2LcVdLgK \
+  --username dev@example.com \
+  --user-attributes Name=email,Value=dev@example.com Name=email_verified,Value=true
+```
+
+**Docs:** [cognito-local](https://github.com/jagregory/cognito-local).
+
+---
+
+## MailHog (SMTP mock)
+
+**Image:** [`mailhog/mailhog`](https://hub.docker.com/r/mailhog/mailhog) — in-memory SMTP capture + web UI (no auth).
+
+**Compose:** `mock_mailhog` on SMTP **1025** and HTTP UI **8025** (profiles `all`, `customer`, `customer-api`).
+
+**Customer API env (F-CA08 invite / app-sent mail):**
+
+| Variable | Local value |
+| --- | --- |
+| `SMTP_HOST` | `mock_mailhog` (compose network) or `127.0.0.1` from host |
+| `SMTP_PORT` | `1025` |
+| `SMTP_FROM` | `noreply@mentorhub.local` |
+| `SMTP_USER` | *(empty — MailHog has no auth)* |
+| `SMTP_PASSWORD` | *(empty)* |
+| `SMTP_STARTTLS` | `false` |
+
+**Host vs compose network:**
+
+- Web UI (inspect captured mail): [http://127.0.0.1:8025](http://127.0.0.1:8025)
+- From API containers on the compose network: `mock_mailhog:1025`
+
+**Consumer:** **Customer API** is the first compose consumer (member invite and other app-sent mail). Production Cognito invite email (Path B) is unchanged — MailHog captures only mail sent by the Customer API SMTP client locally.
+
+**Docs:** [mailhog/mailhog](https://hub.docker.com/r/mailhog/mailhog).
+
+---
+
 ## Cognito mock — welcome dev IdP (locked)
 
-Production Cognito involves Hosted UI, Admin API, and Post Confirmation Lambda. Locally we simulate **outcomes** (MongoDB + JWT) via the welcome page and dev API routes — not Cognito wire protocol.
+Production Cognito involves Hosted UI, Admin API, and Post Confirmation Lambda. For **daily local sign-in**, we simulate **outcomes** (MongoDB + JWT) via the welcome page and dev API routes (**L1**, **L2**, **L9**) — not Cognito Hosted UI or Cognito-issued tokens. The **cognito-local** container (above) exposes Admin/IDP wire protocol for integration tests and future opt-in; it does not replace `login.html` while `COGNITO_ENABLED=false`.
 
 ### `login.html` tabs (F-W10)
 
@@ -110,7 +185,6 @@ All paths call the same **`registration_service`** (or equivalent) — dev route
 
 | Approach | When to reconsider |
 | --- | --- |
-| **cognito-local** container | Only if integration tests must exercise boto3 Admin API against a local endpoint without mocks |
 | **LocalStack Cognito** | Only if broader AWS emulation is already adopted — heavier than needed for onboarding |
 
 ---
@@ -159,7 +233,19 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 | Customer API | `STRIPE_SECRET_KEY` | `sk_test_local_dev` |
 | Customer API | `STRIPE_WEBHOOK_VERIFY` | `false` |
 | Customer API | `COGNITO_ENABLED` | `false` |
+| Customer API | `COGNITO_ENDPOINT` | `http://mock_cognito:9229` |
+| Customer API | `COGNITO_USER_POOL_ID` | `local_2LcVdLgK` |
+| Customer API | `COGNITO_CLIENT_ID` | `34g5holmfkd8emq7v6vldbubg` |
 | Customer API | `REGISTRATION_DEV_MODE` | `true` |
+| Customer API | `SMTP_HOST` | `mock_mailhog` |
+| Customer API | `SMTP_PORT` | `1025` |
+| Customer API | `SMTP_FROM` | `noreply@mentorhub.local` |
+| Customer API | `SMTP_USER` | *(empty)* |
+| Customer API | `SMTP_PASSWORD` | *(empty)* |
+| Customer API | `SMTP_STARTTLS` | `false` |
+| Admin API | `COGNITO_ENDPOINT` | `http://mock_cognito:9229` |
+| Admin API | `COGNITO_USER_POOL_ID` | `local_2LcVdLgK` |
+| Admin API | `COGNITO_CLIENT_ID` | `34g5holmfkd8emq7v6vldbubg` |
 
 ---
 
@@ -174,7 +260,8 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 | Update roles / customer_id | Update tab → PATCH claims → re-mint JWT |
 | Checkout | stripe-mock + F-CA06 |
 | Webhook sync | Fixture POST (`STRIPE_WEBHOOK_VERIFY=false`) |
-| Cognito Admin API contract | Unit mocks in `customer_api` tests — not a local container |
+| Cognito Admin API contract | Unit mocks in `customer_api` tests; optional live calls against `mock_cognito:9229` |
+| Invite / app-sent email | MailHog UI at `http://127.0.0.1:8025`; Customer API → `mock_mailhog:1025` |
 
 ---
 
@@ -182,7 +269,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 
 | ID | Repo | Scope |
 | --- | --- | --- |
-| **F-W10** | `mentorhub` | stripe-mock in compose (done); extend `login.html` / `welcome-auth.js` with four tabs; document env vars |
+| **F-W10** | `mentorhub` | stripe-mock + cognito-local in compose (done); extend `login.html` / `welcome-auth.js` with four tabs; document env vars |
 | **F-CA05** | `customer_api` | `registration_service` + production Post Confirmation callback + dev routes (`REGISTRATION_DEV_MODE`) |
 | **F-CA06** | `customer_api` | `STRIPE_API_BASE` override; `STRIPE_WEBHOOK_VERIFY` for dev/e2e |
 | **F-CA08** | `customer_api` | When `COGNITO_ENABLED=false`, create Profile only (skip AdminCreateUser) — same service as dev invite |
@@ -193,8 +280,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 
 | Anti-pattern | Prefer (locked) |
 | --- | --- |
-| Require AWS Cognito in compose for every developer | Welcome extension + `COGNITO_ENABLED=false` |
-| cognito-local “just in case” on day one | Unit mocks; add container only when justified |
+| Require **real AWS Cognito** for daily Developer Edition login | `login.html` + `COGNITO_ENABLED=false`; `mock_cognito` for wire-protocol tests only |
 | Use production Stripe keys locally | stripe-mock + optional CLI test mode |
 | Dev JWT without `profile_id` / `customer_id` | Always mint full claim set from Profile document |
 | Dev registration routes in production | `REGISTRATION_DEV_MODE` — routes not mounted when false |
@@ -205,6 +291,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 ## References
 
 - [stripe/stripe-mock](https://github.com/stripe/stripe-mock)
+- [mailhog/mailhog](https://hub.docker.com/r/mailhog/mailhog)
 - `DeveloperEdition/standards/api_standards.md` — dev JWT
 - `DeveloperEdition/standards/spa_standards.md` — `IDP_LOGIN_URI`
 - `Research/cognito.md` — production onboarding

@@ -345,7 +345,7 @@ function showReturnToError(message) {
 function initWelcomeLogin() {
   const params = new URLSearchParams(window.location.search)
   const hostname = window.location.hostname || '127.0.0.1'
-  const defaultReturnTo = `http://${hostname}:8398/`
+  const defaultReturnTo = `http://${hostname}:8080/discovery/`
   const returnTo = params.get('return_to') ?? defaultReturnTo
   const returnToInput = document.getElementById('welcome-login-return-to')
   if (returnToInput instanceof HTMLInputElement) {

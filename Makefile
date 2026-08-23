@@ -13,7 +13,7 @@ help:
 	@echo "  make schemas       - Fetch JSON schemas for all data dictionaries, assumes mongodb_api is running"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
 	@echo "  make clone-all     - git clone all repos (except umbrella) into parent folder via SSH"
-	@echo "  make stage0-launch-ui - Stage0 Launch web UI, detached (export GITHUB_TOKEN; optional DELETE_ENABLED=True)"
+	@echo "  make stage0-launch-ui - Stage0 Launch web UI on localhost:8081, detached (optional LAUNCH_HOST_PORT/DELETE_ENABLED=True)"
 	@echo ""
 	@echo "For more information, see ./CONTRIBUTING.md"
 
@@ -131,11 +131,15 @@ update: verify
 		exit 1; \
 	fi
 	@export GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
+	printf '%s\n' "$(abspath $(CURDIR))" > ~/.mentorhub/MENTORHUB_PATH && \
 	cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
 	chmod +x ~/.mentorhub/mh && \
 	cp ./DeveloperEdition/scripts/codeartifact-pypi-auth.sh ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	chmod +x ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
+	cp ./nginx.conf ~/.mentorhub/nginx.conf && \
+	rm -rf ~/.mentorhub/cognito-local && \
+	cp -R ./DeveloperEdition/cognito-local ~/.mentorhub/cognito-local && \
 	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \
 	if ! grep -q "aws-platform.env" ~/.zshrc 2>/dev/null; then \
 		echo "source \$$HOME/.mentorhub/aws-platform.env" >> ~/.zshrc; \
@@ -207,20 +211,9 @@ clone-all:
 
 stage0-launch-ui:
 	@[ -n "$$GITHUB_TOKEN" ] || (echo "Error: export GITHUB_TOKEN first (never commit tokens)."; exit 1)
-	@echo "Starting Stage0 Launch: http://localhost:8080"
-	docker run -d --rm --name stage0_launch_ui \
-		-p 8080:8080 \
-		-v "$(abspath $(CURDIR)/..):/launchpad" \
-		-v "$(CURDIR)/Specifications:/specifications" \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		-e LAUNCHPAD_DIR=/launchpad \
-		-e SPECIFICATIONS=/specifications \
-		-e STAGE0_LAUNCH_CONTAINER_NAME=stage0_launch_ui \
-		-e GITHUB_TOKEN \
-		-e GH_TOKEN=$$GITHUB_TOKEN \
-		-e GH_USERNAME \
-		-e GITHUB_USERNAME \
-		ghcr.io/agile-learning-institute/stage0_launch:latest
+	@echo "Starting Stage0 Launch: http://localhost:$${LAUNCH_HOST_PORT:-8081}"
+	@LAUNCHPAD_HOST="$(abspath $(CURDIR)/..)" \
+		docker compose -f DeveloperEdition/docker-compose.yaml --profile stage0 up --detach stage0_launch
 
 delete-package:
 	@gh api -X DELETE /orgs/mentor-forge/packages/container/mentorhub
