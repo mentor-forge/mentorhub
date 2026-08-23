@@ -300,7 +300,7 @@ mh up all
 The welcome container on **:8080** path-proxies journey SPAs at `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` — the **local twin** of cloud ALB path routing intent ([mentorhub_cloudformation/ARCHITECTURE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)). **CloudFormation** still deploys the real ALB in AWS; this nginx layer is Developer Edition only and is out of scope for IaC changes here.
 
 - **Not proxied on :8080:** `/api/*` (APIs stay on direct ports), `/runbook/` (Runbook tools use **8395** / **8396**), and **Admin Stripe/Cognito webhooks** — do **not** route webhook ingress through the welcome nginx (**F-AA01**); use direct Admin API port or production ingress.
-- **Same-origin navigation:** Full in-app routing under `/{journey}/` requires each journey SPA's Vue **`base`** and nginx prefix configuration — tracked in `tasks/ISSUE.mentorhub_*_spa.vue_base_and_nginx_prefix.md` until shipped.
+- **Same-origin navigation:** Full in-app routing under `/{journey}/` requires each journey SPA's Vue **`base`** and nginx prefix configuration — tracked in `tasks/SHIPPED_ISSUE.mentorhub_*_spa.vue_base_and_nginx_prefix.md` (GitHub issues On Deck).
 
 ## Continuous Integration
 

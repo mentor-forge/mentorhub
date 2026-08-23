@@ -77,6 +77,18 @@ Each task file must contain the following sections under H1 and H2 headings.
     - `PENDING.A012.update_profile.md`
     - `SHIPPED.B009.plan_workshop.md`
 
+## Downstream follow-on issues
+
+Paste shipped ISSUE artifacts from `tasks/SHIPPED_ISSUE.*.md` into the target SPA repo's planning session. GitHub issues are already filed (MentorHub project, On Deck). Welcome nginx path proxy (L022) is shipped; these issues implement Vue `base` + SPA nginx prefix in each journey SPA.
+
+| Repo | Issue |
+|------|--------|
+| `mentorhub_discovery_spa` | `SHIPPED_ISSUE.mentorhub_discovery_spa.vue_base_and_nginx_prefix.md` |
+| `mentorhub_customer_spa` | `SHIPPED_ISSUE.mentorhub_customer_spa.vue_base_and_nginx_prefix.md` |
+| `mentorhub_admin_spa` | `SHIPPED_ISSUE.mentorhub_admin_spa.vue_base_and_nginx_prefix.md` |
+| `mentorhub_mentor_spa` | `SHIPPED_ISSUE.mentorhub_mentor_spa.vue_base_and_nginx_prefix.md` |
+| `mentorhub_mentee_spa` | `SHIPPED_ISSUE.mentorhub_mentee_spa.vue_base_and_nginx_prefix.md` |
+
 ## External repository boundaries
 
 Task planning and execution in **this API repo** (`mentorhub`) must not read or depend on other sibling repositories for input context, except:
