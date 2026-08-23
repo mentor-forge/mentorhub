@@ -1,19 +1,17 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify schemas container push build-package publish-package stage0-launch-ui clone-all aws-setup
+.PHONY: help install update verify container push build-package publish-package clone-all aws-setup
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
 	@echo ""
-	@echo "  make install        - Install mentorhub CLI tools to ~/.mentorhub"
+	@echo "  make install        - Install Homebrew prerequisites and mentorhub CLI tools"
 	@echo "  make verify        - Verify build tools and prerequisites"
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
-	@echo "  make schemas       - Fetch JSON schemas for all data dictionaries, assumes mongodb_api is running"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
-	@echo "  make clone-all     - git clone all repos (except umbrella) into parent folder via SSH"
-	@echo "  make stage0-launch-ui - Stage0 Launch web UI on localhost:8081, detached (optional LAUNCH_HOST_PORT/DELETE_ENABLED=True)"
+	@echo "  make clone-all     - Clone missing architecture.yaml sibling repos via SSH (skip existing)"
 	@echo ""
 	@echo "For more information, see ./CONTRIBUTING.md"
 
@@ -89,6 +87,7 @@ verify:
 	echo "=== All prerequisites verified ==="
 
 install:
+	@./scripts/install-prereqs.sh
 	@echo "Installing mentorhub CLI..."
 	@mkdir -p ~/.mentorhub
 	@cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env
@@ -156,18 +155,6 @@ update: verify
 aws-setup:
 	@zsh ./DeveloperEdition/aws-sso-setup.sh
 
-schemas:
-	@echo "Fetching JSON schemas for all data dictionaries..."
-	@mkdir -p ./Specifications/schemas
-	@yq -r '.data_dictionaries[].name' ./Specifications/catalog.yaml | \
-	while IFS= read -r name; do \
-		[ -z "$$name" ] && continue; \
-		echo "Fetching schema for $${name}"; \
-		curl -s "localhost:8180/api/configurations/json_schema/$${name}.yaml/0.1.0.0" > "./Specifications/schemas/$${name}.schema.json" \
-		|| echo "Warning: Failed to fetch schema for $${name}"; \
-	done
-	@echo "Schema fetching complete."
-
 container:
 	@echo "Building Mentor Hub container..."
 	@DOCKER_BUILDKIT=0 docker build -t ghcr.io/mentor-forge/mentorhub:latest .
@@ -184,36 +171,30 @@ build-package: container
 publish-package: push
 
 clone-all:
-	@echo "Cloning mentor-forge repos (except umbrella) into .."
-	@cd .. && for repo in \
-		mentorhub_mongodb_api \
-		mentorhub_api_utils \
-		mentorhub_spa_utils \
-		mentorhub_admin_api \
-		mentorhub_admin_spa \
-		mentorhub_discovery_api \
-		mentorhub_discovery_spa \
-		mentorhub_customer_api \
-		mentorhub_customer_spa \
-		mentorhub_mentor_api \
-		mentorhub_mentor_spa \
-		mentorhub_mentee_api \
-		mentorhub_mentee_spa \
-		mentorhub_runbook_api; \
-	do \
-		if [ -d "$$repo/.git" ]; then \
-			echo "Skip (exists): $$repo"; \
-		else \
-			git clone "git@github.com:mentor-forge/$$repo.git" "$$repo"; \
+	@command -v yq >/dev/null 2>&1 || { \
+		echo "Error: yq is required. See CONTRIBUTING.md prerequisites, then run make install."; \
+		exit 1; \
+	}
+	@echo "Cloning missing architecture.yaml repos into .."
+	@repos=$$(yq -r '.architecture.["journey-domains"][].repos[] | select(.type != "spa_ref") | .name' Specifications/architecture.yaml) || exit 1; \
+	fail=0; \
+	for name in $$repos; do \
+		repo="mentorhub_$$name"; \
+		path="../$$repo"; \
+		if [ -d "$$path/.git" ]; then \
+			echo "Skip (already cloned): $$repo"; \
+		elif [ -e "$$path" ]; then \
+			echo "Warning: $$path exists but is not a git repository; skipping"; \
+		elif ! git clone "git@github.com:$(ORG)/$$repo.git" "$$path"; then \
+			echo "Warning: Failed to clone $$repo"; \
+			fail=1; \
 		fi; \
-	done
-	@echo "Clone complete."
-
-stage0-launch-ui:
-	@[ -n "$$GITHUB_TOKEN" ] || (echo "Error: export GITHUB_TOKEN first (never commit tokens)."; exit 1)
-	@echo "Starting Stage0 Launch: http://localhost:$${LAUNCH_HOST_PORT:-8081}"
-	@LAUNCHPAD_HOST="$(abspath $(CURDIR)/..)" \
-		docker compose -f DeveloperEdition/docker-compose.yaml --profile stage0 up --detach stage0_launch
+	done; \
+	if [ $$fail -ne 0 ]; then \
+		echo "Clone completed with failures."; \
+		exit $$fail; \
+	fi; \
+	echo "Clone complete."
 
 delete-package:
 	@gh api -X DELETE /orgs/mentor-forge/packages/container/mentorhub

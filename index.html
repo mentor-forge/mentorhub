@@ -102,20 +102,23 @@
             color: white;
             transform: translateX(4px);
         }
+        #discovery-app-link {
+            margin-bottom: 22px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><a href="https://github.com/mentor-forge/mentorhub" id="repo-link" target="_blank" rel="noopener noreferrer">Mentor Hub</a></h1>
+        <h1><a href="https://github.com/mentor-forge" id="repo-link" target="_blank" rel="noopener noreferrer">Mentor Hub</a></h1>
         <p class="subtitle">Welcome to the Development Environment</p>
+        <a href="#" id="discovery-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Discovery (default landing)</a>
 
         <ul class="links">
             <li class="service-block">
                 <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="true" aria-controls="app-links">Applications</button>
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="app-links">Applications</button>
                 </h2>
-                <div id="app-links" class="section-content">
-                    <a href="#" id="discovery-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Discovery (default landing)</a>
+                <div id="app-links" class="section-content" hidden>
                     <a href="#" id="customer-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer</a>
                     <a href="#" id="admin-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Admin</a>
                     <a href="#" id="mentor-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor</a>
@@ -124,12 +127,12 @@
             </li>
             <li class="service-block">
                 <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="true" aria-controls="tool-links">Tools</button>
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="tool-links">Tools</button>
                 </h2>
-                <div id="tool-links" class="section-content">
+                <div id="tool-links" class="section-content" hidden>
                     <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
                     <a href="#" id="runbook-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Runbook</a>
-                    <a href="#" id="mailhog-link" class="cell-link" target="_blank" rel="noopener noreferrer">MailHog</a>
+                    <a href="#" id="mailpit-link" class="cell-link" target="_blank" rel="noopener noreferrer">MailPit</a>
                     <a href="#" id="stripe-mock-link" class="cell-link" target="_blank" rel="noopener noreferrer">Stripe mock</a>
                     <a href="#" id="cognito-mock-link" class="cell-link" target="_blank" rel="noopener noreferrer">Cognito mock</a>
                     <a href="#" id="stage0-launch-link" class="cell-link" target="_blank" rel="noopener noreferrer">Stage0 Launch</a>
@@ -162,7 +165,7 @@
 
         document.getElementById('schema-spa-link').href = `http://${hostname}:8384/`;
         document.getElementById('runbook-spa-link').href = `http://${hostname}:8396/`;
-        document.getElementById('mailhog-link').href = `http://${hostname}:8025/`;
+        document.getElementById('mailpit-link').href = `http://${hostname}:8025/`;
         document.getElementById('stripe-mock-link').href = `http://${hostname}:12111/`;
         document.getElementById('cognito-mock-link').href = `http://${hostname}:9229/`;
         document.getElementById('stage0-launch-link').href = `http://${hostname}:8081/`;

@@ -19,13 +19,17 @@ A platform to connect mentors with engineers engaged in a life long learning jou
 - **Sign in:** [http://localhost:8080/login.html](http://localhost:8080/login.html) — default post-login app is [http://localhost:8080/discovery/](http://localhost:8080/discovery/)
 - To Shutdown (all data lost) ``docker compose --profile=all down``
 
-NOTE: Uses ports **8080** (portal), **8081** (Stage0 Launch), **27017** (MongoDB), **8383–8398** (APIs/SPAs — e.g. Discovery API **8397**, Discovery SPA **8398**), **9229** (cognito-local), **1025/8025** (MailHog), **12111** (stripe-mock). Journey SPAs behind `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` on **8080** share one origin and JWT `localStorage`; direct service ports remain for OpenAPI explorers, Cypress, and mock UIs.
+NOTE: Uses ports **8080** (portal), **8081** (Stage0 Launch), **27017** (MongoDB), **8383–8398** (APIs/SPAs — e.g. Discovery API **8397**, Discovery SPA **8398**), **9229** (cognito-local), **1025/8025** (Mailpit), **12111** (stripe-mock). Journey SPAs behind `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` on **8080** share one origin and JWT `localStorage`; direct service ports remain for OpenAPI explorers, Cypress, and mock UIs.
 
 ## Development Team 
-- Daniel Dissler: Primary SPA Engineering, Secondary SPA Engineering
-- Mary Anderson: Primary Data Engineering, Secondary SPA Engineering
-- Luther (Luke) Still: Primary SRE Engineering, Secondary API Engineering
-- Curtis (Lucky) Minyard: Primary API Engineering, Secondary SRE Engineering
+- Mary Anderson: Data Engineering
+- Candice Beasley: Intern
+- Ashley Carroll: Intern
+
+## Additional Contributors
+- Daniel Dissler: SPA Engineer
+- Luther (Luke) Still: SRE
+- Curtis (Lucky) Minyard: API Engineer
 
 ## Design Specifications
 - [Product Description](./Specifications/product.yaml) 

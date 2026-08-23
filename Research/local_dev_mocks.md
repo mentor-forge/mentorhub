@@ -1,4 +1,4 @@
-# Local Development — Cognito, Stripe & MailHog Mocks
+# Local Development — Cognito, Stripe & Mailpit Mocks
 
 **Context:** Production uses **AWS Cognito** (Hosted UI + Admin API) and **Stripe** (Checkout, Portal, webhooks). Developer Edition must support local work **without AWS or Stripe accounts** for:
 
@@ -10,7 +10,7 @@
 
 **Related:** `Research/cognito.md`, `Research/stripe_research.md`, `DeveloperEdition/docker-compose.yaml`, `login.html`, `welcome-auth.js`.
 
-Mock **UIs** (MailHog **8025**, Stripe mock **12111**, Cognito mock **9229**) are linked from the welcome portal **Tools** section on their own ports — not under `/{journey}/` on **8080**.
+Mock **UIs** (Mailpit **8025**, Stripe mock **12111**, Cognito mock **9229**) are linked from the welcome portal **Tools** section on their own ports — not under `/{journey}/` on **8080**.
 
 ---
 
@@ -118,31 +118,31 @@ aws --endpoint-url http://127.0.0.1:9229 cognito-idp admin-create-user \
 
 ---
 
-## MailHog (SMTP mock)
+## Mailpit (SMTP mock)
 
-**Image:** [`mailhog/mailhog`](https://hub.docker.com/r/mailhog/mailhog) — in-memory SMTP capture + web UI (no auth).
+**Image:** [`axllent/mailpit`](https://hub.docker.com/r/axllent/mailpit) — in-memory SMTP capture + web UI (no auth). Official multi-arch image (`linux/amd64` and `linux/arm64`). MailHog’s published image is amd64-only and unmaintained; Mailpit is the drop-in successor on the same ports.
 
-**Compose:** `mock_mailhog` on SMTP **1025** and HTTP UI **8025** (profiles `all`, `customer`, `customer-api`).
+**Compose:** `mock_mailpit` on SMTP **1025** and HTTP UI **8025** (profiles `all`, `customer`, `customer-api`).
 
 **Customer API env (F-CA08 invite / app-sent mail):**
 
 | Variable | Local value |
 | --- | --- |
-| `SMTP_HOST` | `mock_mailhog` (compose network) or `127.0.0.1` from host |
+| `SMTP_HOST` | `mock_mailpit` (compose network) or `127.0.0.1` from host |
 | `SMTP_PORT` | `1025` |
 | `SMTP_FROM` | `noreply@mentorhub.local` |
-| `SMTP_USER` | *(empty — MailHog has no auth)* |
+| `SMTP_USER` | *(empty — Mailpit has no auth by default)* |
 | `SMTP_PASSWORD` | *(empty)* |
 | `SMTP_STARTTLS` | `false` |
 
 **Host vs compose network:**
 
 - Web UI (inspect captured mail): [http://127.0.0.1:8025](http://127.0.0.1:8025)
-- From API containers on the compose network: `mock_mailhog:1025`
+- From API containers on the compose network: `mock_mailpit:1025`
 
-**Consumer:** **Customer API** is the first compose consumer (member invite and other app-sent mail). Production Cognito invite email (Path B) is unchanged — MailHog captures only mail sent by the Customer API SMTP client locally.
+**Consumer:** **Customer API** is the first compose consumer (member invite and other app-sent mail). Production Cognito invite email (Path B) is unchanged — Mailpit captures only mail sent by the Customer API SMTP client locally.
 
-**Docs:** [mailhog/mailhog](https://hub.docker.com/r/mailhog/mailhog).
+**Docs:** [axllent/mailpit](https://mailpit.axllent.org/docs/install/docker/).
 
 ---
 
@@ -237,7 +237,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 | Customer API | `COGNITO_USER_POOL_ID` | `local_2LcVdLgK` |
 | Customer API | `COGNITO_CLIENT_ID` | `34g5holmfkd8emq7v6vldbubg` |
 | Customer API | `REGISTRATION_DEV_MODE` | `true` |
-| Customer API | `SMTP_HOST` | `mock_mailhog` |
+| Customer API | `SMTP_HOST` | `mock_mailpit` |
 | Customer API | `SMTP_PORT` | `1025` |
 | Customer API | `SMTP_FROM` | `noreply@mentorhub.local` |
 | Customer API | `SMTP_USER` | *(empty)* |
@@ -261,7 +261,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 | Checkout | stripe-mock + F-CA06 |
 | Webhook sync | Fixture POST (`STRIPE_WEBHOOK_VERIFY=false`) |
 | Cognito Admin API contract | Unit mocks in `customer_api` tests; optional live calls against `mock_cognito:9229` |
-| Invite / app-sent email | MailHog UI at `http://127.0.0.1:8025`; Customer API → `mock_mailhog:1025` |
+| Invite / app-sent email | Mailpit UI at `http://127.0.0.1:8025`; Customer API → `mock_mailpit:1025` |
 
 ---
 
@@ -291,7 +291,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 ## References
 
 - [stripe/stripe-mock](https://github.com/stripe/stripe-mock)
-- [mailhog/mailhog](https://hub.docker.com/r/mailhog/mailhog)
+- [axllent/mailpit](https://hub.docker.com/r/axllent/mailpit)
 - `DeveloperEdition/standards/api_standards.md` — dev JWT
 - `DeveloperEdition/standards/spa_standards.md` — `IDP_LOGIN_URI`
 - `Research/cognito.md` — production onboarding
