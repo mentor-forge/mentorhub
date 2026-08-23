@@ -75,6 +75,8 @@ COMMANDS
 
     pull [profile1,profile2,...]
         Pull latest images for the specified profile(s).
+        With profile "all", first sync architecture repositories with
+        git fetch and git pull, then pull all container images.
 
     clean
         Delete all Mentor Hub specific containers, volumes, and images
@@ -110,7 +112,7 @@ Commands:
   stop           Stop a profile
   tail           Tail a service log
   prune          Prune all orphaned images and volumes
-  pull           Pull latest images for a profile
+  pull           Pull latest images for a profile; "all" also syncs architecture repos
   clean          Delete all Mentor Hub specific containers, volumes, and images
   version        Print the Mentor Hub Developers Edition version
   list-profiles  List all available profiles
@@ -277,7 +279,24 @@ function tailServiceLogs {
 }
 
 ################################################################################
-# Pull latest images
+# List real repositories from the architecture specification
+################################################################################
+function listArchitectureRepos {
+    if [[ -z "${MENTORHUB_PATH:-}" ]]; then
+        echo "Error: MENTORHUB_PATH is not set. Run make install and source ~/.zshrc" >&2
+        return 1
+    fi
+    if ! command -v yq >/dev/null 2>&1; then
+        echo "Error: yq is required to read Specifications/architecture.yaml — see CONTRIBUTING.md" >&2
+        return 1
+    fi
+
+    yq -r '.architecture.["journey-domains"][].repos[] | select(.type != "spa_ref") | [.name, .type] | @tsv' \
+        "$MENTORHUB_PATH/Specifications/architecture.yaml"
+}
+
+################################################################################
+# Pull latest images (and sync git repositories for profile all)
 ################################################################################
 function pull {
     ensureDevServices || return 1
@@ -286,6 +305,34 @@ function pull {
         echo "Error: No profile specified. Use 'mh pull [profile1,profile2,...]'"
         listProfiles
         return 1
+    fi
+
+    if [[ "$NEW_PROFILE" == "all" ]]; then
+        typeset architecture_repo_output
+        typeset -a architecture_repos
+        typeset repo_entry repo_name repo_type repo_path git_status
+
+        architecture_repo_output=$(listArchitectureRepos) || return 1
+        architecture_repos=("${(@f)architecture_repo_output}")
+
+        for repo_entry in "${architecture_repos[@]}"; do
+            repo_name="${repo_entry%%$'\t'*}"
+            repo_type="${repo_entry#*$'\t'}"
+            repo_path="$LAUNCHPAD_HOST/mentorhub_$repo_name"
+
+            if [[ ! -d "$repo_path/.git" ]]; then
+                echo "Git sync skipped: $repo_name ($repo_type) is not cloned at $repo_path"
+                continue
+            fi
+
+            echo "Git sync: $repo_name ($repo_type) — running git fetch && git pull in $repo_path"
+            if (cd "$repo_path" && git fetch && git pull); then
+                echo "Git sync succeeded: $repo_name"
+            else
+                git_status=$?
+                echo "Git sync failed: $repo_name (status $git_status)" >&2
+            fi
+        done
     fi
     
     docker_compose_args=("--project-directory" "$INSTALL_PATH" "-f" "$INSTALL_PATH/docker-compose.yaml")
