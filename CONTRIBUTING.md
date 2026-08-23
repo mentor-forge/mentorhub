@@ -219,8 +219,8 @@ make aws-setup
 # Update the developer CLI with the latest compose file
 make update
 
-# Generate data schemas for all collections in catalog.yaml
-make schemas
+# Clone missing sibling repos listed in Specifications/architecture.yaml (skip existing clones)
+make clone-all
 
 # Build the welcome page container
 make container
