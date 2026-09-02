@@ -1,7 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify container push build-package publish-package build-all test-all aws-setup
+.PHONY: help install update verify container push build-package publish-package clone-all build-all test-all aws-setup
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -11,7 +11,8 @@ help:
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
-	@echo "  make build-all     - Clone/pull architecture.yaml sibling repos; build journey API and SPA containers"
+	@echo "  make clone-all     - Clone/pull architecture.yaml sibling repos (no container builds)"
+	@echo "  make build-all     - clone-all, then build journey API and SPA containers"
 	@echo "  make test-all      - mh up all, then journey API e2e and SPA Cypress"
 	@echo ""
 	@echo "For more information, see ./CONTRIBUTING.md"
@@ -171,18 +172,15 @@ build-publish: container push
 build-package: container
 publish-package: push
 
-build-all:
+clone-all:
 	@command -v yq >/dev/null 2>&1 || { \
 		echo "Error: yq is required. See CONTRIBUTING.md prerequisites, then run make install."; \
 		exit 1; \
 	}
-	@echo "Cloning, pulling, and building architecture.yaml repos in .."
-	@entries=$$(yq -r '.architecture.["journey-domains"][] | .is_journey as $$j | .repos[] | select(.type != "spa_ref") | [.name, .type, ($$j == true)] | join(" ")' Specifications/architecture.yaml) || exit 1; \
+	@echo "Cloning and pulling architecture.yaml repos in .."
+	@names=$$(yq -r '.architecture.["journey-domains"][] | .repos[] | select(.type != "spa_ref") | .name' Specifications/architecture.yaml) || exit 1; \
 	fail=0; \
-	set -- $$entries; \
-	while [ "$$#" -ge 3 ]; do \
-		name=$$1; type=$$2; is_journey=$$3; \
-		shift 3; \
+	for name in $$names; do \
 		repo="mentorhub_$$name"; \
 		path="../$$repo"; \
 		if [ -d "$$path/.git" ]; then \
@@ -200,24 +198,46 @@ build-all:
 			if ! git clone "git@github.com:$(ORG)/$$repo.git" "$$path"; then \
 				echo "Warning: Failed to clone $$repo"; \
 				fail=1; \
-				continue; \
 			fi; \
 		fi; \
-		if [ "$$is_journey" != "true" ]; then \
+	done; \
+	if [ $$fail -ne 0 ]; then \
+		echo "Clone completed with failures."; \
+		exit $$fail; \
+	fi; \
+	echo "Clone complete."
+
+build-all: clone-all
+	@echo "Building journey API and SPA containers"
+	@fail=0; \
+	apis=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
+	for name in $$apis; do \
+		repo="mentorhub_$$name"; \
+		path="../$$repo"; \
+		echo "==> pipenv run container ($$repo)"; \
+		if [ ! -d "$$path" ]; then \
+			echo "Warning: $$path is missing"; \
+			fail=1; \
 			continue; \
 		fi; \
-		if [ "$$type" = "api" ]; then \
-			echo "==> pipenv run container ($$repo)"; \
-			if ! (cd "$$path" && pipenv run container); then \
-				echo "Warning: Container build failed for $$repo"; \
-				fail=1; \
-			fi; \
-		elif [ "$$type" = "spa" ]; then \
-			echo "==> npm run container ($$repo)"; \
-			if ! (cd "$$path" && npm run container); then \
-				echo "Warning: Container build failed for $$repo"; \
-				fail=1; \
-			fi; \
+		if ! (cd "$$path" && pipenv run container); then \
+			echo "Warning: Container build failed for $$repo"; \
+			fail=1; \
+		fi; \
+	done; \
+	spas=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "spa") | .name' Specifications/architecture.yaml) || exit 1; \
+	for name in $$spas; do \
+		repo="mentorhub_$$name"; \
+		path="../$$repo"; \
+		echo "==> npm run container ($$repo)"; \
+		if [ ! -d "$$path" ]; then \
+			echo "Warning: $$path is missing"; \
+			fail=1; \
+			continue; \
+		fi; \
+		if ! (cd "$$path" && npm run container); then \
+			echo "Warning: Container build failed for $$repo"; \
+			fail=1; \
 		fi; \
 	done; \
 	if [ $$fail -ne 0 ]; then \

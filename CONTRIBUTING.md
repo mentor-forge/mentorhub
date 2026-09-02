@@ -207,9 +207,14 @@ Developers should focus on one issue at a time, and should complete the followin
 The Step 2 prompt is critical. It's not a book, but should contain clear instructions about what the intended outcome of the changes is. Most prompts will look something like:
 
 ```
-Please create @_PLANNING.md tasks to implement <issue description>
+Please create @_PLANNING.md tasks to implement <issue links>
 Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
 ```
+
+## Nvidia GB10 Hosted Dev Env
+
+- http://spark-478a.tailb0d293.ts.net:8080/
+- Discord: ``@zeroclawagent please deploy the latest code to the spark dev environment. ``
 
 ## Umbrella Repo Developer Commands
 
@@ -226,7 +231,10 @@ make aws-setup
 # Update the developer CLI with the latest compose file
 make update
 
-# Clone/pull architecture.yaml sibling repos and build journey API/SPA containers
+# Clone/pull architecture.yaml sibling repos (no container builds)
+make clone-all
+
+# clone-all, then build journey API/SPA containers
 make build-all
 
 # Start the full Developer Edition stack, then run journey API e2e and SPA Cypress
