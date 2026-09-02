@@ -226,8 +226,11 @@ make aws-setup
 # Update the developer CLI with the latest compose file
 make update
 
-# Clone missing sibling repos listed in Specifications/architecture.yaml (skip existing clones)
-make clone-all
+# Clone/pull architecture.yaml sibling repos and build journey API/SPA containers
+make build-all
+
+# Start the full Developer Edition stack, then run journey API e2e and SPA Cypress
+make test-all
 
 # Build the welcome page container
 make container

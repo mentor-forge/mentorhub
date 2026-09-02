@@ -1,7 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify container push build-package publish-package clone-all aws-setup
+.PHONY: help install update verify container push build-package publish-package build-all test-all aws-setup
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -11,7 +11,8 @@ help:
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
-	@echo "  make clone-all     - Clone missing architecture.yaml sibling repos via SSH (skip existing)"
+	@echo "  make build-all     - Clone/pull architecture.yaml sibling repos; build journey API and SPA containers"
+	@echo "  make test-all      - mh up all, then journey API e2e and SPA Cypress"
 	@echo ""
 	@echo "For more information, see ./CONTRIBUTING.md"
 
@@ -170,31 +171,112 @@ build-publish: container push
 build-package: container
 publish-package: push
 
-clone-all:
+build-all:
 	@command -v yq >/dev/null 2>&1 || { \
 		echo "Error: yq is required. See CONTRIBUTING.md prerequisites, then run make install."; \
 		exit 1; \
 	}
-	@echo "Cloning missing architecture.yaml repos into .."
-	@repos=$$(yq -r '.architecture.["journey-domains"][].repos[] | select(.type != "spa_ref") | .name' Specifications/architecture.yaml) || exit 1; \
+	@echo "Cloning, pulling, and building architecture.yaml repos in .."
+	@entries=$$(yq -r '.architecture.["journey-domains"][] | .is_journey as $$j | .repos[] | select(.type != "spa_ref") | [.name, .type, ($$j == true)] | join(" ")' Specifications/architecture.yaml) || exit 1; \
 	fail=0; \
-	for name in $$repos; do \
+	set -- $$entries; \
+	while [ "$$#" -ge 3 ]; do \
+		name=$$1; type=$$2; is_journey=$$3; \
+		shift 3; \
 		repo="mentorhub_$$name"; \
 		path="../$$repo"; \
 		if [ -d "$$path/.git" ]; then \
-			echo "Skip (already cloned): $$repo"; \
+			echo "==> Pull $$repo"; \
+			if ! git -C "$$path" pull; then \
+				echo "Warning: Failed to pull $$repo"; \
+				fail=1; \
+			fi; \
 		elif [ -e "$$path" ]; then \
 			echo "Warning: $$path exists but is not a git repository; skipping"; \
-		elif ! git clone "git@github.com:$(ORG)/$$repo.git" "$$path"; then \
-			echo "Warning: Failed to clone $$repo"; \
+			fail=1; \
+			continue; \
+		else \
+			echo "==> Clone $$repo"; \
+			if ! git clone "git@github.com:$(ORG)/$$repo.git" "$$path"; then \
+				echo "Warning: Failed to clone $$repo"; \
+				fail=1; \
+				continue; \
+			fi; \
+		fi; \
+		if [ "$$is_journey" != "true" ]; then \
+			continue; \
+		fi; \
+		if [ "$$type" = "api" ]; then \
+			echo "==> pipenv run container ($$repo)"; \
+			if ! (cd "$$path" && pipenv run container); then \
+				echo "Warning: Container build failed for $$repo"; \
+				fail=1; \
+			fi; \
+		elif [ "$$type" = "spa" ]; then \
+			echo "==> npm run container ($$repo)"; \
+			if ! (cd "$$path" && npm run container); then \
+				echo "Warning: Container build failed for $$repo"; \
+				fail=1; \
+			fi; \
+		fi; \
+	done; \
+	if [ $$fail -ne 0 ]; then \
+		echo "Build completed with failures."; \
+		exit $$fail; \
+	fi; \
+	echo "Build complete."
+
+test-all:
+	@command -v yq >/dev/null 2>&1 || { \
+		echo "Error: yq is required. See CONTRIBUTING.md prerequisites, then run make install."; \
+		exit 1; \
+	}
+	@mh_bin=$$(command -v mh 2>/dev/null); \
+	if [ -z "$$mh_bin" ] && [ -x "$$HOME/.mentorhub/mh" ]; then \
+		mh_bin="$$HOME/.mentorhub/mh"; \
+	fi; \
+	if [ -z "$$mh_bin" ] || [ ! -x "$$mh_bin" ]; then \
+		echo "Error: mh is required. Run make install && make update, then source ~/.zshrc."; \
+		exit 1; \
+	fi; \
+	echo "==> mh up all"; \
+	"$$mh_bin" up all || exit 1; \
+	fail=0; \
+	apis=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
+	for name in $$apis; do \
+		repo="mentorhub_$$name"; \
+		path="../$$repo"; \
+		echo "==> pipenv run e2e ($$repo)"; \
+		if [ ! -d "$$path" ]; then \
+			echo "Warning: $$path is missing"; \
+			fail=1; \
+			continue; \
+		fi; \
+		if ! (cd "$$path" && pipenv run e2e); then \
+			echo "Warning: e2e failed for $$repo"; \
+			fail=1; \
+		fi; \
+	done; \
+	spas=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "spa") | .name' Specifications/architecture.yaml) || exit 1; \
+	for name in $$spas; do \
+		repo="mentorhub_$$name"; \
+		path="../$$repo"; \
+		echo "==> npm run cypress:run ($$repo)"; \
+		if [ ! -d "$$path" ]; then \
+			echo "Warning: $$path is missing"; \
+			fail=1; \
+			continue; \
+		fi; \
+		if ! (cd "$$path" && npm run cypress:run); then \
+			echo "Warning: Cypress failed for $$repo"; \
 			fail=1; \
 		fi; \
 	done; \
 	if [ $$fail -ne 0 ]; then \
-		echo "Clone completed with failures."; \
+		echo "Tests completed with failures."; \
 		exit $$fail; \
 	fi; \
-	echo "Clone complete."
+	echo "Tests complete."
 
 delete-package:
 	@gh api -X DELETE /orgs/mentor-forge/packages/container/mentorhub
