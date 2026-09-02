@@ -155,6 +155,16 @@
         </ul>
     </div>
     <script>
+        // Same-origin as /discovery/ etc. on :8080 — drop the persona JWT so
+        // the next SPA visit goes through login.html (spa_utils logout keys).
+        try {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_expires_at');
+            localStorage.removeItem('user_roles');
+        } catch (e) {
+            /* storage blocked */
+        }
+
         const hostname = window.location.hostname || 'localhost';
 
         document.getElementById('discovery-app-link').href = `http://${hostname}:8080/discovery/`;
