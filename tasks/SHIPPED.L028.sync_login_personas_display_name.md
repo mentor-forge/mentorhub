@@ -1,6 +1,6 @@
 # L028 – Sync login personas and mint `display_name`
 
-Status: Pending
+Status: Shipped
 Type: Feature
 Depends On: none
 Description: F-W22 ([issue #68](https://github.com/mentor-forge/mentorhub/issues/68)) — Align the Developer Edition sign-in page with the latest Profile test data, and mint JWT claim `display_name` instead of `name`.
@@ -65,4 +65,36 @@ Also load the latest **Profile test data** from the running configurator (same s
 
 ## Execution Notes
 
-(reserved)
+### Plan
+
+1. Query the running configurator for the latest Profile JSON schema, configuration metadata, and referenced test-data document set.
+2. Rebuild `PROFILES` from every latest test-data document, using `display_name` for the human-readable JWT claim and the unique email local-part as the login key because the current schema/test data do not define a document `name`.
+3. Update JWT minting to emit `display_name` without `name`, and make `populateUserSelect()` rebuild the select from `PROFILES`.
+4. Remove hardcoded persona options from `login.html`.
+5. Run source-of-truth parity, JWT payload, DOM population, and return-target regression checks; record results here and ship the task.
+
+### Implementation summary
+
+- Queried the running configurator on port 8383. The latest Profile configuration is `0.1.0.0` and references `Profile.0.1.0.0.json`.
+- The latest JSON schema defines `display_name` and does not define `name`. Because every latest Profile document has a unique email, the email local-part is used as the login key / `sub`.
+- Synchronized `PROFILES` to all 21 current test-data documents, including the six newer personas `patha-owner`, `nora`, `helen`, `pat`, `riley`, and `quinn`.
+- Replaced persona `name` properties and the JWT `name` claim with `display_name`.
+- Changed `populateUserSelect()` to clear and rebuild the dropdown every time it runs, and removed all hardcoded persona options from `login.html`.
+- L029 follow-on remains out of scope: shared API token-dict behavior and downstream SPA consumers are not changed here.
+
+### Test results
+
+- Required schema request passed:
+  `curl -X GET "http://localhost:8383/api/configurations/json_schema/Profile.yaml/latest/" -H "accept: application/json"`
+- Live configuration and test-data requests passed:
+  `GET /api/configurations/Profile.yaml/` and
+  `GET /api/test_data/Profile.0.1.0.0.json/`.
+- `node --check welcome-auth.js`: passed.
+- Node unit-style source-of-truth check: passed.
+  - Verified `display_name` exists in the schema and `name` does not.
+  - Verified all 21 live Profile documents appear exactly once in `PROFILES`, with matching login key, `profile_id`, roles, customer, mentor, and display name.
+  - Minted and decoded JWTs for `mike` (admin) and `mary` (multi-role); both contain non-empty `display_name`, omit `name`, and match all `PROFILES` identity claims.
+  - Verified `login.html` has no hardcoded persona options and the populated DOM has one option per `PROFILES` key.
+  - Verified `defaultReturnTo` remains `http://${hostname}:8080/discovery/` and `isAllowedReturnTo` is byte-for-byte unchanged from `HEAD`.
+- IDE diagnostics for `welcome-auth.js` and `login.html`: no errors.
+- Optional live browser/container sign-in was not run; all required Testing Expectations passed.
