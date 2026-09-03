@@ -88,6 +88,7 @@ Paste shipped ISSUE artifacts from `tasks/SHIPPED_ISSUE.*.md` into the target SP
 | `mentorhub_admin_spa` | `SHIPPED_ISSUE.mentorhub_admin_spa.vue_base_and_nginx_prefix.md` |
 | `mentorhub_mentor_spa` | `SHIPPED_ISSUE.mentorhub_mentor_spa.vue_base_and_nginx_prefix.md` |
 | `mentorhub_mentee_spa` | `SHIPPED_ISSUE.mentorhub_mentee_spa.vue_base_and_nginx_prefix.md` |
+| `mentorhub_api_utils` | `ISSUE.mentorhub_api_utils.display_name_token_dict.md` |
 
 ## External repository boundaries
 
