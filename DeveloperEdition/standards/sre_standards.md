@@ -283,6 +283,10 @@ See the [API Standards authentication](./api_standards.md#authentication) sectio
 
 Developer Edition CLI and compose uses a **stable `JWT_SECRET`** so SPAs and backends agree across restarts. The umbrella **developer sign-in page** (`login.html`) mints persona JWTs client-side; journey SPAs load tokens into `localStorage` via `bootstrapAuthFromUrl()` from shared SPA utilities before boot. **`IDP_LOGIN_URI`** / **`VITE_IDP_LOGIN_URI`** default to `http://127.0.0.1:8080/login.html` so unauthenticated guards, `401` handling, and logout send users to that page—not to a per-SPA `/login` route.
 
+Developer Edition and the intended production IdP use `display_name` as the
+human-readable JWT identity claim; consumers must not require the OIDC/JWT
+`name` claim for display.
+
 **Verifying the stack after compose or image changes** (from the product checkout root, for example the repo that contains `DeveloperEdition/`):
 
 ```sh
@@ -422,6 +426,7 @@ Before deploying any API to production, ensure:
 - **Signature Verification**: api_utils validates JWT signatures when `JWT_SECRET` is configured
 - **Fail-Fast Validation**: Applications will not start with default `JWT_SECRET` value
 - **Token Requirements**: All tokens must include `iss`, `aud`, `sub`, `exp` claims
+- **Display Identity**: MentorHub tokens carry the human-readable label in `display_name`, not `name`
 - **Secret Rotation**: Plan for regular secret rotation in production environments
 
 ### Development vs Production

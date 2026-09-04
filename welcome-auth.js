@@ -4,12 +4,12 @@ const JWT_ISSUER = 'dev-idp'
 const JWT_AUDIENCE = 'dev-api'
 const TOKEN_TTL_SECONDS = 10 * 365 * 24 * 60 * 60
 
-/** Static profiles from mentorhub_mongodb_api/configurator/test_data/Profile.0.1.0.0.json */
+/** Profiles synchronized from the latest Profile test data served by the running configurator. */
 const PROFILES = {
   mike: {
     label: 'Mike the Admin (admin)',
     sub: 'mike',
-    name: 'Mike Storey',
+    display_name: 'Mike Storey',
     profile_id: 'A00000000000000000000001',
     roles: ['admin'],
     customer_id: '',
@@ -18,7 +18,7 @@ const PROFILES = {
   daniel: {
     label: 'Daniel the Mentee (mentee)',
     sub: 'daniel',
-    name: 'Daniel Dissler',
+    display_name: 'Daniel Dissler',
     profile_id: 'A00000000000000000000002',
     roles: ['mentee'],
     customer_id: 'D00000000000000000000002',
@@ -27,7 +27,7 @@ const PROFILES = {
   lucky: {
     label: 'Lucky the Mentee (mentee)',
     sub: 'lucky',
-    name: 'Lucky Minyard',
+    display_name: 'Lucky Minyard',
     profile_id: 'A00000000000000000000003',
     roles: ['mentee'],
     customer_id: 'D00000000000000000000007',
@@ -36,7 +36,7 @@ const PROFILES = {
   mary: {
     label: 'Mary the Super Mentee (customer, coordinator, mentee)',
     sub: 'mary',
-    name: 'Mary Anderson',
+    display_name: 'Mary Anderson',
     profile_id: 'A00000000000000000000004',
     roles: ['customer', 'coordinator', 'mentee'],
     customer_id: 'D00000000000000000000001',
@@ -45,7 +45,7 @@ const PROFILES = {
   linda: {
     label: 'Linda the Archived Mentee (mentee)',
     sub: 'linda',
-    name: 'Linda Left',
+    display_name: 'Linda Left',
     profile_id: 'A00000000000000000000005',
     roles: ['mentee'],
     customer_id: 'D00000000000000000000006',
@@ -54,7 +54,7 @@ const PROFILES = {
   marti: {
     label: 'Marti the Mentor (mentor)',
     sub: 'marti',
-    name: 'Marti Lombardi',
+    display_name: 'Marti Lombardi',
     profile_id: 'A00000000000000000000006',
     roles: ['mentor'],
     customer_id: '',
@@ -63,7 +63,7 @@ const PROFILES = {
   emma: {
     label: 'Emma the Coordinator (coordinator)',
     sub: 'emma',
-    name: 'Emma Coordinator',
+    display_name: 'Emma Coordinator',
     profile_id: 'A00000000000000000000007',
     roles: ['coordinator'],
     customer_id: 'D00000000000000000000002',
@@ -72,7 +72,7 @@ const PROFILES = {
   stacey: {
     label: 'Stacey the CEO (customer)',
     sub: 'stacey',
-    name: 'Stacey CEO',
+    display_name: 'Stacey CEO',
     profile_id: 'A00000000000000000000008',
     roles: ['customer'],
     customer_id: 'D00000000000000000000002',
@@ -81,7 +81,7 @@ const PROFILES = {
   margaret: {
     label: 'Margaret the Coordinator (coordinator)',
     sub: 'margaret',
-    name: 'Margaret Coordinator',
+    display_name: 'Margaret Coordinator',
     profile_id: 'A00000000000000000000009',
     roles: ['coordinator'],
     customer_id: 'D00000000000000000000002',
@@ -90,7 +90,7 @@ const PROFILES = {
   paula: {
     label: 'Paula the Persevere Mentor (mentor)',
     sub: 'paula',
-    name: 'Paula Persevere',
+    display_name: 'Paula Persevere',
     profile_id: 'A00000000000000000000010',
     roles: ['mentor'],
     customer_id: '',
@@ -99,7 +99,7 @@ const PROFILES = {
   elon: {
     label: 'Elon the Money Mentor (mentor)',
     sub: 'elon',
-    name: 'Elon Money',
+    display_name: 'Elon Money',
     profile_id: 'A00000000000000000000011',
     roles: ['mentor'],
     customer_id: '',
@@ -108,7 +108,7 @@ const PROFILES = {
   eddy: {
     label: 'Eddy the Entrepreneur (customer)',
     sub: 'eddy',
-    name: 'Eddy Entrepreneur',
+    display_name: 'Eddy Entrepreneur',
     profile_id: 'A00000000000000000000012',
     roles: ['customer'],
     customer_id: 'D00000000000000000000007',
@@ -117,7 +117,7 @@ const PROFILES = {
   donny: {
     label: 'Donny the Deadbeat (customer)',
     sub: 'donny',
-    name: 'Donny Deadbeat',
+    display_name: 'Donny Deadbeat',
     profile_id: 'A00000000000000000000013',
     roles: ['customer'],
     customer_id: 'D00000000000000000000008',
@@ -126,7 +126,7 @@ const PROFILES = {
   danny: {
     label: 'Danny the Dev Lead (coordinator, mentor)',
     sub: 'danny',
-    name: 'Danny Dev Lead',
+    display_name: 'Danny Dev Lead',
     profile_id: 'A00000000000000000000014',
     roles: ['coordinator', 'mentor'],
     customer_id: 'D00000000000000000000007',
@@ -135,10 +135,64 @@ const PROFILES = {
   melinda: {
     label: 'Melinda the Multi Customer Mentor (mentor)',
     sub: 'melinda',
-    name: 'Melinda Multi',
+    display_name: 'Melinda Multi',
     profile_id: 'A00000000000000000000015',
     roles: ['mentor'],
     customer_id: '',
+    mentor_id: '',
+  },
+  'patha-owner': {
+    label: 'Path A Owner (customer)',
+    sub: 'patha-owner',
+    display_name: 'Path A Owner',
+    profile_id: 'A00000000000000000000016',
+    roles: ['customer'],
+    customer_id: 'D00000000000000000000009',
+    mentor_id: '',
+  },
+  nora: {
+    label: 'Nora Northstar (customer)',
+    sub: 'nora',
+    display_name: 'Nora Northstar',
+    profile_id: 'A00000000000000000000017',
+    roles: ['customer'],
+    customer_id: 'D00000000000000000000010',
+    mentor_id: '',
+  },
+  helen: {
+    label: 'Helen Harbor (customer)',
+    sub: 'helen',
+    display_name: 'Helen Harbor',
+    profile_id: 'A00000000000000000000018',
+    roles: ['customer'],
+    customer_id: 'D00000000000000000000011',
+    mentor_id: '',
+  },
+  pat: {
+    label: 'Pat Persevere (mentee)',
+    sub: 'pat',
+    display_name: 'Pat Persevere',
+    profile_id: 'A00000000000000000000019',
+    roles: ['mentee'],
+    customer_id: 'D00000000000000000000002',
+    mentor_id: 'A00000000000000000000010',
+  },
+  riley: {
+    label: 'Riley Invitee (customer)',
+    sub: 'riley',
+    display_name: 'Riley Invitee',
+    profile_id: 'A00000000000000000000020',
+    roles: ['customer'],
+    customer_id: 'D00000000000000000000002',
+    mentor_id: '',
+  },
+  quinn: {
+    label: 'Quinn Revoked (customer)',
+    sub: 'quinn',
+    display_name: 'Quinn Revoked',
+    profile_id: 'A00000000000000000000021',
+    roles: ['customer'],
+    customer_id: 'D00000000000000000000002',
     mentor_id: '',
   },
 }
@@ -316,7 +370,6 @@ async function signJwt(payload) {
 function populateUserSelect() {
   const userSelect = document.getElementById('welcome-login-user-id')
   if (!(userSelect instanceof HTMLSelectElement)) return
-  if (userSelect.options.length > 0) return
 
   userSelect.replaceChildren()
   Object.entries(PROFILES).forEach(([value, profile]) => {
@@ -390,7 +443,7 @@ function initWelcomeLogin() {
           iss: JWT_ISSUER,
           aud: JWT_AUDIENCE,
           sub: profile.sub,
-          name: profile.name,
+          display_name: profile.display_name,
           iat: now,
           exp,
           roles: profile.roles,

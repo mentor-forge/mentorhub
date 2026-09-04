@@ -14,6 +14,7 @@ All domain APIs validate Bearer tokens via `api_utils` and expect these claims:
 
 | Claim | Required | Source of truth | Notes |
 | --- | --- | --- | --- |
+| **`display_name`** | **Yes** — always-present string | Profile `display_name` | Human-readable identity label; use this claim instead of OIDC/JWT `name` |
 | **`profile_id`** | **Yes** — request rejected without it | Profile `_id` | Primary identity for RBAC and document scoping |
 | **`customer_id`** | Present (may be empty string for non-tenant personas) | Customer `_id` on Profile | Sponsoring org; set for Customer persona flows |
 | **`mentor_id`** | **Reserved** — always present (may be empty string) | Profile `mentor_id` | Empty for Customer registrants and non-mentees; set when a mentee is assigned a mentor |
@@ -21,7 +22,7 @@ All domain APIs validate Bearer tokens via `api_utils` and expect these claims:
 
 **Pool storage vs token shape**
 
-- Cognito **custom attributes** on the user pool: `custom:profile_id`, `custom:customer_id`, `custom:mentor_id`, `custom:roles`.
+- Cognito **custom attributes** on the user pool: `custom:display_name`, `custom:profile_id`, `custom:customer_id`, `custom:mentor_id`, `custom:roles`.
 - **JWT claims** (what APIs read): same names **without** the `custom:` prefix.
 - A **Pre Token Generation** Lambda copies pool attributes into claims on every token issue/refresh. Hosted UI sign-up alone does **not** populate MentorHub claims — Customer API must create Profile/Customer and write attributes first.
 
@@ -63,7 +64,7 @@ Prospect
             roles: ["customer"]
             mentor_id: ""
        → AdminUpdateUserAttributes: set custom:* on Cognito user
-  → Pre Token Generation → JWT with four claims
+  → Pre Token Generation → JWT with display_name and four authorization/scoping claims
   → Customer SPA (existing IdP redirect) → APIs accept token
 ```
 
@@ -74,7 +75,7 @@ Prospect
 - Return ids to the trigger path that writes Cognito attributes, or write attributes directly if API holds Cognito Admin credentials.
 - If MongoDB create fails after Cognito user exists: retry, quarantine, or disable user — **do not** allow API access without `profile_id`.
 
-**Hosted UI fields (minimum):** email, password, and display name (maps to Profile `full_name`; username policy TBD — email-as-username is acceptable default).
+**Hosted UI fields (minimum):** email, password, and display name (maps to Profile `display_name`; username policy TBD — email-as-username is acceptable default).
 
 **Not in Path A:** SPA registration screens; end-user JWT on the provisioning call (use service credential from Lambda).
 
@@ -112,7 +113,7 @@ Authenticated Customer (JWT customer_id set)
 | # | Task | Notes |
 | --- | --- | --- |
 | **P1** | User pool | Password policy, MFA policy, email config |
-| **P2** | Custom attribute schema | `custom:profile_id`, `custom:customer_id`, `custom:mentor_id`, `custom:roles` — **names immutable after pool creation** |
+| **P2** | Custom attribute schema | `custom:display_name`, `custom:profile_id`, `custom:customer_id`, `custom:mentor_id`, `custom:roles` — **names immutable after pool creation** |
 | **P3** | App client + Hosted UI | Callback/logout URLs for Customer SPA; authorization code flow; **sign-up enabled** for Path A |
 | **P4** | Cognito domain | Hosted UI hostname |
 | **P5** | Pre Token Generation Lambda | Maps `custom:*` → JWT claims; use **V2** if access token must carry claims |

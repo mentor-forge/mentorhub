@@ -28,7 +28,7 @@ These choices prioritize **best practice for local dev** (real API + MongoDB pat
 | **L6** | **No Post Confirmation Lambda in compose** | `login.html` → dev register route → same service as F-CA05 production callback |
 | **L7** | **`stripe-mock`** in compose for Stripe API calls | Official stub; `STRIPE_API_BASE` points at container |
 | **L8** | **Webhook testing:** fixture POST in e2e + **`STRIPE_WEBHOOK_VERIFY=false`** in dev; Stripe CLI on host optional for manual test-mode runs | No `stripe listen` service in compose; daily dev does not need Stripe CLI |
-| **L9** | **JWT unchanged:** HS256 minted client-side after API returns claims — `JWT_SECRET=local-dev-jwt-secret-fixed`, `iss: dev-idp`, `aud: dev-api` | Aligns with `DeveloperEdition/standards/api_standards.md` |
+| **L9** | **JWT shape:** HS256 minted client-side after API returns Profile claims — `iss`, `aud`, `sub`, `exp`, `display_name`, `profile_id`, `customer_id`, `mentor_id`, and `roles`; `JWT_SECRET=local-dev-jwt-secret-fixed` | Aligns with `DeveloperEdition/standards/api_standards.md` |
 
 **Explicitly not doing locally (MVP):** Cognito Hosted UI, **real AWS Cognito** (cloud credentials), production Stripe keys, webhook signature verification in automated dev/e2e (still required in prod).
 
@@ -154,7 +154,7 @@ Production Cognito involves Hosted UI, Admin API, and Post Confirmation Lambda. 
 
 | Tab | Simulates | Flow |
 | --- | --- | --- |
-| **Sign in** (existing) | Returning user login | Pick seeded profile → mint JWT from stored claims |
+| **Sign in** (existing) | Returning user login | Pick seeded profile → mint JWT with `display_name`, `profile_id`, `customer_id`, `mentor_id`, and `roles` |
 | **Register organization** | E1 Path A — Hosted UI sign-up + Post Confirmation | Form: email, name, org name → `POST /api/dev/register/primary` → mint JWT with new `profile_id`, `customer_id`, `roles: ["customer"]`, `mentor_id: ""` |
 | **Join as invited member** | E4 invitee first login (after AdminCreateUser in prod) | Form: sponsor `customer_id`, name, email → `POST /api/dev/register/invite` → mint JWT under inviter |
 | **Update profile claims** | AdminUpdateUserAttributes + re-login | Pick profile, edit `roles` / `customer_id` / `mentor_id` → `PATCH /api/dev/profile/{profile_id}/claims` → re-mint JWT |
@@ -198,7 +198,7 @@ Developer Edition — new primary user (no AWS)
     → POST customer_api /api/dev/register/primary  (REGISTRATION_DEV_MODE=true)
          → registration_service: create Customer + Profile
          → COGNITO_ENABLED=false → skip AdminUpdateUserAttributes
-    → welcome-auth mints JWT (profile_id, customer_id, roles, mentor_id "")
+    → welcome-auth mints JWT (display_name, profile_id, customer_id, roles, mentor_id "")
     → redirect to Customer SPA #access_token=…
 
 Developer Edition — invited member
@@ -282,7 +282,7 @@ Production path unchanged: Cognito Hosted UI + Lambdas + real Admin API + Stripe
 | --- | --- |
 | Require **real AWS Cognito** for daily Developer Edition login | `login.html` + `COGNITO_ENABLED=false`; `mock_cognito` for wire-protocol tests only |
 | Use production Stripe keys locally | stripe-mock + optional CLI test mode |
-| Dev JWT without `profile_id` / `customer_id` | Always mint full claim set from Profile document |
+| Dev JWT without `display_name` / `profile_id` / `customer_id` | Always mint the full claim set from the Profile document; use `display_name`, not `name`, for the human-readable identity |
 | Dev registration routes in production | `REGISTRATION_DEV_MODE` — routes not mounted when false |
 | Duplicate provisioning logic in login.html | API owns creates; welcome page only mints JWT |
 
