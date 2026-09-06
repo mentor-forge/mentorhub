@@ -134,7 +134,7 @@ Direct service ports are supported on purpose for **Cypress** (per-repo `npm run
 
 ### Stage0 Launch
 
-`make update` writes the absolute path of this umbrella repo to `~/.mentorhub/MENTORHUB_PATH`. `mh` sets **`LAUNCHPAD_HOST`** to that path's **parent** so Stage0 Launch mounts the launchpad directory at **`/Launchpad`** (sibling repos plus `mentorhub/Specifications`).
+`make update` writes the absolute path of this umbrella repo to `~/.mentorhub/MENTORHUB_PATH`. `mh` sets **`LAUNCHPAD_DIR`** to that path's **parent** so Stage0 Launch mounts the launchpad directory at **`/Launchpad`** (sibling repos plus `mentorhub/Specifications`).
 
 - Start Launch: `mh up stage0` or `mh up all` (profile **`stage0`** / **`all`**)
 - Launch UI: [http://localhost:8081](http://localhost:8081) — see [system tour](./DeveloperEdition/standards/system_tour.md) for clone workflow

@@ -11,7 +11,7 @@ if [[ -z "${MENTORHUB_PATH:-}" && -f "$HOME/.mentorhub/MENTORHUB_PATH" ]]; then
   export MENTORHUB_PATH=$(<"$HOME/.mentorhub/MENTORHUB_PATH")
 fi
 if [[ -n "${MENTORHUB_PATH:-}" ]]; then
-  export LAUNCHPAD_HOST="${MENTORHUB_PATH:h}"
+  export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-${MENTORHUB_PATH:h}}"
 fi
 if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
   source "$HOME/.mentorhub/aws-platform.env"
@@ -348,7 +348,7 @@ function e2eAll {
             ;;
         esac
 
-        repo_path="$LAUNCHPAD_HOST/mentorhub_$repo_name"
+        repo_path="$LAUNCHPAD_DIR/mentorhub_$repo_name"
         echo
         echo "========================================================================"
         echo "E2E: mentorhub_$repo_name ($repo_type)"
@@ -433,7 +433,7 @@ function pull {
         for repo_entry in "${architecture_repos[@]}"; do
             repo_name="${repo_entry%%$'\t'*}"
             repo_type="${repo_entry#*$'\t'}"
-            repo_path="$LAUNCHPAD_HOST/mentorhub_$repo_name"
+            repo_path="$LAUNCHPAD_DIR/mentorhub_$repo_name"
 
             if [[ ! -d "$repo_path/.git" ]]; then
                 echo "Git sync skipped: $repo_name ($repo_type) is not cloned at $repo_path"

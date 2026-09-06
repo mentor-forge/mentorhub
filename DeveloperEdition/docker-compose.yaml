@@ -24,23 +24,23 @@ services:
   ##################################
   # Stage0 Launch
   ##################################
-  # stage0_launch:
-  #   image: ghcr.io/agile-learning-institute/stage0_launch:latest
-  #   container_name: stage0_launch
-  #   restart: no
-  #   ports:
-  #     - "0.0.0.0:${LAUNCH_HOST_PORT:-8081}:8080"
-  #   volumes:
-  #     - ${LAUNCHPAD_HOST:-./}:/Launchpad
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     GITHUB_TOKEN: ${GITHUB_TOKEN:-foo}
-  #     GITHUB_USERNAME: ${GITHUB_USERNAME:-}
-  #     DELETE_ENABLED: ${DELETE_ENABLED:-}
-  #     STAGE0_LAUNCH_CONTAINER_NAME: stage0_launch
-  #   profiles:
-  #     - all
-  #     - stage0
+  stage0_launch:
+    image: ghcr.io/agile-learning-institute/stage0_launch:latest
+    container_name: stage0_launch
+    restart: no
+    ports:
+      - "0.0.0.0:${LAUNCH_HOST_PORT:-8081}:8080"
+    volumes:
+      - ${LAUNCHPAD_DIR:-${MENTORHUB_PATH:-./}}:/Launchpad
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-foo}
+      GITHUB_USERNAME: ${GITHUB_USERNAME:-}
+      DELETE_ENABLED: ${DELETE_ENABLED:-False}
+      STAGE0_LAUNCH_CONTAINER_NAME: stage0_launch
+    profiles:
+      - all
+      - stage0
 
   ##################################
   # Backing Services

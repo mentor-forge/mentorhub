@@ -33,7 +33,7 @@ if [[ -z "${MENTORHUB_PATH:-}" ]]; then
   MENTORHUB_PATH="$(cd "${SCRIPT_DIR}/.." && pwd)"
   export MENTORHUB_PATH
 fi
-export LAUNCHPAD_HOST="${LAUNCHPAD_HOST:-$(dirname "$MENTORHUB_PATH")}"
+export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-$(dirname "$MENTORHUB_PATH")}"
 
 if [[ -z "${IDP_LOGIN_URI:-}" ]]; then
   HOST_NAME="$(read_mh_file "${MH_DIR}/HOST_NAME")"
@@ -64,7 +64,7 @@ if git -C "${SCRIPT_DIR}/.." rev-parse --is-inside-work-tree >/dev/null 2>&1; th
 fi
 
 echo "IDP_LOGIN_URI=${IDP_LOGIN_URI}"
-echo "LAUNCHPAD_HOST=${LAUNCHPAD_HOST}"
+echo "LAUNCHPAD_DIR=${LAUNCHPAD_DIR}"
 
 # Stop first so pull is not racing running containers; up --detach recreates
 # from the newly pulled tags (start would keep old container filesystems).

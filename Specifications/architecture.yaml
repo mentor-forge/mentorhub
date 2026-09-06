@@ -7,7 +7,7 @@ architecture:
     architecture: https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md
     config: https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml
     note: AWS accounts, infrastructure services, deployment topology, and as-built platform values live in mentorhub_cloudformation.
-  journey-domains:
+  domains:
     - name: schema
       description: MongoDB Database Configuration and Management.
       repos:
