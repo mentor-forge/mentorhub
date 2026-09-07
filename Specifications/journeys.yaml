@@ -1,10 +1,52 @@
 journeys:
+  - name: Discovery
+    description: The application landing page where users discover things to work with/on.
+    primary_actor: Anyone
+    routes:
+      - /discovery/ 
+      - /discovery/config
+      - /discovery/events
+      - /discovery/paths
+      - /discovery/plans
+      - /discovery/resources
+      - /discovery/notifications
+      - /discovery/notification/:id
+  - name: Admin Journey
+    description: A system administrator responsible for configuration, monitoring, and operation of the platform.
+    primary_actor: Mike Storey
+    routes:
+      - /admin/
+      - /admin/config
+      - /admin/logs
+      - /admin/settings
   - name: Mentor Journey 
     description: The Mentor Journey is the journey of a mentor as they help a mentee's learn.
-    actor: Marti the Mentor
+    primary_actor: Paula Persevere
+    routes:
+      - /mentor/mentee/:id
+      - /mentor/resource
+      - /mentor/resource/:id
+      - /mentor/path
+      - /mentor/path/:id
+      - /mentor/plan
+      - /mentor/plan/:id
+      - /mentor/encounter/:id
   - name: Mentee Journey
     description: The Mentee Journey is the journey of a mentee as they learn from a mentor.
-    actor: Mary the Mentee
+    primary_actor: Daniel Dissler
+    routes:
+      - /mentee/
+      - /mentee/journey
+      - /mentee/journey/:id
+      - /mentee/plan/:id
+      - /mentee/resource/:id
+      - /mentee/config
   - name: Customer Journey
-    description: The Customer Journey is the journey of a customer as they learn from a mentor.
-    actor: Carol the Customer
+    description: The Customer Journey is the journey of a customer organiation who subscribes to mentorhsip encounters for their employeesmentee's. 
+    primary_actor: Stacey CEO
+    note: The coordinator role allows a Customer to deligate a sub-set of the Customer Journey responsibilities to other users.
+    routes:
+      - /customer/
+      - /customer/:id
+      - /customer/profile/:id
+      - /customer/config
