@@ -1,7 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify container push build-package publish-package clone-all build-all test-all aws-setup
+.PHONY: help install update verify container push build-package publish-package clone-all build-all test-all test aws-setup
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -9,6 +9,7 @@ help:
 	@echo "  make install        - Install Homebrew prerequisites and mentorhub CLI tools"
 	@echo "  make verify        - Verify build tools and prerequisites"
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
+	@echo "  make test          - Run welcome server regression tests"
 	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
 	@echo "  make clone-all     - Clone/pull architecture.yaml sibling repos (no container builds)"
@@ -297,6 +298,10 @@ test-all:
 		exit $$fail; \
 	fi; \
 	echo "Tests complete."
+
+test:
+	@echo "Running welcome server regression tests..."
+	@node --test tests/welcome-auth.test.js
 
 delete-package:
 	@gh api -X DELETE /orgs/mentor-forge/packages/container/mentorhub

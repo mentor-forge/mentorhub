@@ -20,9 +20,13 @@ if [[ -f "$HOME/.mentorhub/aws-platform.local.env" ]]; then
   source "$HOME/.mentorhub/aws-platform.local.env"
 fi
 
-# Tailscale VPN access: point journey SPAs at the mock IdP on this host's magic
-# name. Opt-in via ~/.mentorhub/HOST_NAME; unset falls back to the compose
-# default (http://127.0.0.1:8080/login.html). See CONTRIBUTING.md (VPN access).
+# Tailscale Funnel / VPN access: IDP_LOGIN_URI env var takes precedence.
+# Optional persistent file ~/.mentorhub/IDP_LOGIN_URI is checked next.
+# ~/.mentorhub/HOST_NAME derives http://<HOST_NAME>:8080/login.html.
+# Unset falls back to the compose default (http://127.0.0.1:8080/login.html).
+if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/IDP_LOGIN_URI" ]]; then
+  export IDP_LOGIN_URI=$(<"$HOME/.mentorhub/IDP_LOGIN_URI")
+fi
 if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/HOST_NAME" ]]; then
   export IDP_LOGIN_URI="http://$(<"$HOME/.mentorhub/HOST_NAME"):8080/login.html"
 fi

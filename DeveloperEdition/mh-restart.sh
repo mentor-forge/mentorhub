@@ -36,6 +36,13 @@ fi
 export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-$MENTORHUB_PATH}"
 
 if [[ -z "${IDP_LOGIN_URI:-}" ]]; then
+  file_idp_uri="$(read_mh_file "${MH_DIR}/IDP_LOGIN_URI")"
+  if [[ -n "${file_idp_uri}" ]]; then
+    export IDP_LOGIN_URI="${file_idp_uri}"
+  fi
+fi
+
+if [[ -z "${IDP_LOGIN_URI:-}" ]]; then
   HOST_NAME="$(read_mh_file "${MH_DIR}/HOST_NAME")"
   if [[ -n "${HOST_NAME}" ]]; then
     export HOST_NAME

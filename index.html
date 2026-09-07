@@ -167,11 +167,11 @@
 
         const hostname = window.location.hostname || 'localhost';
 
-        document.getElementById('discovery-app-link').href = `http://${hostname}:8080/discovery/`;
-        document.getElementById('customer-app-link').href = `http://${hostname}:8080/customer/`;
-        document.getElementById('admin-app-link').href = `http://${hostname}:8080/admin/`;
-        document.getElementById('mentor-app-link').href = `http://${hostname}:8080/mentor/`;
-        document.getElementById('mentee-app-link').href = `http://${hostname}:8080/mentee/`;
+        document.getElementById('discovery-app-link').href = '/discovery/';
+        document.getElementById('customer-app-link').href = '/customer/';
+        document.getElementById('admin-app-link').href = '/admin/';
+        document.getElementById('mentor-app-link').href = '/mentor/';
+        document.getElementById('mentee-app-link').href = '/mentee/';
 
         document.getElementById('schema-spa-link').href = `http://${hostname}:8384/`;
         document.getElementById('runbook-spa-link').href = `http://${hostname}:8396/`;
