@@ -212,14 +212,18 @@ function base64UrlEncodeJson(value) {
 function isAllowedReturnTo(urlString) {
   try {
     const url = new URL(urlString)
-    if (url.protocol !== 'http:') return false
-    // Local development, plus Tailscale MagicDNS hosts (*.ts.net) so journey
-    // SPAs opened over the team VPN can redirect back after dev sign-in.
-    return (
-      url.hostname === '127.0.0.1' ||
-      url.hostname === 'localhost' ||
-      url.hostname.endsWith('.ts.net')
-    )
+    const isLoopback = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+    const isTailnetHost = url.hostname.endsWith('.ts.net')
+
+    if (url.protocol === 'http:') {
+      return isLoopback || isTailnetHost
+    }
+
+    if (url.protocol === 'https:') {
+      return isTailnetHost
+    }
+
+    return false
   } catch {
     return false
   }
@@ -397,8 +401,7 @@ function showReturnToError(message) {
 
 function initWelcomeLogin() {
   const params = new URLSearchParams(window.location.search)
-  const hostname = window.location.hostname || '127.0.0.1'
-  const defaultReturnTo = `http://${hostname}:8080/discovery/`
+  const defaultReturnTo = new URL('/discovery/', window.location.origin).href
   const returnTo = params.get('return_to') ?? defaultReturnTo
   const returnToInput = document.getElementById('welcome-login-return-to')
   if (returnToInput instanceof HTMLInputElement) {
@@ -409,7 +412,7 @@ function initWelcomeLogin() {
   if (!validReturnTo) {
     showReturnToError(
       returnTo
-        ? 'Invalid return_to URL. Only http://127.0.0.1:*, http://localhost:*, and http://*.ts.net:* are allowed.'
+        ? 'Invalid return_to URL. Only http://localhost:*, http://127.0.0.1:*, http://*.ts.net:*, and https://*.ts.net are allowed.'
         : 'Missing return_to query parameter. Open a journey SPA from the developer portal.'
     )
     setLoginEnabled(false)
@@ -467,6 +470,7 @@ function initWelcomeLogin() {
 }
 
 function bootWelcomeLogin() {
+  if (typeof document === 'undefined') return
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initWelcomeLogin)
   } else {
@@ -474,4 +478,25 @@ function bootWelcomeLogin() {
   }
 }
 
-bootWelcomeLogin()
+if (typeof window !== 'undefined') {
+  bootWelcomeLogin()
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    PROFILES,
+    DEV_JWT_SECRET,
+    JWT_ISSUER,
+    JWT_AUDIENCE,
+    TOKEN_TTL_SECONDS,
+    base64UrlEncodeBytes,
+    base64UrlEncodeJson,
+    isAllowedReturnTo,
+    signJwt,
+    hmacSha256Pure,
+    sha256Pure,
+    initWelcomeLogin,
+    showReturnToError,
+    setLoginEnabled,
+  }
+}
