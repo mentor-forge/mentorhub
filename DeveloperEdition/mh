@@ -28,7 +28,38 @@ if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/IDP_LOGIN_URI" ]]; then
   export IDP_LOGIN_URI=$(<"$HOME/.mentorhub/IDP_LOGIN_URI")
 fi
 if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/HOST_NAME" ]]; then
-  export IDP_LOGIN_URI="http://$(<"$HOME/.mentorhub/HOST_NAME"):8080/login.html"
+  raw_host=$(<"$HOME/.mentorhub/HOST_NAME")
+  raw_host="$(echo "$raw_host" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+  if [[ -n "$raw_host" ]]; then
+    # If HOST_NAME already includes a scheme (e.g. https://spark-478a.tailb0d293.ts.net)
+    if [[ "$raw_host" =~ ^https?:// ]]; then
+      base_url="${raw_host%/login.html}"
+      base_url="${base_url%/}"
+      export IDP_LOGIN_URI="${base_url}/login.html"
+      h_only="${base_url#*://}"
+      h_only="${h_only%%:*}"
+      export HOST_NAME="${h_only%%/*}"
+    elif [[ "$raw_host" =~ \.ts\.net$ ]]; then
+      # If on a Tailscale .ts.net domain, check if Tailscale Funnel is active
+      is_funnel=false
+      if command -v tailscale >/dev/null 2>&1; then
+        if tailscale funnel status 2>/dev/null | grep -Eqi "(funnel is on|active|https://${raw_host})" || \
+           sudo -n tailscale funnel status 2>/dev/null | grep -Eqi "(funnel is on|active|https://${raw_host})"; then
+          is_funnel=true
+        fi
+      fi
+      if [[ "$is_funnel" == "true" || "${FUNNEL:-}" == "true" ]]; then
+        export IDP_LOGIN_URI="https://${raw_host}/login.html"
+      else
+        export IDP_LOGIN_URI="http://${raw_host}:8080/login.html"
+      fi
+      export HOST_NAME="${raw_host}"
+    else
+      export HOST_NAME="${raw_host}"
+      export IDP_LOGIN_URI="http://${raw_host}:8080/login.html"
+    fi
+  fi
 fi
 
 # Compose-only default; shell profile may already export JWT_SECRET.

@@ -113,13 +113,23 @@ mh down
 mh up
 ```
 
-`HOST_NAME` remains a hostname-only setting (do not include a scheme or port).
+`HOST_NAME` supports hostname-only settings (`localhost`, `spark-478a.tailb0d293.ts.net`), full URLs (`https://spark-478a.tailb0d293.ts.net`), and automatically detects active Tailscale Funnel to derive HTTPS `IDP_LOGIN_URI`.
 
 #### Mode 2: Public Funnel HTTPS (e.g. Spark host)
 
-For remote / public access using Tailscale Funnel, provide an explicit `IDP_LOGIN_URI` override with the HTTPS URL. An explicit `IDP_LOGIN_URI` takes precedence over `HOST_NAME`:
+For remote / public access using Tailscale Funnel, you can either:
+1. Set `HOST_NAME` to your Tailscale host (e.g. `echo spark-478a.tailb0d293.ts.net > ~/.mentorhub/HOST_NAME` or with `https://`), which automatically derives `https://<host>/login.html` when Funnel is active.
+2. Or provide an explicit `IDP_LOGIN_URI` override (via env var or `~/.mentorhub/IDP_LOGIN_URI`):
 
 ```sh
+# Method A: Set HOST_NAME (auto-detects funnel or explicit https)
+echo "https://spark-478a.tailb0d293.ts.net" > ~/.mentorhub/HOST_NAME
+mh down
+mh up
+sudo tailscale funnel --bg http://127.0.0.1:8080
+sudo tailscale funnel status
+
+# Method B: Explicit IDP_LOGIN_URI
 export IDP_LOGIN_URI="https://spark-478a.tailb0d293.ts.net/login.html"
 mh down
 mh up
