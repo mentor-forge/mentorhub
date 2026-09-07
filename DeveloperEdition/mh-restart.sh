@@ -33,7 +33,7 @@ if [[ -z "${MENTORHUB_PATH:-}" ]]; then
   MENTORHUB_PATH="$(cd "${SCRIPT_DIR}/.." && pwd)"
   export MENTORHUB_PATH
 fi
-export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-$(dirname "$MENTORHUB_PATH")}"
+export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-$MENTORHUB_PATH}"
 
 if [[ -z "${IDP_LOGIN_URI:-}" ]]; then
   HOST_NAME="$(read_mh_file "${MH_DIR}/HOST_NAME")"

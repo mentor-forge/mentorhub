@@ -132,7 +132,7 @@ update: verify
 		exit 1; \
 	fi
 	@export GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
-	printf '%s\n' "$(abspath $(CURDIR))" > ~/.mentorhub/MENTORHUB_PATH && \
+	printf '%s\n' "$(abspath $(CURDIR)/..)" > ~/.mentorhub/MENTORHUB_PATH && \
 	cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
 	chmod +x ~/.mentorhub/mh && \
 	cp ./DeveloperEdition/scripts/codeartifact-pypi-auth.sh ~/.mentorhub/codeartifact-pypi-auth.sh && \

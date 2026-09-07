@@ -7,11 +7,11 @@ export INSTALL_PATH=$(dirname "$0")
 if [[ -z "${GITHUB_TOKEN:-}" && -f "$HOME/.mentorhub/GITHUB_TOKEN" ]]; then
   export GITHUB_TOKEN=$(<"$HOME/.mentorhub/GITHUB_TOKEN")
 fi
-if [[ -z "${MENTORHUB_PATH:-}" && -f "$HOME/.mentorhub/MENTORHUB_PATH" ]]; then
+if [[ -f "$HOME/.mentorhub/MENTORHUB_PATH" ]]; then
   export MENTORHUB_PATH=$(<"$HOME/.mentorhub/MENTORHUB_PATH")
-fi
-if [[ -n "${MENTORHUB_PATH:-}" ]]; then
-  export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-${MENTORHUB_PATH:h}}"
+  export LAUNCHPAD_DIR="$MENTORHUB_PATH"
+elif [[ -n "${MENTORHUB_PATH:-}" ]]; then
+  export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-$MENTORHUB_PATH}"
 fi
 if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
   source "$HOME/.mentorhub/aws-platform.env"
@@ -214,6 +214,11 @@ function upProfile {
         return 1
     fi
     
+    if [[ -f "$HOME/.mentorhub/MENTORHUB_PATH" ]]; then
+        export MENTORHUB_PATH=$(<"$HOME/.mentorhub/MENTORHUB_PATH")
+        export LAUNCHPAD_DIR="$MENTORHUB_PATH"
+    fi
+
     docker_compose_args=("-f" "$INSTALL_PATH/docker-compose.yaml")
     for profile in "${(s:,:)NEW_PROFILE}"; do
         docker_compose_args+=("--profile" "$profile")
@@ -299,8 +304,13 @@ function listArchitectureRepos {
         return 1
     fi
 
-    yq -r '.architecture.["journey-domains"][].repos[] | select(.type != "spa_ref") | [.name, .type] | @tsv' \
-        "$MENTORHUB_PATH/Specifications/architecture.yaml"
+    local arch_file="$MENTORHUB_PATH/Specifications/architecture.yaml"
+    if [[ ! -f "$arch_file" && -f "$MENTORHUB_PATH/mentorhub/Specifications/architecture.yaml" ]]; then
+        arch_file="$MENTORHUB_PATH/mentorhub/Specifications/architecture.yaml"
+    fi
+
+    yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | .repos[] | select(.type != "spa_ref") | [.name, .type] | @tsv' \
+        "$arch_file"
 }
 
 ################################################################################
