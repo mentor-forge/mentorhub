@@ -1,28 +1,27 @@
 # Mentor Forge Mentor Hub
 
-## Current State
-
-**Pre-release.** Backward compatibility is not required. Limit version changes to internal `api_utils` and `spa_utils` dependencies — features may be added, changed, or removed without notice.
-
-**Test local, harvest global:** develop and validate here first; promote reusable API services and SPA components into shared utils when they are stable.
-
-**Platform / cloud Dev:** [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) — AWS architecture, CloudFormation templates, platform config, and IaC tasks live there, not in this repo.
-
 ## Big Idea
-A platform to connect mentors with engineers engaged in a life long learning journey.
+A cloud-based platform to connect mentors with engineers engaged in a life long learning journey.
 
 ## Quick Start (for non Contributors)
-- Install [Docker Desktop](https://docs.docker.com/get-started/introduction/get-docker-desktop/)
-- Download [docker-compose.yaml](./DeveloperEdition/docker-compose.yaml)
-- Run the command ``docker compose --profile=all up -d``
-- **Portal (front door):** [http://localhost:8080](http://localhost:8080)
-- **Sign in:** [http://localhost:8080/login.html](http://localhost:8080/login.html) — default post-login app is [http://localhost:8080/discovery/](http://localhost:8080/discovery/)
-- To Shutdown (all data lost) ``docker compose --profile=all down``
-
-NOTE: Uses ports **8080** (portal), **8081** (Stage0 Launch), **27017** (MongoDB), **8383–8398** (APIs/SPAs — e.g. Discovery API **8397**, Discovery SPA **8398**), **9229** (cognito-local), **1025/8025** (Mailpit), **12111** (stripe-mock). Journey SPAs behind `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` on **8080** share one origin and JWT `localStorage`; direct service ports remain for OpenAPI explorers, Cypress, and mock UIs.
+If you have [Docker Desktop](https://docs.docker.com/get-started/get-docker/) installed, you can simply run these commands in a terminal window.
+```
+cd ~/ &&
+mkdir -p mentorhub &&
+cd mentorhub &&
+docker compose --profile all down || true &&
+rm ./docker-compose.yaml || true &&
+URL=https://raw.githubusercontent.com/mentor-forge/mentorhub/refs/heads/main &&
+curl $URL/DeveloperEdition/docker-compose.yaml > docker-compose.yaml &&
+docker compose --profile all pull &&
+docker compose --profile all up --detach &&
+open -a Safari "http://localhost:8080" || open -a 'Google Chrome' 'http://localhost:8080'
+```
+Then visit http://localhost:8080
 
 ## Development Team 
 - Mary Anderson: Data Engineering
+- Jillian Pennewell: Intern
 - Candice Beasley: Intern
 - Ashley Carroll: Intern
 
@@ -37,7 +36,6 @@ NOTE: Uses ports **8080** (portal), **8081** (Stage0 Launch), **27017** (MongoDB
 - [Data Catalog](./Specifications/catalog.yaml)
 - [Architecture Diagram](./Specifications/ArchitectureDiagram.md)
 - [Product Architecture Data](./Specifications/architecture.yaml)
-- [AWS Platform Architecture](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)
 
 ## Contributing Guides
 - [Developer Onboarding](./CONTRIBUTING.md) On-Boarding Process and CLI install (GitHub token + **CodeArtifact** via `make aws-setup`)

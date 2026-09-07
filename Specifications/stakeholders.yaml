@@ -1,3 +1,84 @@
 stakeholders:
-  - name: 
-    role: 
+  - name: Mike Storey
+    role: admin
+    description: Platform architect and administrator supporting full-stack mentorship programs.
+
+  - name: Daniel Dissler
+    role: mentee
+    description: SPA engineer learning advanced frontend patterns and component design.
+
+  - name: Lucky Minyard
+    role: mentee
+    description: Career switcher focused on site reliability and operational excellence.
+
+  - name: Mary Anderson
+    role: customer, coordinator, mentee
+    description: Self-funded apprentice who coordinates her own cohort while learning data engineering.
+
+  - name: Linda Left
+    role: mentee
+    description: Former mentee who completed the ALI program and moved on from active learning.
+
+  - name: Marti Lombardi
+    role: mentor
+    description: Experienced mentor guiding mentees through delivery and code review.
+
+  - name: Emma Coordinator
+    role: coordinator
+    description: Coordinator matching mentors to mentees and tracking Persevere cohort progress.
+
+  - name: Stacey CEO
+    role: customer
+    description: CEO sponsoring Persevere graduate mentorship for her engineering organization.
+
+  - name: Margaret Coordinator
+    role: coordinator
+    description: Former Persevere coordinator whose account is suspended pending review.
+
+  - name: Paula Persevere
+    role: mentor
+    description: Special mentor focused on Persevere graduate onboarding and frontend craft.
+
+  - name: Elon Money
+    role: mentor
+    description: Money mentor advising ALI cohorts on startup funding and technical due diligence.
+
+  - name: Eddy Entrepreneur
+    role: customer
+    description: Entrepreneur customer sponsoring SuperSoft engineering apprenticeships.
+
+  - name: Donny Deadbeat
+    role: customer
+    description: ScamSoft customer persona used to test delinquent sponsorship edge cases.
+
+  - name: Danny Dev Lead
+    role: coordinator, mentor
+    description: SuperSoft dev lead who coordinates cohorts and mentors senior-track engineers.
+
+  - name: Melinda Multi
+    role: mentor
+    description: Multi-skilled ALI mentor covering UX, API design, and cross-functional coaching.
+
+  - name: Path A Owner
+    role: customer
+    description: Customer primary owner provisioned via self-registration (Path A).
+
+  - name: Nora Northstar
+    role: customer
+    description: Northstar Labs primary owner after Customer API enrichment (F-CA05).
+
+  - name: Helen Harbor
+    role: customer
+    description: Harbor primary owner sponsoring a starter plan with no mentees enrolled yet.
+
+  - name: Pat Persevere
+    role: mentee
+    description: Persevere mentee on the roster who has not started mentoring encounters.
+
+  - name: Riley Invitee
+    role: customer
+    description: Persevere Path B invitee pending first login after Stacey invited them.
+
+  - name: Quinn Revoked
+    role: customer
+    description: Persevere Path B invitee whose invitation Stacey revoked before first login.

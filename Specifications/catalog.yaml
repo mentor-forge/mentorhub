@@ -1,29 +1,33 @@
 data_dictionaries:
-  - name: Identity
-    description: The IdP Identity of a person who is a user of the system. 
-  - name: Profile
-    description: User Preferences associated with one **Identity**.
   - name: Customer  
     description: An customer who pays for the service for a craftsperson.
-  - name: Subscription
-    description: A subscription to the service for a customer.
-  - name: Card
-    description: Credit Card details
-  - name: Dashboard
-    description: Dashboard configuration for a customer.
-  - name: Event
-    description: A meaningful event for a user.
-  - name: Resource
-    description: A learning resource (link)
-  - name: Path
-    description: A learning path through resources
-  - name: Plan
-    description: A encounter plan.
   - name: Encounter
     description: A learning encounter between a mentor and a craftsperson.
+  - name: Event
+    description: A meaningful event for a user.
+  - name: ExternalEvent
+    description: A event from a external system (stripe, Cognito)
   - name: Journey
     description: A learning journey for a craftsperson.
+  - name: Mentee
+    description: A Mentors Notes about a Mentee
+  - name: Note
+    description: A Mentee Note about a Resource
+  - name: Notification
+    description: A message shown to a user on their dashboard
+  - name: Path
+    description: A learning path through resources
+  - name: Payment
+    description: A stripe payment record
+  - name: Profile
+    description: User Preferences associated with one **Identity**.
+  - name: Plan
+    description: A encounter plan.
   - name: Rating
     description: A rating of a resource.
-  - name: Note
-    description: A note about a resource.
+  - name: Resource
+    description: A learning resource (link)
+  - name: Resource_Aggregation
+    description: Mentee data about resources (rating, usage)
+  - name: Setting
+    description: A "bag of configuration data"
