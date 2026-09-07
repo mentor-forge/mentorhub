@@ -93,64 +93,18 @@ We publish `**api-utils**` (PyPI) and `**@mentor-forge/mentorhub_spa_utils**` (n
 
 To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 
-### HOST_NAME (optional) and Launch Modes
+### HOST_NAME (optional)
 
-Developer Edition supports two main launch modes for the welcome portal and journey SPAs:
+`make update` populates `~/.mentorhub/HOST_NAME` with `http://localhost` by default. `mh` reads this file at launch and sets `IDP_LOGIN_URI` so journey SPA containers redirect sign-in to the mock IdP on your host.
 
-#### Mode 1: Local / Private HTTP
-
-`mh` reads `~/.mentorhub/HOST_NAME` at launch and sets `IDP_LOGIN_URI` to `http://<HOST_NAME>:8080/login.html` so journey SPA containers redirect sign-in to the mock IdP on your host instead of `127.0.0.1`. Without this file, behavior is unchanged (localhost only). Set **before** `mh up`; after changing it, run `mh down` then `mh up` again:
+If you are developing over a private team VPN (e.g. Tailscale MagicDNS), you can update `~/.mentorhub/HOST_NAME`:
 
 ```sh
-# Local HTTP
-echo localhost > ~/.mentorhub/HOST_NAME
-mh down
-mh up
-
-# Or Tailscale MagicDNS private HTTP access
+# Tailscale MagicDNS (optional one-liner)
 tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
 mh down
 mh up
 ```
-
-`HOST_NAME` remains a hostname-only setting (do not include a scheme or port).
-
-#### Mode 2: Public Funnel HTTPS (e.g. Spark host)
-
-For remote / public access using Tailscale Funnel, provide an explicit `IDP_LOGIN_URI` override with the HTTPS URL. An explicit `IDP_LOGIN_URI` takes precedence over `HOST_NAME`:
-
-```sh
-export IDP_LOGIN_URI="https://spark-478a.tailb0d293.ts.net/login.html"
-mh down
-mh up
-sudo tailscale funnel --bg http://127.0.0.1:8080
-sudo tailscale funnel status
-```
-
-> **Note:** You can also save `IDP_LOGIN_URI` permanently in `~/.mentorhub/IDP_LOGIN_URI` (checked when the env var is unset).
-
-#### Verification Instructions
-
-Verify the public Funnel deployment with `curl`:
-
-```sh
-curl -I https://spark-478a.tailb0d293.ts.net/
-curl -I https://spark-478a.tailb0d293.ts.net/discovery/
-curl -s https://spark-478a.tailb0d293.ts.net/discovery/runtime-config.js
-```
-
-The runtime configuration output from the third command should contain:
-```javascript
-IDP_LOGIN_URI: 'https://spark-478a.tailb0d293.ts.net/login.html'
-```
-
-#### Architecture & Security Notes
-
-- **TLS Termination:** Tailscale Funnel terminates HTTPS externally and automatically manages TLS certificates.
-- **Internal HTTP:** NGINX and Docker containers communicate internally over HTTP. No TLS configuration or HTTPS listener is required in NGINX.
-- **Exposed Surface:** Only the welcome server on `127.0.0.1:8080` is exposed via Funnel. Direct-port development tools (e.g., MailPit on 8025, Stripe mock on 12111, Cognito mock on 9229) and individual API documentation endpoints (e.g., 8383, 8397) remain private to the local machine / tailnet and are not exposed by the Funnel.
-- **Explicit Override:** An explicit `IDP_LOGIN_URI` is required for public HTTPS deployments so journey SPAs redirect to HTTPS rather than HTTP.
-- **Backward Compatibility:** `HOST_NAME` remains backward compatible as the hostname-only mechanism for local and private tailnet HTTP access.
 
 Developer Edition binds services to `0.0.0.0`; see compose comments and [SRE Standards](./DeveloperEdition/standards/sre_standards.md).
 

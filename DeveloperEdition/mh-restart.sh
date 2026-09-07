@@ -45,11 +45,18 @@ fi
 if [[ -z "${IDP_LOGIN_URI:-}" ]]; then
   HOST_NAME="$(read_mh_file "${MH_DIR}/HOST_NAME")"
   if [[ -n "${HOST_NAME}" ]]; then
-    export HOST_NAME
-    export IDP_LOGIN_URI="http://${HOST_NAME}:8080/login.html"
+    # HOST_NAME includes scheme (e.g. https://spark-478a.tailb0d293.ts.net or http://localhost:8080)
+    base_url="${HOST_NAME%/login.html}"
+    base_url="${base_url%/}"
+    if [[ ! "${base_url}" =~ ^https?:// ]]; then
+      base_url="https://${base_url}"
+    fi
+    export IDP_LOGIN_URI="${base_url}/login.html"
+    export HOST_NAME="${base_url}"
   else
-    export HOST_NAME=localhost
-    export IDP_LOGIN_URI="http://127.0.0.1:8080/login.html"
+    # Default for Spark server environment
+    export HOST_NAME="https://spark-478a.tailb0d293.ts.net"
+    export IDP_LOGIN_URI="https://spark-478a.tailb0d293.ts.net/login.html"
   fi
 fi
 

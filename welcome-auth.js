@@ -214,13 +214,14 @@ function isAllowedReturnTo(urlString) {
     const url = new URL(urlString)
     const isLoopback = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
     const isTailnetHost = url.hostname.endsWith('.ts.net')
+    const isSameHost = typeof window !== 'undefined' && Boolean(window.location?.hostname) && url.hostname === window.location.hostname
 
     if (url.protocol === 'http:') {
-      return isLoopback || isTailnetHost
+      return isLoopback || isTailnetHost || isSameHost
     }
 
     if (url.protocol === 'https:') {
-      return isTailnetHost
+      return isTailnetHost || (isSameHost && window.location.protocol === 'https:')
     }
 
     return false

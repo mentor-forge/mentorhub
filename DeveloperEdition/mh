@@ -27,8 +27,21 @@ fi
 if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/IDP_LOGIN_URI" ]]; then
   export IDP_LOGIN_URI=$(<"$HOME/.mentorhub/IDP_LOGIN_URI")
 fi
-if [[ -z "${IDP_LOGIN_URI:-}" && -f "$HOME/.mentorhub/HOST_NAME" ]]; then
-  export IDP_LOGIN_URI="http://$(<"$HOME/.mentorhub/HOST_NAME"):8080/login.html"
+if [[ -z "${IDP_LOGIN_URI:-}" ]]; then
+  if [[ -f "$HOME/.mentorhub/HOST_NAME" ]]; then
+    raw_host=$(<"$HOME/.mentorhub/HOST_NAME")
+    raw_host="$(echo "$raw_host" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+  fi
+  raw_host="${raw_host:-http://localhost}"
+  clean="${raw_host%/login.html}"
+  clean="${clean%/}"
+  if [[ ! "$clean" =~ ^https?:// ]]; then
+    clean="http://${clean}"
+  fi
+  if [[ "$clean" =~ ^http://(localhost|127\.0\.0\.1)$ ]]; then
+    clean="${clean}:8080"
+  fi
+  export IDP_LOGIN_URI="${clean}/login.html"
 fi
 
 # Compose-only default; shell profile may already export JWT_SECRET.

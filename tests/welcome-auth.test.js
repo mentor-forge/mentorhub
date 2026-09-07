@@ -100,6 +100,22 @@ test('Return URL validation allows permitted destinations and rejects others', (
       `Expected ${url} to be rejected by isAllowedReturnTo`
     )
   }
+
+  // When loaded on a specific host in browser, same-host return URLs are permitted
+  const prevWindow = global.window
+  try {
+    global.window = {
+      location: {
+        hostname: 'spark-478a.tailb0d293.ts.net',
+        protocol: 'https:',
+      },
+    }
+    assert.strictEqual(isAllowedReturnTo('https://spark-478a.tailb0d293.ts.net/discovery/'), true)
+    assert.strictEqual(isAllowedReturnTo('https://spark-478a.tailb0d293.ts.net/customer/'), true)
+    assert.strictEqual(isAllowedReturnTo('https://evil.com/discovery/'), false)
+  } finally {
+    global.window = prevWindow
+  }
 })
 
 test('Default return URL is derived from origin', () => {

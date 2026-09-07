@@ -143,6 +143,10 @@ update: verify
 	rm -rf ~/.mentorhub/cognito-local && \
 	cp -R ./DeveloperEdition/cognito-local ~/.mentorhub/cognito-local && \
 	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \
+	if [ ! -f ~/.mentorhub/HOST_NAME ]; then \
+		echo "http://localhost" > ~/.mentorhub/HOST_NAME; \
+		echo "Created ~/.mentorhub/HOST_NAME (default: http://localhost)"; \
+	fi && \
 	if ! grep -q "aws-platform.env" ~/.zshrc 2>/dev/null; then \
 		echo "source \$$HOME/.mentorhub/aws-platform.env" >> ~/.zshrc; \
 		echo "[ -f \$$HOME/.mentorhub/aws-platform.local.env ] && source \$$HOME/.mentorhub/aws-platform.local.env" >> ~/.zshrc; \
