@@ -80,8 +80,12 @@ fi
 echo "IDP_LOGIN_URI=${IDP_LOGIN_URI}"
 echo "LAUNCHPAD_DIR=${LAUNCHPAD_DIR}"
 
-# Stop first so pull is not racing running containers; up --detach recreates
-# from the newly pulled tags (start would keep old container filesystems).
-docker compose --profile all stop
+# Teardown: stop and remove all containers, purge named/anonymous volumes, and
+# remove orphan containers so the stack restarts from a blank slate.
+# mongodb_api will populate fresh test data on startup.
+docker compose --profile all down --volumes --remove-orphans
+docker volume prune -f
+
+# Pull latest published images and start the clean stack
 docker compose --profile all pull
 docker compose --profile all up --detach
