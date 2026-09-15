@@ -407,3 +407,39 @@ test('Existing authentication behavior is preserved', async () => {
   assert.ok(fragment.includes('expires_at='), 'Fragment must contain expires_at parameter')
   assert.ok(fragment.includes('roles=admin'), 'Fragment must contain roles parameter')
 })
+
+test('Profiles in login.html and welcome-auth.js are ordered by admin, mentors, mentees, customer, coordinator', () => {
+  const loginPath = path.join(__dirname, '..', 'login.html')
+  const loginHtml = fs.readFileSync(loginPath, 'utf-8')
+  const optionRegex = /<option value="([^"]+)">([^<]+)<\/option>/g
+  const htmlOptions = []
+  let match
+  while ((match = optionRegex.exec(loginHtml)) !== null) {
+    htmlOptions.push({ value: match[1], text: match[2] })
+  }
+
+  const profileKeys = Object.keys(PROFILES)
+  assert.strictEqual(htmlOptions.length, profileKeys.length, 'All profiles must be represented in login.html')
+  for (let i = 0; i < profileKeys.length; i++) {
+    assert.strictEqual(htmlOptions[i].value, profileKeys[i], `Option at index ${i} must match PROFILES key`)
+    assert.strictEqual(htmlOptions[i].text, PROFILES[profileKeys[i]].label, `Option text at index ${i} must match PROFILES label`)
+  }
+
+  // Verify group ordering: admin -> mentor -> mentee -> customer -> coordinator
+  function getGroup(roles) {
+    if (roles.includes('admin')) return 0
+    if (roles.includes('mentor')) return 1
+    if (roles.includes('mentee')) return 2
+    if (roles.includes('customer')) return 3
+    if (roles.includes('coordinator')) return 4
+    return 5
+  }
+
+  let lastGroup = 0
+  for (const key of profileKeys) {
+    const group = getGroup(PROFILES[key].roles)
+    assert.ok(group >= lastGroup, `Profile ${key} in group ${group} must not precede earlier group ${lastGroup}`)
+    lastGroup = group
+  }
+})
+
