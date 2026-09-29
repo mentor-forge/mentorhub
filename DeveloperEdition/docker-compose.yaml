@@ -344,8 +344,17 @@ services:
         condition: service_healthy
     profiles:
       - all
+      - mongodb
+      - customer
+      - customer-api
+      - admin
+      - admin-api
       - discovery
       - discovery-api
+      - mentor
+      - mentor-api
+      - mentee
+      - mentee-api
 
   discovery_spa:
     image: ghcr.io/mentor-forge/mentorhub_discovery_spa:latest
@@ -361,7 +370,17 @@ services:
         condition: service_started
     profiles:
       - all
+      - mongodb
+      - customer
+      - customer-api
+      - admin
+      - admin-api
       - discovery
+      - discovery-api
+      - mentor
+      - mentor-api
+      - mentee
+      - mentee-api
 
   ##################################
   # Runbook Automation
