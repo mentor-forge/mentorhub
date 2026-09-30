@@ -10,7 +10,6 @@ journeys:
       - /discovery/plans
       - /discovery/resources
       - /discovery/notifications
-      - /discovery/notification/:id
   - name: Admin Journey
     description: A system administrator responsible for configuration, monitoring, and operation of the platform.
     primary_actor: Mike Storey
@@ -23,6 +22,7 @@ journeys:
     description: The Mentor Journey is the journey of a mentor as they help a mentee's learn.
     primary_actor: Paula Persevere
     routes:
+      - /mentor/config
       - /mentor/mentee/:id
       - /mentor/resource
       - /mentor/resource/:id
@@ -36,17 +36,17 @@ journeys:
     primary_actor: Daniel Dissler
     routes:
       - /mentee/
+      - /mentee/config
       - /mentee/journey
       - /mentee/journey/:id
       - /mentee/plan/:id
       - /mentee/resource/:id
-      - /mentee/config
   - name: Customer Journey
     description: The Customer Journey is the journey of a customer organiation who subscribes to mentorhsip encounters for their employeesmentee's. 
     primary_actor: Stacey CEO
     note: The coordinator role allows a Customer to deligate a sub-set of the Customer Journey responsibilities to other users.
     routes:
+      - /customer/config
       - /customer/
       - /customer/:id
       - /customer/profile/:id
-      - /customer/config

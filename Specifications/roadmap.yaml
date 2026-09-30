@@ -1,0 +1,48 @@
+Discovery Updates:
+  - F-DS07 Notification List Page
+  - F-DS08 Resource List Page 
+  - F-DS09 Path List Page
+  - F-DS10 Plan List Page
+Notification Review:
+	- F-D35 Schema & Test Data
+	- F-DA09 Discovery API Refactor
+	- F-DS07 Discovery SPA Refactor
+Encounter Huge Transcript:
+	- F-D36 Add huge-markdown
+	- F-D34 Improve test data
+	- F-RA18 Huge Markdown openapi updates
+	- F-RS19 Encounter Page - Huge Markdown editor updates
+Resource Updates:
+	- F-D37 Improve Test Data
+	- F-DS08 Resource List Page 
+	- F-ES12 ResourceViewPage
+	- F-RS08 ResourceEditPage
+	- F-RS20 New Resource Page
+Path Updates:
+	- F-DS09 PathListPage
+	- F-RS10 PathNewPage & PathEditPage
+	- F-ES14 PathViewPage
+Journey Updates:
+	- F-ES13 JourneyEditPage
+Plan Updates:
+	- F-DSnn PlanListPage
+	- F-RSnn PlanNewPage & PlanEditPage
+Profile Updates:
+	- F-Dnn Profile Schema Review/update
+	- F-CAnn Profile Schema and RBAC
+	- F-CSnn ProfileEditPage
+Coordinator Updates:
+	- F-DSnn Invite Coordinator / Members button
+	- F-CAnn Invite Coordinator / Member mutation
+	- F-CSnn Invite Member(s) Page
+	- F-CSnn Match Mentors Page
+Customer Updates:
+	- Figure out trials, subscriptions, capacity, and draw-down
+		- Add customer_id to encounter (encounter paid for by)
+		- Add a Customer "Balance" property to track available encounters.
+		- Expose / Call Async Customer "create" and "consume" capacity mutations.
+
+	- F-CAnn - Update OpenAPI to match Data Schema
+	- F-CAnn - Update subscription mutations (add/update/cancel) to call Stripe API
+	- F-RAnn - Capacity check and draw down updates if needed
+	- F-CSnn - Layout Page, including add/update/cancel subscription
