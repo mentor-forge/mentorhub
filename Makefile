@@ -6,7 +6,7 @@ ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
 	@echo ""
-	@echo "  make install        - Install Homebrew prerequisites and mentorhub CLI tools"
+	@echo "  make install        - Install CLI tools with Homebrew and the mentorhub CLI"
 	@echo "  make verify        - Verify build tools and prerequisites"
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make test          - Run welcome server regression tests"
@@ -26,7 +26,6 @@ verify:
 	command -v make >/dev/null 2>&1 && printf "make:    " && make --version | head -1 || { echo "  FAIL: make"; fail=1; }; \
 	command -v node >/dev/null 2>&1 && printf "node:    " && node --version || { echo "  FAIL: node"; fail=1; }; \
 	command -v npm >/dev/null 2>&1 && printf "npm:     " && npm --version || { echo "  FAIL: npm"; fail=1; }; \
-    (vite --version 2>/dev/null || npx vite --version 2>/dev/null) >/dev/null && printf "vite:    " && (vite --version 2>/dev/null || npx vite --version 2>/dev/null) || { echo "  FAIL: vite"; fail=1; }; \
 	echo ""; \
 	echo "--- Python tools (3.12 required for projects) ---"; \
 	PY312=$$(command -v python3.12 2>/dev/null); \

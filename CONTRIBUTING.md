@@ -7,26 +7,28 @@ NOTE: Native Windows is unsupported; use WSL.
 ## Step 1 of 4 - Install Prerequisites
 
 You will need to install the following desktop tools first.
+
+- **Homebrew** - [https://brew.sh](https://brew.sh) on macOS or Linux (including WSL). 
+After installing, open a new terminal and confirm `brew --version` works. If the command is not found, add the shellenv line the installer prints to `~/.zprofile` or `~/.zshrc`.
 - **Docker Desktop** - [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
 - **Mongo Compass** - [https://www.mongodb.com/docs/compass/install/](https://www.mongodb.com/docs/compass/install/)
 - **WSL** - For Windows users: [https://learn.microsoft.com/en-us/windows/wsl/install](https://learn.microsoft.com/en-us/windows/wsl/install)
-
-**Recommended:** [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for clone/push, and global git identity for commits:
+- **git configuration** -
 
 ```sh
 git config --global user.name "Your Name"
 git config --global user.email yourname@example.com
 ```
 
+**Recommended:** [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for clone/push, and global git identity for commits:
+
 ## Step 2 of 4 - Install the CLI
 
-The install process will install the following tools on your system:
+These tools need to be available. `make install` uses Homebrew to install the ones it can:
 
-- **Homebrew** - Package manager used by `make install` on macOS and Linux
 - **make** - usually pre-installed - [https://www.gnu.org/software/make/](https://www.gnu.org/software/make/)
 - **Node.js** (v24+) - [https://nodejs.org/en/download](https://nodejs.org/en/download)
 - **npm** (v11.5+) - Bundled with Node.js
-- **Vite** - `npm install -g vite` or use via `npx vite`. [https://vitejs.dev/guide/](https://vitejs.dev/guide/)
 - **Python 3.12+** - [https://www.python.org/downloads/](https://www.python.org/downloads/)
 - **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/)
 - **git** - [https://git-scm.com/downloads](https://git-scm.com/downloads)
@@ -36,7 +38,9 @@ The install process will install the following tools on your system:
 - **curl** - Usually pre-installed. [https://curl.se/download.html](https://curl.se/download.html)
 - **zsh shell** - Default on macOS. Linux: [https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
 
-Use this command to install the brew-backed tools (`git`, Node.js, Python 3.12, Pipenv, `jq`, `yq`, AWS CLI, and `curl`), Vite, and the Developer Edition `mh` command line utility. It installs `make` only when it is missing. Docker Desktop and Mongo Compass remain manual installs using the vendor links above.
+Journey SPAs use Vite from their own npm dependencies (`npx vite`). A global Vite install is not required.
+
+`make install` requires `brew` from [Step 1](#step-1-of-4---install-prerequisites). It installs `git`, Node.js, Python 3.12, Pipenv, `jq`, `yq`, AWS CLI, and `curl` when they are missing, and it installs `make` only when `make` is missing. It then installs the Developer Edition `mh` command line utility. Docker Desktop, Mongo Compass, and Homebrew stay manual installs using the links above.
 
 ```sh
 ## Install Developer Edition 
@@ -74,11 +78,13 @@ After GITHUB_TOKEN and `make aws-setup` are in place, run update to finish the i
 make update
 ```
 
+
+
 ## Developer Edition — portal vs direct ports
 
 After sign-in at `http://<HOST_NAME>:8080/login.html`, prefer the **Applications** links on the welcome portal (`http://localhost:8080`) so journey SPAs load on the shared **8080** origin — do not bookmark direct SPA ports (e.g. `:8398` for Discovery) as your primary app URL.
 
-Direct service ports are supported on purpose for **Cypress** (per-repo `npm run cypress:run` against `:8388`, `:8390`, etc.) and **API `/docs/` explorers** on each API port (e.g. `:8397/docs/explorer.html`).
+Direct service ports are supported on purpose for **Cypress** (per-repo `npm run cypress:run` against `:8388`, `:8390`, etc.) and **API** `/docs/` **explorers** on each API port (e.g. `:8397/docs/explorer.html`).
 
 ## Development Standards
 
@@ -90,7 +96,11 @@ Direct service ports are supported on purpose for **Cypress** (per-repo `npm run
 - Review the [SPA Standards](./DeveloperEdition/standards/spa_standards.md).
 - Take the [Onboarding Tour](./DeveloperEdition/standards/system_tour.md).
 
+
+
 ## Developer Workflow
+
+
 
 ### Issue-Feature-Branch
 
@@ -109,6 +119,7 @@ We utilize an Issue-Feature–Branch pattern for the developer workflow. Our iss
 **Data dictionary tickets** (`mentorhub_mongodb_api`) use **F-D##** with **no layer letter** — the second **D** means **Data** (configurator / schema), not Discovery. Example: **F-D29** = event type schemas. Do not confuse with **F-DA##** (Discovery Api).
 
 For Example:
+
 - Filter to **F-R** for all Mentor API/SPA features
 - Filter to **F-RS** for all SPA features in `mentorhub_mentor_spa`
 - **F-RS05** = 5th Feature for the Mentor SPA
@@ -120,6 +131,8 @@ For Example:
 - **F-D29** = 29th Data (mongodb configurator) feature — not Discovery
 - **F-S01** = 1st SRE feature (e.g. Cognito in cloudformation)
 
+
+
 ### Workflow
 
 Developers should focus on one issue at a time, and should complete the following workflow for the full issue before moving on to the next:
@@ -127,22 +140,31 @@ Developers should focus on one issue at a time, and should complete the followin
 1. Pick an issue from the "On Deck" cards on the [kanban board](https://github.com/orgs/mentor-forge/projects/1), and move it from **On Deck** to **In Progress**
 2. Review the issue description, and create a feature branch that references the issue name
 3. Use the following prompt to create a plan, make sure you @mention the correct file/folder.
+
 ```
 Please create @_PLANNING.md tasks to implement <issue links>. Only create files in the @tasks folder
 ```
-4. Review tasks to fully understand the proposed changes, adjust as needed.
-5. Use the following prompt to execute the plan
+
+1. Review tasks to fully understand the proposed changes, adjust as needed.
+2. Use the following prompt to execute the plan
+
 ```
 Please @_ORCHESTRATE.md all PENDING @tasks
 ```
-6. Review cursors work, run unit and end-to-end testing, fix any problems you find.
-7. Request a review of the PR that was opened during orchestration.
-8. After approval, merge the PR, delete the branch, locally change back to the main branch and sync.
-9. Go back to the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and make sure your issue moved from **In Progress** to **Done** then loop back up to 1.
+
+1. Review cursors work, run unit and end-to-end testing, fix any problems you find.
+2. Request a review of the PR that was opened during orchestration.
+3. After approval, merge the PR, delete the branch, locally change back to the main branch and sync.
+4. Go back to the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and make sure your issue moved from **In Progress** to **Done** then loop back up to 1.
+
+
 
 ## Nvidia GB10 Hosted Dev Env
-- https://mentorhub-gb10.tailb0d293.ts.net/discovery/
-- Discord: ``@zeroclawagent please deploy the latest code using mh-restart.sh ``
+
+- [https://mentorhub-gb10.tailb0d293.ts.net/discovery/](https://mentorhub-gb10.tailb0d293.ts.net/discovery/)
+- Discord: `@zeroclawagent please deploy the latest code using mh-restart.sh` 
+
+
 
 ## Repo Developer Commands
 
