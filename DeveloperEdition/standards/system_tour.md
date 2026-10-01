@@ -26,15 +26,11 @@ mh down
 ```
 
 ## Clone Everything
-Ok - now to look at all of the different repo's. You will first need to clone them down to your computer - you can do so using the stage0 launch UI. Use these commands:
+Ok - now to look at all of the different repo's. You will first need to clone them down to your computer - you can do so using this commands:
 ```sh
-# to shut down the app if it's running
-mh down
-
-# to start Developer Edition (Stage0 Launch is in compose)
-mh up all
+# Clone all architecture repo's
+make clone-all
 ```
-Open the welcome portal at [localhost:8080](http://localhost:8080/) and choose **Stage0 Launch** (or go to [localhost:8081](http://localhost:8081/)). Click the "all" checkbox, then "Clone". Override the port with `LAUNCH_HOST_PORT` if needed.
 
 ## Tour common code libraries
 With the Backend for Frontend pattern, all of our services consist of a single API that supports a single SPA. Common code that is used by multiple API's or SPA's is shared in utility repo's. Review these repo's to see the overall patterns used.
@@ -147,7 +143,5 @@ make dev
 to start the Configurator in Edit mode. This should open Chrome, Click the ? icon and review the help screens. 
 
 ## Task Automation 
-Every repo has a /Tasks folder, with a README that describes the Task Automation framework. This framework is used to create re-usable LLM tasks for working in a repo. You can review existing tasks, or ask your AI Code Assistant to review the Task Automation README.md and help you create a new task for something you want to accomplish. 
+Every repo has a /tasks folder, with _PLANNING.md and _ORCHESTRATE.md that describe the Task Automation framework. You can review existing tasks, or ask your AI Code Assistant to "Create _PLANNING.md tasks" or "_ORCHESTRATE.md all PENDING tasks".
 
-## Merge Templates and launch automation
-**Extra Credit** If you want to understand the tooling that was used to help launch this product, you can review the README at [stage0_launch](https://github.com/agile-learning-institute/stage0_launch) which uses [stage0_runbook_merge](https://github.com/agile-learning-institute/stage0_runbook_merge) to automate repository provisioning.
