@@ -78,13 +78,8 @@ aws sso login --profile "${MH_AWS_PROFILE_SHARED}"
 echo "Verifying Shared-Services access..."
 aws sts get-caller-identity --profile "${MH_AWS_PROFILE_SHARED}" --region "${AWS_REGION}"
 
-echo "Refreshing CodeArtifact pip/npm credentials..."
-aws codeartifact login --tool pip \
-  --domain "${CODEARTIFACT_DOMAIN}" \
-  --domain-owner "${AWS_SHARED_SERVICES_ACCOUNT_ID}" \
-  --repository "${CODEARTIFACT_PYPI_REPO}" \
-  --profile "${MH_AWS_PROFILE_SHARED}" \
-  --region "${AWS_REGION}"
+echo "Refreshing CodeArtifact npm credentials..."
+echo "Python installs use pipenv and request a CodeArtifact token at install time; a global pip command is not required."
 aws codeartifact login --tool npm \
   --domain "${CODEARTIFACT_DOMAIN}" \
   --domain-owner "${AWS_SHARED_SERVICES_ACCOUNT_ID}" \

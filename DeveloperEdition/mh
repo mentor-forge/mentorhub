@@ -547,7 +547,6 @@ function ensureCodeArtifactAuth {
     typeset region="${AWS_REGION:-us-east-1}"
     typeset domain="${CODEARTIFACT_DOMAIN:-mentor-forge}"
     typeset domain_owner="${AWS_SHARED_SERVICES_ACCOUNT_ID:-${CODEARTIFACT_DOMAIN_OWNER:-}}"
-    typeset pypi_repo="${CODEARTIFACT_PYPI_REPO:-mentorhub-pypi}"
     typeset npm_repo="${CODEARTIFACT_NPM_REPO:-mentorhub-npm}"
 
     if ! command -v aws >/dev/null 2>&1; then
@@ -588,15 +587,10 @@ function ensureCodeArtifactAuth {
         return 1
     fi
 
-    aws codeartifact login --tool pip \
-        --domain "$domain" \
-        --domain-owner "$domain_owner" \
-        --repository "$pypi_repo" \
-        --profile "$profile" \
-        --region "$region" >/dev/null 2>&1 || {
-        echo "Error: CodeArtifact pip login failed (profile $profile, repo $pypi_repo)" >&2
-        return 1
-    }
+    # Python installs do not use this login. Journey APIs call
+    # `pipenv run install`, which requests a CodeArtifact token and passes it
+    # to `pipenv run pip`. `aws codeartifact login --tool pip` requires a
+    # global `pip` executable (Homebrew Python does not put one on PATH).
 
     aws codeartifact login --tool npm \
         --domain "$domain" \
@@ -641,7 +635,8 @@ case $COMMAND in
   "")
 
     ensureCodeArtifactAuth || exit 1
-    echo "CodeArtifact auth refreshed — pipenv run install and npm ci are ready."
+    echo "AWS SSO is current and npm CodeArtifact login refreshed."
+    echo "pipenv run install requests its own token; npm ci is ready."
     ;;
 
   "up")

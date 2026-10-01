@@ -272,7 +272,7 @@ One-time AWS SSO: `make aws-setup` (writes `~/.aws/config` from platform env; br
 |------|----------|
 | AWS profile | `mentorhub-shared` (override with `MH_AWS_PROFILE_SHARED` if needed) |
 | SSO | Opens browser only when session expired |
-| Token lifetime | ~12 hours; run `mh` before `pipenv install`, `npm ci`, or container builds if auth fails |
+| Token lifetime | ~12 hours. `mh` refreshes the SSO session and the npm CodeArtifact login. `pipenv run install` requests its own PyPI token; a global `pip` executable is not required. |
 | Integration | `make update` runs bare `mh` after copying CLI files |
 
 GitHub tokens remain required for git clone/push; they are **not** required for installing `api_utils` or `mentorhub_spa_utils` after migration.

@@ -63,7 +63,7 @@ After [Step 2](#step-2-of-4---install-the-cli), run **once** to configure packag
 make aws-setup
 ```
 
-This opens a browser login and configures `~/.mentorhub/aws-platform.env` and `~/.aws/config` for profile `mentorhub-shared`. Run bare `mh` (or `make update`) before `pipenv run install` or `npm ci` in journey API/SPA repos so CodeArtifact tokens are fresh (~12 hour lifetime).
+This opens a browser login and configures `~/.mentorhub/aws-platform.env` and `~/.aws/config` for profile `mentorhub-shared`. Run bare `mh` (or `make update`) before `pipenv run install` or `npm ci` in journey API/SPA repos. `mh` keeps the AWS SSO session current and refreshes the npm CodeArtifact login (~12 hour lifetime). Python projects do not use a global `pip` login; `pipenv run install` requests its own CodeArtifact token.
 
 ## Step 4 of 4 - Finally
 
