@@ -2,44 +2,14 @@
 
 The Mentor Hub Developer Edition system provides a `mh` Command Line Interface that supports key components of the developer experience. This CLI wraps docker compose commands, and secret management for local development environments. All developers should install this tooling, create and configure tokens, and review the linked standards before contributing to any repo.
 
+NOTE: Native Windows is unsupported; use WSL. 
+
 ## Step 1 of 4 - Install Prerequisites
 
-Run `make install` to install Homebrew when needed and then install the brew-backed CLI prerequisites on macOS or Linux (including WSL). Run `make verify` afterward to check the complete development environment.
-
-Native Windows is unsupported; use WSL. Homebrew installation details are available for [macOS](https://docs.brew.sh/Installation) and [Linux](https://docs.brew.sh/Homebrew-on-Linux). After a first Linux install, add Homebrew to the current shell with:
-
-```sh
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-```
-
-### Build tools
-
-- **Homebrew** - Package manager used by `make install` on macOS and Linux
-- **make** - usually pre-installed - [https://www.gnu.org/software/make/](https://www.gnu.org/software/make/)
-- **Node.js** (v24+) - [https://nodejs.org/en/download](https://nodejs.org/en/download)
-- **npm** (v11.5+) - Bundled with Node.js
-- **Vite** - `npm install -g vite` or use via `npx vite`. [https://vitejs.dev/guide/](https://vitejs.dev/guide/)
-
-Cypress is not a host prerequisite. Each SPA installs and runs it through its repository's `npx`/npm scripts.
-
-
-### Python tools
-
-- **Python 3.12+** - [https://www.python.org/downloads/](https://www.python.org/downloads/)
-- **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/)
-
-
-
-### Container tools
-
+You will need to install the following desktop tools first.
 - **Docker Desktop** - [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
-
-
-
-### GitHub & Git
-
-- **GITHUB_TOKEN** - See [Configuring AccessToken](#configure-access-tokens)
-- **git** - [https://git-scm.com/downloads](https://git-scm.com/downloads)
+- **Mongo Compass** - [https://www.mongodb.com/docs/compass/install/](https://www.mongodb.com/docs/compass/install/)
+- **WSL** - For Windows users: [https://learn.microsoft.com/en-us/windows/wsl/install](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 **Recommended:** [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for clone/push, and global git identity for commits:
 
@@ -48,31 +18,23 @@ git config --global user.name "Your Name"
 git config --global user.email yourname@example.com
 ```
 
+## Step 2 of 4 - Install the CLI
 
+The install process will install the following tools on your system:
 
-### AWS CLI (CodeArtifact packages)
-
+- **Homebrew** - Package manager used by `make install` on macOS and Linux
+- **make** - usually pre-installed - [https://www.gnu.org/software/make/](https://www.gnu.org/software/make/)
+- **Node.js** (v24+) - [https://nodejs.org/en/download](https://nodejs.org/en/download)
+- **npm** (v11.5+) - Bundled with Node.js
+- **Vite** - `npm install -g vite` or use via `npx vite`. [https://vitejs.dev/guide/](https://vitejs.dev/guide/)
+- **Python 3.12+** - [https://www.python.org/downloads/](https://www.python.org/downloads/)
+- **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/)
+- **git** - [https://git-scm.com/downloads](https://git-scm.com/downloads)
 - **AWS CLI v2** - [https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
-
-
-### Utilities
-
 - **jq** - [https://jqlang.github.io/jq/download/](https://jqlang.github.io/jq/download/)
 - **yq** - [https://mikefarah.gitbook.io/yq](https://mikefarah.gitbook.io/yq)
 - **curl** - Usually pre-installed. [https://curl.se/download.html](https://curl.se/download.html)
-
-
-
-### Other
-
 - **zsh shell** - Default on macOS. Linux: [https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
-- **Mongo Compass** - [https://www.mongodb.com/docs/compass/install/](https://www.mongodb.com/docs/compass/install/)
-- **WSL** - For Windows users: [https://learn.microsoft.com/en-us/windows/wsl/install](https://learn.microsoft.com/en-us/windows/wsl/install)
-
-
-
-## Step 2 of 4 - Install the CLI
 
 Use this command to install the brew-backed tools (`git`, Node.js, Python 3.12, Pipenv, `jq`, `yq`, AWS CLI, and `curl`), Vite, and the Developer Edition `mh` command line utility. It installs `make` only when it is missing. Docker Desktop and Mongo Compass remain manual installs using the vendor links above.
 
@@ -92,21 +54,6 @@ When local environment values are required (GitHub access tokens, etc.) they are
 We publish `**api-utils**` (PyPI) and `**@mentor-forge/mentorhub_spa_utils**` (npm) to **AWS CodeArtifact**, and container images to **GitHub Container Registry**. Create a GitHub classic access token with `repo`, `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the `~/.mentorhub/` folder.
 
 To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-
-### HOST_NAME (optional)
-
-`make update` populates `~/.mentorhub/HOST_NAME` with `http://localhost` by default. `mh` reads this file at launch and sets `IDP_LOGIN_URI` so journey SPA containers redirect sign-in to the mock IdP on your host.
-
-If you are developing over a private team VPN (e.g. Tailscale MagicDNS), you can update `~/.mentorhub/HOST_NAME`:
-
-```sh
-# Tailscale MagicDNS (optional one-liner)
-tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//' > ~/.mentorhub/HOST_NAME
-mh down
-mh up
-```
-
-Developer Edition binds services to `0.0.0.0`; see compose comments and [SRE Standards](./DeveloperEdition/standards/sre_standards.md).
 
 ### CodeArtifact (private packages)
 
@@ -133,14 +80,6 @@ After sign-in at `http://<HOST_NAME>:8080/login.html`, prefer the **Applications
 
 Direct service ports are supported on purpose for **Cypress** (per-repo `npm run cypress:run` against `:8388`, `:8390`, etc.) and **API `/docs/` explorers** on each API port (e.g. `:8397/docs/explorer.html`).
 
-### Stage0 Launch
-
-`make update` writes the absolute path of this umbrella repo to `~/.mentorhub/MENTORHUB_PATH`. `mh` sets **`LAUNCHPAD_DIR`** to that path's **parent** so Stage0 Launch mounts the launchpad directory at **`/Launchpad`** (sibling repos plus `mentorhub/Specifications`).
-
-- Start Launch: `mh up stage0` or `mh up all` (profile **`stage0`** / **`all`**)
-- Launch UI: [http://localhost:8081](http://localhost:8081) — see [system tour](./DeveloperEdition/standards/system_tour.md) for clone workflow
-- Optional: export `DELETE_ENABLED=True` before `mh up` to enable destructive Launch actions (off by default)
-
 ## Development Standards
 
 - Local API mocks (`mock_stripe_api`, `mock_cognito`, `mock_mailpit`) — see [Research/local_dev_mocks.md](./Research/local_dev_mocks.md) for ports and env vars.
@@ -151,11 +90,7 @@ Direct service ports are supported on purpose for **Cypress** (per-repo `npm run
 - Review the [SPA Standards](./DeveloperEdition/standards/spa_standards.md).
 - Take the [Onboarding Tour](./DeveloperEdition/standards/system_tour.md).
 
-
-
 ## Developer Workflow
-
-
 
 ### Issue-Feature-Branch
 
@@ -189,35 +124,27 @@ For Example:
 
 Developers should focus on one issue at a time, and should complete the following workflow for the full issue before moving on to the next:
 
-1. Pick an issue from the "On Deck" cards on the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and move it from **On Deck** to **In Progress**
+1. Pick an issue from the "On Deck" cards on the [kanban board](https://github.com/orgs/mentor-forge/projects/1), and move it from **On Deck** to **In Progress**
 2. Review the issue description, and create a feature branch that references the issue name
-3. Create a LLM Prompt to "Create a set of tasks" for automation. See below for advice on how to do this.
-4. If you want Mike's review of your prompt, DM him with it on Discord.
-5. Open a **new** Cursor Chat and submit your Create Tasks prompt.
-6. Review tasks to fully understand the proposed changes, adjust as needed.
-7. If you want Mike to review your tasks, open a Draft PR and request the review.
-8. Ask Cursor to "Please use @_ORCHESTRATION.md for all PENDING tasks"
-9. Review cursors work, run unit and end-to-end testing, fix any problems you find.
-10. Open a Pull Request (or mark your PR as no longer a draft) - request a review.
-  Make sure your PR references the issue # and the name (T-XX...)
-11. After approval, merge the PR, delete the branch, locally change back to the main branch and sync.
-12. Go back to the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and make sure your issue moved from **In Progress** to **Done** then loop back up to 1.
-
-
-### Create Tasks Prompt
-The Step 2 prompt is critical. It's not a book, but should contain clear instructions about what the intended outcome of the changes is. Most prompts will look something like:
-
+3. Use the following prompt to create a plan, make sure you @mention the correct file/folder.
 ```
-Please create @_PLANNING.md tasks to implement <issue links>
-Only create tasks, do not execute any tasks, or edit any files outside of the tasks folder.
+Please create @_PLANNING.md tasks to implement <issue links>. Only create files in the @tasks folder
 ```
+4. Review tasks to fully understand the proposed changes, adjust as needed.
+5. Use the following prompt to execute the plan
+```
+Please @_ORCHESTRATE.md all PENDING @tasks
+```
+6. Review cursors work, run unit and end-to-end testing, fix any problems you find.
+7. Request a review of the PR that was opened during orchestration.
+8. After approval, merge the PR, delete the branch, locally change back to the main branch and sync.
+9. Go back to the [kanban board](https://github.com/orgs/mentor-forge/projects/1/views/2), and make sure your issue moved from **In Progress** to **Done** then loop back up to 1.
 
 ## Nvidia GB10 Hosted Dev Env
+- https://mentorhub-gb10.tailb0d293.ts.net/discovery/
+- Discord: ``@zeroclawagent please deploy the latest code using mh-restart.sh ``
 
-- http://spark-478a.tailb0d293.ts.net:8080/
-- Discord: ``@zeroclawagent please deploy the latest code to the spark dev environment. ``
-
-## Umbrella Repo Developer Commands
+## Repo Developer Commands
 
 ```sh
 # Verify you have all the developer pre-req's installed

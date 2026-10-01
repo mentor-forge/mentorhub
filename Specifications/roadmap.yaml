@@ -1,32 +1,30 @@
-Discovery Updates:
-  - F-DS07 Notification List Page
-  - F-DS08 Resource List Page 
-  - F-DS09 Path List Page
-  - F-DS10 Plan List Page
 Notification Review:
-	- F-D35 Schema & Test Data
-	- F-DA09 Discovery API Refactor
-	- F-DS07 Discovery SPA Refactor
+	- F-D35* Schema & Test Data
+  - F-DS07* Notification List Page
+	- F-DA09* Discovery API Refactor
+	- F-DS07* Discovery SPA Refactor
+Mentor API Cleanup:
+	- F-RA20* Mentor API Cleanup
+	- F-RS20* Simplify SPA - API Code from API Cleanup
 Encounter Huge Transcript:
-	- F-D36 Add huge-markdown
-	- F-D34 Improve test data
-	- F-RA18 Huge Markdown openapi updates
-	- F-RS19 Encounter Page - Huge Markdown editor updates
+	- F-D36* Add huge-markdown
+	- F-D34* Improve test data
+	- F-RA18* Huge Markdown openapi updates
+	- F-RS19* Encounter Page - Huge Markdown editor updates
 Resource Updates:
-	- F-D37 Improve Test Data
-	- F-DS08 Resource List Page 
-	- F-ES12 ResourceViewPage
-	- F-RS08 ResourceEditPage
-	- F-RS20 New Resource Page
+	- F-D37* Improve Test Data
+  - F-DS08* Resource List Page 
+	- F-RS08* ResourceEditPage layout updates
 Path Updates:
-	- F-DS09 PathListPage
+  - F-DS09* Path List Page
 	- F-RS10 PathNewPage & PathEditPage
-	- F-ES14 PathViewPage
-Journey Updates:
-	- F-ES13 JourneyEditPage
 Plan Updates:
-	- F-DSnn PlanListPage
+  - F-DS10* Plan List Page
 	- F-RSnn PlanNewPage & PlanEditPage
+Mentee Updates:
+	- F-ES13 JourneyEditPage
+	- F-ES12 ResourceViewPage layout updates
+	- F-ES14 PathViewPage layout updates
 Profile Updates:
 	- F-Dnn Profile Schema Review/update
 	- F-CAnn Profile Schema and RBAC
