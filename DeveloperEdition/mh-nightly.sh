@@ -79,7 +79,7 @@ fi
   elif [[ ! -f "$ARCH" ]]; then
     printf '%s\n' "Could not generate the report: missing architecture.yaml." >"$body"
   else
-    names="$(yq -r '.architecture.["journey-domains"][] | .repos[] | select(.type != "spa_ref") | .name' "$ARCH" || true)"
+    names="$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | .repos[] | select(.type != "spa_ref") | .name' "$ARCH" || true)"
     process_repo "mentorhub" "$UMBRELLA"
     for name in $names; do
       [[ -z "$name" ]] && continue
