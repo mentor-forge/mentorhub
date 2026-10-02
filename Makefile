@@ -182,7 +182,7 @@ clone-all:
 		exit 1; \
 	}
 	@echo "Cloning and pulling architecture.yaml repos in .."
-	@names=$$(yq -r '.architecture.["journey-domains"][] | .repos[] | select(.type != "spa_ref") | .name' Specifications/architecture.yaml) || exit 1; \
+	@names=$$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | .repos[] | select(.type != "spa_ref") | .name' Specifications/architecture.yaml) || exit 1; \
 	fail=0; \
 	for name in $$names; do \
 		repo="mentorhub_$$name"; \
@@ -214,7 +214,7 @@ clone-all:
 build-all: clone-all
 	@echo "Building journey API and SPA containers"
 	@fail=0; \
-	apis=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
+	apis=$$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
 	for name in $$apis; do \
 		repo="mentorhub_$$name"; \
 		path="../$$repo"; \
@@ -229,7 +229,7 @@ build-all: clone-all
 			fail=1; \
 		fi; \
 	done; \
-	spas=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "spa") | .name' Specifications/architecture.yaml) || exit 1; \
+	spas=$$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | select(.is_journey == true) | .repos[] | select(.type == "spa") | .name' Specifications/architecture.yaml) || exit 1; \
 	for name in $$spas; do \
 		repo="mentorhub_$$name"; \
 		path="../$$repo"; \
@@ -266,7 +266,7 @@ test-all:
 	echo "==> mh up all"; \
 	"$$mh_bin" up all || exit 1; \
 	fail=0; \
-	apis=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
+	apis=$$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
 	for name in $$apis; do \
 		repo="mentorhub_$$name"; \
 		path="../$$repo"; \
@@ -281,7 +281,7 @@ test-all:
 			fail=1; \
 		fi; \
 	done; \
-	spas=$$(yq -r '.architecture.["journey-domains"][] | select(.is_journey == true) | .repos[] | select(.type == "spa") | .name' Specifications/architecture.yaml) || exit 1; \
+	spas=$$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | select(.is_journey == true) | .repos[] | select(.type == "spa") | .name' Specifications/architecture.yaml) || exit 1; \
 	for name in $$spas; do \
 		repo="mentorhub_$$name"; \
 		path="../$$repo"; \
