@@ -41,11 +41,14 @@
         }
         .subtitle {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-size: 1.1em;
         }
-        .links {
-            list-style: none;
+        .documentation {
+            color: #666;
+            margin-left: 20px;
+            margin-bottom: 10px;
+            font-size: 1em;
         }
         .service-block {
             margin-bottom: 22px;
@@ -116,22 +119,22 @@
         <ul class="links">
             <li class="service-block">
                 <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="app-links">Applications</button>
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="app-links">Key Documentation</button>
                 </h2>
                 <div id="app-links" class="section-content" hidden>
-                    <a href="#" id="customer-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Customer</a>
-                    <a href="#" id="admin-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Admin</a>
-                    <a href="#" id="mentor-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentor</a>
-                    <a href="#" id="mentee-app-link" class="cell-link" target="_blank" rel="noopener noreferrer">Mentee</a>
+                    <a href="https://github.com/mentor-forge/mentorhub/blob/main/README.md" class="cell-link" target="_blank" rel="noopener noreferrer">Platform README</a>
+                    <a href="https://github.com/mentor-forge/mentorhub/blob/main/Specifications/ArchitectureDiagram.local.svg" class="cell-link" target="_blank" rel="noopener noreferrer">Architecture Diagram</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_mongodb_api/blob/main/erd.svg" class="cell-link" target="_blank" rel="noopener noreferrer">Entity Relationship Diagram</a>
+                    <a href="https://github.com/mentor-forge/mentorhub_mongodb_api/blob/main/README.md#test-data" class="cell-link" target="_blank" rel="noopener noreferrer">Test Data Entities</a>
+                    <a href="https://github.com/mentor-forge/mentorhub/blob/main/Specifications/roadmap.yaml" class="cell-link" target="_blank" rel="noopener noreferrer">Feature Roadmap</a>
                 </div>
             </li>
             <li class="service-block">
                 <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="tool-links">Tools</button>
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="tool-links">Developer Tools</button>
                 </h2>
                 <div id="tool-links" class="section-content" hidden>
                     <a href="#" id="schema-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Schema configurator</a>
-                    <a href="#" id="runbook-spa-link" class="cell-link" target="_blank" rel="noopener noreferrer">Runbook</a>
                     <a href="#" id="mailpit-link" class="cell-link" target="_blank" rel="noopener noreferrer">MailPit</a>
                     <a href="#" id="stripe-mock-link" class="cell-link" target="_blank" rel="noopener noreferrer">Stripe mock</a>
                     <a href="#" id="cognito-mock-link" class="cell-link" target="_blank" rel="noopener noreferrer">Cognito mock</a>
@@ -140,7 +143,7 @@
             </li>
             <li class="service-block">
                 <h2 class="service-title">
-                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="api-links">API Explorer</button>
+                    <button class="section-toggle" type="button" aria-expanded="false" aria-controls="api-links">API Explorers</button>
                 </h2>
                 <div id="api-links" class="section-content" hidden>
                     <a href="#" id="schema-api-docs-link" class="cell-link" target="_blank" rel="noopener noreferrer" title="Open API docs">Schema API</a>
@@ -168,13 +171,7 @@
         const hostname = window.location.hostname || 'localhost';
 
         document.getElementById('discovery-app-link').href = '/discovery/';
-        document.getElementById('customer-app-link').href = '/customer/';
-        document.getElementById('admin-app-link').href = '/admin/';
-        document.getElementById('mentor-app-link').href = '/mentor/';
-        document.getElementById('mentee-app-link').href = '/mentee/';
-
         document.getElementById('schema-spa-link').href = `http://${hostname}:8384/`;
-        document.getElementById('runbook-spa-link').href = `http://${hostname}:8396/`;
         document.getElementById('mailpit-link').href = `http://${hostname}:8025/`;
         document.getElementById('stripe-mock-link').href = `http://${hostname}:12111/`;
         document.getElementById('cognito-mock-link').href = `http://${hostname}:9229/`;
