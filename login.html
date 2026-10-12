@@ -98,11 +98,13 @@
 <body>
     <div class="container">
         <h1>Developer sign-in</h1>
-        <p class="subtitle">Local IdP for Developer Edition journey SPAs. Pick a profile from MongoDB test data, then sign in.</p>
+        <p class="subtitle">Local IdP for Developer Edition journey SPAs. Pick a profile from MongoDB test data, then sign in. 
+            See the Schema documentation for more details: <a href="https://github.com/mentor-forge/mentorhub_mongodb_api#test-data" target="_blank">Test Data Documentation</a>
+        </p>
 
         <div class="dev-banner" role="alert">
             Dev-only: JWTs are minted in the browser with a fixed HS256 secret (<code>local-dev-jwt-secret-fixed</code>).
-            Do not use this page outside local development.
+            Do not use this page outside self hosted development.
         </div>
 
         <form id="welcome-login-form">
@@ -149,7 +151,6 @@
             <button type="submit" id="welcome-login-submit" data-automation-id="welcome-login-submit">Login</button>
         </form>
 
-        <a href="/index.html" class="back-link" data-automation-id="welcome-back-to-portal">Back to developer portal</a>
     </div>
     <script src="welcome-auth.js"></script>
 </body>
