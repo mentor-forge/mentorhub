@@ -1,4 +1,4 @@
-# A004 – Remove AWS assumptions from the welcome runtime and deployment configuration
+# A004 – Make local compose and integration configuration cloud agnostic
 
 **Status**: Pending
 
@@ -38,20 +38,17 @@ Source issue is authoritative for this migration. The agreed migration supersede
 
 ## Goals
 
-- After the recorded production identity/hosting decision, configure the welcome/runtime entry and Developer Edition compose without active Cognito/AWS service calls. Preserve local persona login, hash bootstrap, roles, stable local JWT secret and journey prefixes.
-- Inventory cognito-local and mocks before changing compose: local emulation/history is not proof of an AWS network dependency. Retain or retire each with documented rationale and preserve non-AWS Stripe/mail integrations.
-- Document non-AWS production IdP endpoint, claims/signing configuration, provisioning handoff to Admin, data/DNS/TLS transition and rollback. Do not mint production credentials in domain APIs or use the local dev secret in production.
-- Do not expand output paths or remove persisted identities/data automatically; any new schema requirements are explicit follow-on work outside excluded utility repos. Stop if the approved runtime decision cannot be implemented within these outputs.
-
-### Craftsmanship Expectations
-
-Keep package, auth and deployment ownership in the existing shared modules. Preserve APIs and runtime contracts unless the recorded migration decision explicitly requires a change; remove obsolete AWS auth knowledge rather than duplicate it. Keep every dependency reference reproducible.
+- Audit COGNITO_* variables currently on Customer API and Admin API and the mock_cognito service. Determine which are used by executable local paths versus placeholders. Remove unused mandatory provider settings; preserve optional local emulator compatibility when useful without requiring AWS accounts/credentials/endpoints.
+- Keep local JWT/persona login, configured IDP_LOGIN_URI, tenant/role claims, service profiles, journey base paths and non-AWS mocks working. Reuse existing runtime configuration rather than build an identity provider or per-SPA adapters.
+- Coordinate only demonstrated Admin API integration requirements through existing provider-neutral service contracts. Do not alter Customer API code or excluded utility repos merely because compose carries unused variables.
+- Put AWS-specific backing-service endpoints, role/secret requirements, identity-provider mapping and deployment overlay guidance under the AWS infrastructure repo. Document future provider repo extension points without creating them.
+- No production hosting/IdP selection, live user/data migration, DNS cutover or new schema is required for this local task. If an actual compatibility issue requires more scope, document it for review rather than invent a production implementation.
 
 ## Testing Expectations
 
-These checks are for future execution; none were run while creating this plan.
-
-- Gate this task on maintainer approval of the recorded runtime decision and Admin/provider readiness. Validate login/logout/401 redirects, claims, registration handoff and existing welcome tests; use non-AWS staging credentials, not live production cutover. Check compose configuration and no live AWS endpoints.
+- During future execution, validate compose configuration and each affected local service profile. Exercise existing local persona login, bootstrap, 401/logout and registration parity flows without live AWS access.
+- Use existing welcome-auth tests and the planned provider-neutral-runtime regression test. Verify no aws CLI/account/network dependency and no accidental change to Stripe/mail mocks or MongoDB/Runbook utility behavior.
+- Confirm provider-specific deployment configuration is documented as infrastructure-owned, not a required developer setting. Do not wait for a production provider choice.
 
 ## Outputs
 
@@ -71,11 +68,21 @@ Only these implementation files may change. The orchestrator may also update/ren
 
 This is a reviewable plan, not an execution record. Execute only this task's listed outputs when orchestration is separately authorized. Do not touch excluded MongoDB/Runbook utility repos, publish packages/tags, mutate issue/project state, or delete/provision AWS resources as a side effect. Future workflow publication happens only through the reviewed maintainer release path.
 
-Where a task requires an unpublished release, an undecided production contract, unavailable live schema or operator evidence, stop execution at that prerequisite and report it; do not guess values or substitute the unrelated PyPI api-utils package. Pending status describes the plan's review state, not proof that external execution gates are satisfied.
+Where a task requires an unpublished release, unavailable live schema or operator evidence, stop execution at that prerequisite and report it; do not guess values or substitute the unrelated PyPI api-utils package. Pending status describes the plan's review state, not proof that external execution gates are satisfied.
 
 ## External prerequisites
 
 Publisher readiness is tracked in https://github.com/mentor-forge/mentorhub_api_utils/issues/36 and https://github.com/mentor-forge/mentorhub_spa_utils/issues/43; AWS inventory/teardown readiness in https://github.com/mentor-forge/mentorhub_cloudformation/issues/12. Track all consumer issues in the source issue checklist. Do not make sibling file changes from this task.
+
+## Cloud-agnostic deployment boundary
+
+The deliverable is a cloud-agnostic **local** deployment plus the agreed GitHub dependency/build migration. Existing identity/hosting implementations are largely placeholders: audit actual executable dependencies before proposing changes. Selecting, implementing or migrating to a production IdP/hosting provider is not a prerequisite for library releases, journey package/build/CI changes or local acceptance.
+
+Keep application-facing backing-service contracts and environment settings provider neutral. Concentrate necessary integration changes in Admin API and DeveloperEdition/docker-compose.yaml where inspection proves coupling; preserve the existing shared JWT/redirect contracts and local persona/mocked-service behavior. Do not create per-journey provider adapters, new identity schemas or a general multi-cloud framework speculatively.
+
+Cloud-specific provisioning, backing-service configuration, identity-provider wiring, roles/secrets and deployment overlays belong to the relevant infrastructure repo: mentorhub_cloudformation owns AWS, including future CodeArtifact provisioning. Future separate repos may implement Google, Microsoft/Azure, IBM or Red Hat platforms against the same contracts; do not create or implement them in this effort. Core compose must not require AWS accounts, credentials or endpoints. A locally optional emulator is not a live AWS dependency; retain it only if useful without making it a required cloud-specific integration.
+
+AWS inventory, secure backup/restore evidence and separately approved decommissioning remain I-S01 responsibilities. Production provider selection or a live production cutover is future infrastructure/integration work, not an acceptance gate for the cloud-agnostic local stack.
 
 ## Execution Notes
 
