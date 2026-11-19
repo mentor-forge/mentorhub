@@ -108,7 +108,7 @@ We utilize an Issue-Feature–Branch pattern for the developer workflow. Our iss
 
 **Type-UserLayerNumber** where:
 
-- **Type** is *F*eature or *D*efect
+- **Type** is *F*eature or *D*efect or *I*nfrastructure
 - **User** identifies the bounded domain or platform component:
   - Journey domains (API/SPA repos): mento**R**, ment**E**, **C**ustomer, co**O**rdinator, **D**iscovery, **A**dmin
   - Platform: **W**elcome/Login (mentorhub), **U**tils (api_utils, spa_utils)

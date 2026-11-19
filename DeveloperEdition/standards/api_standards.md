@@ -32,7 +32,6 @@ All journey domain APIs use CodeArtifact. Canonical package names and registry v
 - pipenv run dev (run dev server)
 - pipenv run db (start backing db container)
 - pipenv run api (start db + api containers)
-- pipenv run service (start db, api, spa containers)
 - pipenv run container (build API container)
 
 ## API Design
