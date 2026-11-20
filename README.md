@@ -33,3 +33,18 @@ See the instructions on the [Organization Page](https://github.com/mentor-forge#
 - [SRE Standards](./DeveloperEdition/standards/sre_standards.md)
 - [AWS infrastructure](https://github.com/mentor-forge/mentorhub_cloudformation)
 - [Onboarding Tour](./DeveloperEdition/standards/system_tour.md) 
+
+## Welcome container base updates
+
+The Welcome image uses Nginx 1.30.7 on Alpine. For the next update, check the
+[stable release](https://nginx.org/en/download.html) and
+[security advisories](https://nginx.org/en/security_advisories.html). Inspect
+the official Alpine tag with `docker buildx imagetools inspect` and update
+the Dockerfile with its version and multi-platform index digest.
+
+Run `make test` and `make container`. Build both published architectures
+locally and verify each image with `nginx -v`, `nginx -V`, and a current
+image scan. Start Developer Edition with the local Welcome image and check
+the landing page, login assets, and journey redirects and API routes.
+After merge, verify the published multi-platform digest and binaries.
+Promote that same application digest through test, staging, and production.

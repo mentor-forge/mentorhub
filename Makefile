@@ -125,7 +125,7 @@ update: verify
 
 container:
 	@echo "Building Mentor Hub container..."
-	@DOCKER_BUILDKIT=0 docker build -t ghcr.io/mentor-forge/mentorhub:latest .
+	@DOCKER_BUILDKIT=0 docker build --pull -t ghcr.io/mentor-forge/mentorhub:latest .
 	@echo "Container built successfully: ghcr.io/mentor-forge/mentorhub:latest"
 
 push:
