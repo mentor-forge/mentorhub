@@ -1,0 +1,28 @@
+name: Welcome PR validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install shell test prerequisite
+        run: sudo apt-get update && sudo apt-get install -y zsh
+      - name: Test Welcome and Developer Edition tooling
+        run: node --test tests/*.test.js
+      - name: Build Welcome image
+        run: docker build --pull --tag mentorhub-welcome:ci .

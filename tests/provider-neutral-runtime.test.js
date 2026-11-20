@@ -48,11 +48,10 @@ test('Customer keeps local registration, billing and mail configuration', () => 
   assert.ok(services.mock_mailpit)
 })
 
-test('Cognito wire-protocol fixture is available on demand', () => {
-  const services = profileServices('cognito-mock')
-  assert.deepEqual(Object.keys(services), ['mock_cognito'])
-  assert.equal(services.mock_cognito.ports[0].host_ip, '127.0.0.1')
-  assert.equal(services.mock_cognito.ports[0].target, 9229)
+test('no Compose profile or Welcome portal exposes the Cognito emulator', () => {
+  assert.equal(profileServices('*').mock_cognito, undefined)
+  const portal = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
+  assert.doesNotMatch(portal, /cognito-mock-link|:9229/)
 })
 
 test('Welcome edge keeps the same-origin journey routes', () => {

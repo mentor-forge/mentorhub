@@ -1,6 +1,6 @@
 # A005 – Align welcome container workflow and AWS-free CI evidence
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -76,4 +76,6 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Removed the unused GitHub token build argument and left GHCR login, platforms, image tag and the push-to-main trigger intact. Added a read-only pull request workflow that runs the owned Node tests and builds the Welcome image locally without signing in to a registry.
+
+All three Node test suites and workflow structure checks passed locally. Parsed YAML confirms the publishing workflow only lost its build argument, while the PR workflow uses no secrets, persists no checkout credential and includes no publishing step. A clean local ARM64 Docker build passed with a fresh base pull and no credential build arguments. GitHub PR validation and multi-architecture publishing have not run.

@@ -113,8 +113,6 @@ update: verify
 	chmod +x ~/.mentorhub/mh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
 	cp ./nginx.conf ~/.mentorhub/nginx.conf && \
-	rm -rf ~/.mentorhub/cognito-local && \
-	cp -R ./DeveloperEdition/cognito-local ~/.mentorhub/cognito-local && \
 	if [ ! -f ~/.mentorhub/HOST_NAME ]; then \
 		echo "http://localhost" > ~/.mentorhub/HOST_NAME; \
 		echo "Created ~/.mentorhub/HOST_NAME (default: http://localhost)"; \

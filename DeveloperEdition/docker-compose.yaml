@@ -427,17 +427,6 @@ services:
       - customer-api
       - customer
 
-  # Optional wire-protocol fixture for explicit local identity testing.
-  mock_cognito:
-    image: jagregory/cognito-local:latest
-    restart: no
-    ports:
-      - "127.0.0.1:9229:9229"
-    volumes:
-      - ./cognito-local/.cognito:/app/.cognito
-    profiles:
-      - cognito-mock
-
   mock_mailpit:
     image: axllent/mailpit:latest
     restart: no

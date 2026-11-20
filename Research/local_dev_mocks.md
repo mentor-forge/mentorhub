@@ -4,7 +4,7 @@
 
 The standard journey profiles use the Welcome persona login and locally signed JWTs. Customer API enables local registration and uses Stripe mock and Mailpit. Customer and Admin API receive no Cognito environment settings. Local registration and the Admin inbound callback continue to use the existing identity provisioning contracts.
 
-For standalone Cognito wire-protocol testing, run `docker compose -f DeveloperEdition/docker-compose.yaml up -d mock_cognito` from the repo root. The optional `cognito-mock` profile exposes its seeded fixture at `127.0.0.1:9229` without a cloud account. The Developer Tools link requires starting this fixture explicitly. Core profiles, including `all`, leave it stopped.
+The Cognito emulator and its seed fixtures were removed from Developer Edition. The prior design below records how the fixture was used.
 
 Provider-specific endpoints, identity mapping, deployment overlays, and roles and secrets belong to the infrastructure repo for that provider. [Mentor Hub CloudFormation](https://github.com/mentor-forge/mentorhub_cloudformation) owns AWS-specific deployment.
 
