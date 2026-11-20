@@ -18,7 +18,7 @@
 2. Publish, validate and record permanent version-matched artifacts in the two publisher repos before updating consumers. API Utils publishes a public GitHub Release wheel and source archive. Pin the direct versioned wheel asset in Pipfile and regenerate Pipfile.lock. SPA Utils publishes `@mentor-forge/mentorhub_spa_utils` in GitHub Packages. Use an exact version and regenerate package-lock.json. Keep other dependencies on public PyPI/npm and preserve GHCR for containers.
 3. Keep package credentials limited to their purpose. Public Python Release downloads require no credentials. GitHub npm requires package read access even for the public package. Use an environment-variable reference scoped to the GitHub npm host and the Mentor Forge scope. Consumer CI uses least-privilege package access and passes authentication to Docker via BuildKit secrets. Maintainers merge and tag matching versions. Publisher workflows check package contents and version agreement before publishing. Fix releases with new versions.
 4. Upgrade all five API and five SPA journey consumers. Require clean installs from committed locks, tests, Docker builds and CI. A008 collects actual artifacts, consumer pins and lockfiles, and confirms combined local acceptance, including Developer Edition startup, persona login, registration and cross-journey smoke tests.
-5. Roll back a failing release with a reviewed revert to the previous working package and lockfile, container pin or local configuration. If the previous pins require CodeArtifact, keep their supporting infrastructure available until rollback is no longer needed. Keep inventory, backup/restore evidence and separately approved AWS teardown under I-S01. Teardown follows consumer cutover and recovery verification.
+5. Roll back a failing release with a reviewed revert to a verified GitHub-hosted package and its matching lockfile, a verified container pin, or a working local configuration. Keep inventory, backup/restore evidence and separately approved AWS teardown under I-S01. Teardown follows consumer cutover and recovery verification.
 
 ## Welcome CI validation
 
@@ -34,9 +34,11 @@ The isolated registry tests passed for install, verify, update, pull, up and loc
 
 ### Rollback
 
-1. For a consumer dependency regression, revert the consumer change that introduced the failing release. Restore the previous package pin and its matching lockfile together, then rerun that repo's clean install, tests and image build. If the old pin uses CodeArtifact, coordinate access to the retained registry with the infrastructure owner before rolling back.
+1. For a consumer dependency regression, revert the consumer change that introduced the failing release. Restore a verified GitHub-hosted package pin and its matching lockfile together, then rerun that repo's clean install, tests and image build.
 2. For a Welcome image regression, restore the previous verified image pin for the affected deployment and use that deployment's normal rollout procedure. Record the running image digest and check Welcome login and journey routes. If the previous image has a known security issue, use a patched version that passes the same checks.
-3. For a Developer Edition configuration regression, revert the affected umbrella configuration change. From the rollback checkout run `make update` to refresh the installed CLI and Compose configuration, then start the affected profile with `mh up` and validate its local behavior. Preserve operator-managed configuration and credentials. Use the prerequisites from the restored revision if the rollback crosses the registry migration.
+3. For a Developer Edition configuration regression, revert the affected umbrella configuration change. From the rollback checkout run `make update` to refresh the installed CLI and Compose configuration, then start the affected profile with `mh up` and validate its local behavior. Preserve operator-managed configuration and credentials.
+
+The rollback floor is the first GitHub-hosted release of each utility. A008 will record those versions.
 
 ### Cross-repo acceptance after the upgrades
 
