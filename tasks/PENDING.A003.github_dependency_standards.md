@@ -38,6 +38,7 @@ Source issue is authoritative for this migration. The agreed migration supersede
 
 ## Goals
 
+- Simplify Developer Onboarding (`CONTRIBUTING.md`) and the API and SPA standards. Put common setup steps in onboarding and link to them from the standards, which should focus on requirements specific to each service type. Remove obsolete AWS references, including superseded AWS CLI, SSO, and CodeArtifact setup. Retain references that still serve a current purpose and make their scope clear.
 - Replace active CodeArtifact/SSO dependency instructions with exact Release-wheel Pipfile examples and GitHub npm exact-version examples. Public Python wheel downloads need no token; npm downloads need read:packages.
 - Define maintainer merge/tag/release gates, immutable tags/artifacts, version agreement, package contents, consumer locks and rollback. Preserve the warning about unrelated public PyPI api-utils.
 - Provide AWS-free journey workflow examples with correct GitHub permissions and BuildKit npm secrets. Keep image publishing push-to-main only; PR validation, where added, is separate and never publishes. Remove obsolete AWS OIDC/id-token permissions from active examples, not GHCR publishing.
@@ -51,6 +52,7 @@ Keep package, auth and deployment ownership in the existing shared modules. Pres
 
 These checks are for future execution; none were run while creating this plan.
 
+- Verify that the onboarding guide presents one clear setup sequence, that both standards link to shared steps, and that any remaining AWS references in the three documents have a current purpose.
 - Review links, examples, workflow syntax and least-privilege scopes. Search active docs for stale mandatory AWS auth; allow explicitly deferred/history references. Only update the dependency-auth section of _PLANNING.md, not run-specific framework content.
 
 ## Outputs
