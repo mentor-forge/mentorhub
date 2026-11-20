@@ -1,6 +1,6 @@
 # A001 – Record the AWS exit inventory, decisions and rollout gates
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -68,4 +68,4 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Reviewed the active Makefile, CLI, Compose, Welcome CI, standards and Admin/Customer identity paths. Recorded dependency classifications, provider ownership, rollout gates and rollback in Research/aws_exit_plan.md. Verified issue coverage against the live I-WE01 migration checklist. A001 is documentation-only. Integrated install, build and runtime evidence belongs to the later tasks.
