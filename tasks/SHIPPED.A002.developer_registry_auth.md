@@ -1,6 +1,6 @@
 # A002 – Make Developer Edition installation and registry auth AWS independent
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -86,4 +86,6 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Removed AWS authentication and setup from Developer Edition entry points. The CLI retains GHCR login and configures the scoped GitHub npm registry using an environment-variable reference. Existing account files and unrelated npm and shell configuration are preserved. A default npm registry set by the retired login is reset so public dependencies resolve normally. The obsolete tracked scripts and platform environment file have no remaining executable references in the checked-out repos.
+
+Shell syntax and all three isolated registry regression cases passed. The cases cover install, verify, update, bare CLI, pull, up and the clone/build path with stubbed external services and an isolated home. The separate existing Welcome suite has one unchanged failure in the Customer portal link expectation. Live consumer package installation remains part of coordinated verification.

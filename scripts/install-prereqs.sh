@@ -64,7 +64,6 @@ install_if_missing python@3.12 python3.12
 install_if_missing pipenv pipenv
 install_if_missing jq jq
 install_if_missing yq yq
-install_if_missing awscli aws
 install_if_missing curl curl
 
 if ! command -v make >/dev/null 2>&1; then
