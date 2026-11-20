@@ -32,14 +32,12 @@ Source issue is authoritative for this migration. The agreed migration supersede
 
 ## Goals
 
-- Collect actual GitHub wheel/npm release identifiers, consumer locks, clean local installs, Docker/CI and local auth/registration evidence across in-scope repos. Do not require production provider deployment or migration evidence for local acceptance.
-- Confirm core compose and developer tooling work without AWS; validate the limited Admin integration changes against existing local contracts. Verify no speculative cross-cloud framework or provider-specific journey code was added.
-- Document rollback to prior package/image pins and local configuration. Keep I-S01 resource inventory, backups, restore evidence and teardown authorization separate from this local release.
-- Ensure future AWS provider configuration is anchored in CloudFormation, with possible future provider repos documented only as extension points. Preserve GitHub issue/project states unless separately authorized.
+- Record the umbrella changes, repository-local checks, rollback steps for prior package/image pins and local configuration, and the CloudFormation ownership boundary.
+- Document the cross-repo acceptance checklist and point to A008 for evidence and sign-off after the upgrades. Keep AWS inventory, backups, restore evidence and teardown in I-S01.
 
 ## Testing Expectations
 
-Review all source issue acceptance items against cloud-agnostic local scope. During future execution, make update / mh up all and cross-journey local smoke tests must work without AWS credentials/CLI. No live production cutover, provider selection or AWS deletion is part of this acceptance task.
+Review the rollback and handoff against the umbrella changes and record the local results available from A002 through A005. Full-stack and cross-repository acceptance belong to A008.
 
 ## Outputs
 
@@ -56,7 +54,7 @@ Where a task requires an unpublished release, unavailable live schema or operato
 
 ## External prerequisites
 
-Publisher readiness is tracked in https://github.com/mentor-forge/mentorhub_api_utils/issues/36 and https://github.com/mentor-forge/mentorhub_spa_utils/issues/43; AWS inventory/teardown readiness in https://github.com/mentor-forge/mentorhub_cloudformation/issues/12. Track all consumer issues in the source issue checklist. Do not make sibling file changes from this task.
+None for the umbrella handoff. External upgrade readiness is verified in A008.
 
 ## Cloud-agnostic deployment boundary
 

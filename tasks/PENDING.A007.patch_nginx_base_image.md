@@ -2,7 +2,7 @@
 
 **Status**: Pending  
 **Type**: Defect  
-**Depends On**: A006  
+**Depends On**: A005
 **Issue**: https://github.com/mentor-forge/mentorhub/issues/81  
 **Description**: Replace the floating Nginx runtime base with the latest patched stable Alpine image, refresh builds, and prove the packaged welcome/login edge still meets its deployment contract.
 
