@@ -1,6 +1,6 @@
 # A006 – Record coordinated cutover, rollback and infrastructure handoff
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -68,4 +68,4 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+Recorded the A002–A005 umbrella changes and available local results, rollback for package and image pins and local configuration, and the CloudFormation ownership boundary. Updated the roadmap to keep A008 outstanding pending publisher releases and consumer upgrades. Reviewed the handoff against the shipped task notes, current installer and runtime, and Welcome build configuration. No cross-repo acceptance or AWS teardown work was performed.

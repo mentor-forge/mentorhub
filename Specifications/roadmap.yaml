@@ -1,4 +1,7 @@
 Now:
+	Developer Edition:
+		- I-WE01 AWS exit. See Research/aws_exit_plan.md for umbrella validation, rollback, and CloudFormation ownership.
+		- A008 Cross-repo verification pending publisher releases and API and SPA consumer upgrades. Collect package, build, CI, and integrated Developer Edition evidence before migration sign-off.
 	Discovery Service:
 		Notification Review:
 			- F-D35* Schema & Test Data

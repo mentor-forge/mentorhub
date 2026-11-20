@@ -26,6 +26,29 @@ The Welcome workflow validates pull requests to main with read-only repository a
 
 Local validation passed on Node 24 with a temporary home and stubbed external commands for the registry tests. The tests exercised install, verify, update, and local build orchestration without AWS commands or real credentials. Compose render checks validated the core profiles and the absence of the removed emulator. A clean local ARM64 Welcome build passed with a fresh public base check and no registry credentials passed to the build. Live package installation and upgraded-stack acceptance remain in A008. Record the first GitHub PR validation and post-merge publish runs when they occur.
 
+## Umbrella handoff
+
+The umbrella branch replaces AWS setup with GitHub registry authentication for Developer Edition, simplifies onboarding and both package standards, removes unused cloud settings and the Cognito emulator from local Compose, and adds credential-free Welcome PR checks. The Welcome persona login, journey routes, local registration, Stripe mock, and Mailpit remain part of Developer Edition.
+
+The isolated registry tests passed for install, verify, update, pull, up and local build orchestration. Documentation links, pinned-dependency examples and workflow structure were checked locally. All 13 umbrella regression tests passed after removing the emulator. The Welcome image built locally on ARM64 during A005 before the Welcome portal link was removed. The patched image has its own build and verification in A007. GitHub PR validation and the post-merge publish run still need evidence.
+
+### Rollback
+
+1. For a consumer dependency regression, revert the consumer change that introduced the failing release. Restore the previous package pin and its matching lockfile together, then rerun that repo's clean install, tests and image build. If the old pin uses CodeArtifact, coordinate access to the retained registry with the infrastructure owner before rolling back.
+2. For a Welcome image regression, restore the previous verified image pin for the affected deployment and use that deployment's normal rollout procedure. Record the running image digest and check Welcome login and journey routes. If the previous image has a known security issue, use a patched version that passes the same checks.
+3. For a Developer Edition configuration regression, revert the affected umbrella configuration change. From the rollback checkout run `make update` to refresh the installed CLI and Compose configuration, then start the affected profile with `mh up` and validate its local behavior. Preserve operator-managed configuration and credentials. Use the prerequisites from the restored revision if the rollback crosses the registry migration.
+
+### Cross-repo acceptance after the upgrades
+
+[Cross-repo verification](../tasks/PENDING.A008.verify_cross_repository_migration.md) remains outstanding. Record these results before closing the migration:
+
+- Verify the published API Utils wheel and SPA Utils npm release, including actual versions, their sources, and read access from the intended consumers.
+- Check the exact pins and committed lockfiles for all five APIs and five SPAs. Collect each consumer's clean install, regression, Docker build and CI evidence.
+- Run Developer Edition update and startup with the upgraded images and without AWS credentials or CLI. Verify Welcome persona sign-in, journey routing, local registration and the Admin integration against the existing contracts.
+- Record the evidence and remaining gaps in the roadmap. Production hosting, identity migration and live cutover are separate infrastructure work.
+
+The umbrella repo owns local Compose and provider-neutral contracts. CloudFormation owns AWS provisioning, provider configuration and deployment overlays. AWS inventory, backups, restore evidence and teardown authorization remain under [I-S01](https://github.com/mentor-forge/mentorhub_cloudformation/issues/12).
+
 ## Migration issues
 
 | Role | Tracking |
