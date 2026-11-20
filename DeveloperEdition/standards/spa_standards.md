@@ -11,18 +11,14 @@
  - Cypress E2E v15.8
 
 ## Dependency Management
-- All dependencies are managed via `package.json` and `package-lock.json`
-- The `@mentor-forge/mentorhub_spa_utils` shared library is published to AWS CodeArtifact — see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml)
-- Pin exact semver (for example `"0.2.2"`); do not track `github:...#main`
-- Repo `.npmrc` scopes `@mentor-forge` to the CodeArtifact registry URL (no `always-auth`)
-- Local development: run `mh` before `npm ci` or `npm install` (see [SRE Standards](./sre_standards.md#codeartifact-local-authentication))
-- Docker builds: GitHub Actions runs CodeArtifact npm login before `npm ci` — no git or `GITHUB_TOKEN` for dependency install (see [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml))
 
-All journey domain SPAs use CodeArtifact. Canonical package names and registry values live in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml). Stage0 templates may still require cleanup until their SRE task ships.
+Pin `@mentor-forge/mentorhub_spa_utils` to an exact GitHub Packages version and commit `package.json` and `package-lock.json` together. For example, use `"@mentor-forge/mentorhub_spa_utils": "1.2.3"` with the actual approved version in place of the example version. Use `npm ci` to install from the lockfile.
+
+Scope npm registry configuration to `@mentor-forge`. Local credentials come from [Developer Onboarding](../../CONTRIBUTING.md#install-shared-dependencies). Container builds use the [BuildKit secret example](./examples/docker-push.yml) for registry access.
 
 ## Standard Developer Commands
-- npm install (install dependencies)
-- npx cypress install (download Cypress binary after npm install when the package version changes)
+- npm ci (install locked dependencies)
+- npx cypress install (download Cypress binary after npm ci when the package version changes)
 - npm run build (package code for deployment)
 - npm run dev (run dev server)
 - npm run test (run unit tests)

@@ -1,6 +1,6 @@
 # A003 – Document the new package, release, CI and onboarding standards
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -92,4 +92,7 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+- Consolidated shared setup in Developer Onboarding. The API and SPA standards now carry exact-version patterns and link to onboarding for local setup.
+- Documented public Release wheels, scoped GitHub npm packages, publish and consumer gates, rollback, and provider-neutral requirements. Replaced the active journey workflow example with GitHub-only publishing and a BuildKit secret for SPA package installation. The superseded example points readers to its replacement.
+- Verified changed relative links and anchors, parsed the Pipfile example and workflow YAML, checked publishing triggers, permissions and secret placement, and ran `git diff --check`. The three simplified guides contain no AWS-service references. The version in each example is illustrative. Cross-repo package install evidence is tracked in A008.
+- The branch-protection standards still mention the former package authentication setup. That file is outside A003's listed outputs and needs to be aligned separately.

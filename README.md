@@ -25,7 +25,7 @@ See the instructions on the [Organization Page](https://github.com/mentor-forge#
 - [Product Architecture Data](./Specifications/architecture.yaml)
 
 ## Contributing Guides
-- [Developer Onboarding](./CONTRIBUTING.md) On-Boarding Process and CLI install (GitHub token + **CodeArtifact** via `make aws-setup`)
+- [Developer Onboarding](./CONTRIBUTING.md) Set up the CLI and access GitHub-hosted packages and images.
 - [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
 - [Data Standards](./DeveloperEdition/standards/data_standards.md)
 - [API Standards](./DeveloperEdition/standards/api_standards.md)

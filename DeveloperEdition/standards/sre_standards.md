@@ -3,279 +3,16 @@
 Platform provisioning, CloudFormation tasks, platform config, and AWS architecture: **[mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation)**. This document covers org-wide standards and what **application developers** need for CI, DE auth, and production alignment.
 
 ## Tech Stack
-- Source Control: GitHub
-- CI Automation: GitHub Actions
-- Private Container Registry: GitHub Container Registry today; AWS ECR is the preferred AWS-native target for cloud deployment (separate from dependency registry migration)
-- Private PyPI Registry: AWS CodeArtifact (see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml))
-- Private NPM Registry: AWS CodeArtifact (see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml))
-- Infrastructure Automation: Docker Compose for local dev; AWS IaC in [mentorhub_cloudformation](https://github.com/mentor-forge/mentorhub_cloudformation) (`templates/`, `tasks/`)
-- Container Runtime Hosting: AWS, first target account `MentorHub-Dev`
-- Container Orchestration: TBD; ECS/Fargate is the preferred first AWS runtime unless/until EKS is justified
-- Monitoring: Prometheus, Grafana, ELK for application observability; AWS CloudTrail for AWS API audit logging; CloudWatch for AWS-native logs/metrics
-- Runbook Automation: [stage0 runbooks](https://github.com/agile-learning-institute/stage0_runbooks)
 
-## AWS Account and Identity Standards
+- GitHub Container Registry for container images.
+- GitHub Releases for public Python wheels and GitHub Packages for scoped npm packages.
+- Docker Compose for local development. Provider-specific provisioning and deployment overlays belong in the infrastructure repository.
 
-### As-built AWS organization
-
-MentorHub uses AWS Organizations with a separate management account and development workload account.
-
-```text
-AWS Organization
-└── Root
-    ├── Mike Storey
-    │   └── Management account
-    └── MentorHub-Dev
-        └── Development workload account
-```
-
-Target account model (see [mentorhub_cloudformation README](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/README.md) and [ARCHITECTURE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)):
-
-```text
-AWS Organization
-└── Root
-    ├── Management
-    ├── Shared-Services
-    └── MentorHub-Dev
-```
-
-### Management account
-
-The existing long-lived AWS account is the **Management Account**.
-
-Purpose:
-- AWS Organizations administration
-- IAM Identity Center administration
-- Account creation and governance
-- Billing and payment ownership
-- Emergency/root recovery path
-
-Standards:
-- Do not deploy MentorHub application workloads into the Management Account.
-- Do not create routine development resources in the Management Account.
-- Use the Management Account only for organization, identity, billing, and governance activities.
-- Root user is emergency-only and protected by MFA/passkey.
-- The legacy `flatballflyer` IAM user is retained as historical/legacy access pending later cleanup.
-- The `mike-admin` IAM user is retained as a backup administrator while IAM Identity Center is being adopted.
-
-### MentorHub-Dev account
-
-The `MentorHub-Dev` member account is the first MentorHub workload account.
-
-Purpose:
-- Development deployments
-- Team learning and apprentice experimentation
-- Early Stage0/MentorHub AWS integration
-- Future ECS/ECR/VPC/application infrastructure
-
-Standards:
-- MentorHub development resources belong in `MentorHub-Dev`, not the Management Account.
-- The root user for `MentorHub-Dev` is protected by MFA/passkey and is emergency-only.
-- Human access should come through IAM Identity Center, not account-local IAM users.
-- Application and automation access should use IAM roles, not long-lived access keys.
-
-### Shared-Services account
-
-The `Shared-Services` member account hosts shared platform services (CodeArtifact first).
-
-Purpose:
-- Private npm and PyPI package registries
-- GitHub Actions OIDC roles for package publish and read
-- Future shared platform services that are not application workloads
-
-Standards:
-- Do not deploy MentorHub application containers or databases into `Shared-Services`.
-- Enable CloudTrail and a monthly budget before turning on CodeArtifact.
-- Root user follows the same emergency-only MFA/passkey standard as other accounts.
-
-### IAM Identity Center
-
-IAM Identity Center is enabled from the Management Account and is the standard for all human AWS access.
-
-```text
-Humans      -> IAM Identity Center users and groups
-Automation  -> IAM roles / OIDC federation
-Emergency   -> Root user and backup IAM admin only
-```
-
-Configured Identity Center groups:
-- `Organization-Admin`
-- `SRE`
-- `Developer`
-
-Configured permission sets:
-- `Organization-Admin`
-- `SRE`
-- `Developer`
-
-Account assignment standard:
-
-| Account | Group | Permission Set | Purpose |
-|---------|-------|----------------|---------|
-| Management | Organization-Admin | Organization-Admin | Organization, identity, billing/governance administration |
-| MentorHub-Dev | SRE | SRE | Infrastructure administration in development |
-| MentorHub-Dev | Developer | Developer | Developer/apprentice access without IAM administration |
-| Shared-Services | SRE | SRE | CodeArtifact administration, GitHub OIDC roles |
-| Shared-Services | Developer | Developer (CodeArtifact read) | Local `pipenv`/`npm` installs; no console admin required |
-
-The Developer permission set in `Shared-Services` must allow CodeArtifact read (`GetAuthorizationToken`, `ReadFromRepository`, `GetServiceBearerToken`). Customize the permission set or add a repository resource policy if the default Developer set is too broad.
-
-User assignment standard:
-- Mike belongs to `Organization-Admin` and `SRE`.
-- SRE team members belong to `SRE`.
-- Apprentices and application developers belong to `Developer`.
-
-Access pattern:
-
-```text
-AWS Access Portal
-  -> sign in as Identity Center user
-  -> choose AWS account
-  -> choose permission set / role
-```
-
-Recommended local AWS CLI profile names:
-- `mentorhub-shared` — `Shared-Services` + **`Developer-Packages`**. **All developers** — configured by `make aws-setup`; used by `mh` for CodeArtifact.
-- `mentorhub-shared-sre` — `Shared-Services` + **`SRE`**. **Platform/SRE only** — IAM OIDC trust, CloudFormation on Shared-Services; not used by `mh`.
-- `mentorhub-dev` — `MentorHub-Dev` (application infrastructure). **SRE/platform only** — not required for local Developer Edition.
-
-Do not ask team members to use root-account sign-in or IAM-user sign-in for normal work.
-
-### Root account standard
-
-Each AWS account has its own root user. Root users are not shared across accounts.
-
-```text
-Management Account root       -> existing management account email
-MentorHub-Dev Account root      -> mentorhub-dev@agile-learning.institute
-Shared-Services Account root    -> shared-services@agile-learning.institute
-Future Prod roots               -> account-specific aliases
-```
-
-Root-user requirements for every AWS account:
-- Verify the account email alias works before account creation.
-- Set a strong password and store it in the approved password manager.
-- Enable MFA/passkey.
-- Sign out and do not use root for daily work.
-
-### IAM user standard
-
-Do not create IAM users for team members.
-
-Permitted IAM users:
-- Legacy users retained temporarily for cleanup/migration.
-- Backup administrative user during IAM Identity Center adoption.
-
-Preferred alternatives:
-- Human access: IAM Identity Center.
-- GitHub Actions: AWS OIDC role assumption.
-- Runtime services: IAM roles.
-- Local developer CLI access: IAM Identity Center / AWS SSO profiles.
-
-## AWS Audit and Security Baseline
-
-### CloudTrail
-
-`MentorHub-Dev` has a CloudTrail trail configured for AWS API audit logging.
-
-Standard trail settings for workload and shared-service accounts:
-
-| Account | Trail name | KMS alias |
-|---------|------------|-----------|
-| MentorHub-Dev | `mentorhub-dev-trail` | `alias/mentorhub-dev-cloudtrail` |
-| Shared-Services | `shared-services-trail` | `alias/shared-services-cloudtrail` |
-
-Common settings:
-- Scope: multi-region trail when available
-- Events: management events, read and write
-- Data events: disabled by default unless specifically needed
-- Insights events: disabled by default unless specifically needed
-- Log encryption: AWS KMS
-
-CloudTrail should be enabled before team members begin creating AWS resources in an account.
-
-### Budgets
-
-Every non-management account should have an AWS Budget before substantial service usage.
-
-| Account | Monthly budget | Alerts |
-|---------|----------------|--------|
-| MentorHub-Dev | `$50` | 80%, 100% |
-| Shared-Services | `$25` | 80%, 100% |
-
-Recipients: Mike and appropriate SRE contacts.
-
-### Regions
-
-**Primary region (decided):** `us-east-1` (N. Virginia), recorded in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
-
-Canonical values: [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml). Local shell defaults: [DeveloperEdition/aws-platform.env](../aws-platform.env) (installed to `~/.mentorhub/aws-platform.env` by `make update`).
-
-All GitHub Actions, CodeArtifact repositories, ECR repositories, and developer setup instructions must use **`us-east-1`** unless a future platform decision documents otherwise.
-
-## AWS Shared Service Placement
-
-CodeArtifact is a shared platform service rather than an application workload. The preferred long-term placement is a dedicated `Shared-Services` AWS account.
-
-Recommended account model before production:
-
-```text
-AWS Organization
-└── Root
-    ├── Management
-    ├── Shared-Services
-    └── MentorHub-Dev
-```
-
-If CodeArtifact is created before a `Shared-Services` account exists, treat that as temporary and document the migration path. Prefer creating `Shared-Services` first to avoid moving package registries later.
-
-### CodeArtifact layout
-
-Canonical registry values: [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
-
-```text
-AWS Account:     Shared-Services
-CodeArtifact Domain:  mentor-forge
-├── Repository: mentorhub-pypi   (internal packages + PyPI upstream)
-└── Repository: mentorhub-npm    (internal packages + npmjs upstream)
-```
-
-Record for GitHub org variables and developer tooling:
-
-```text
-AWS_REGION=us-east-1
-AWS_SHARED_SERVICES_ACCOUNT_ID=<shared-services-account-id>
-CODEARTIFACT_DOMAIN=mentor-forge
-CODEARTIFACT_PYPI_REPO=mentorhub-pypi
-CODEARTIFACT_NPM_REPO=mentorhub-npm
-```
-
-**Container images** stay on GitHub Container Registry until ECR migration is explicitly planned. This migration changes **library** install sources only.
+The AWS account, identity, audit, budget, and CodeArtifact configuration are maintained through [the AWS infrastructure repo](https://github.com/mentor-forge/mentorhub_cloudformation) and its [deferred infrastructure and teardown work](https://github.com/mentor-forge/mentorhub_cloudformation/issues/12).
 
 ## Developer Experience
 
-The `mh` Developer Edition CLI is how SRE provides a strong developer experience. It manages developer environment values (keys, secrets, JWT material for local tooling, AWS/CodeArtifact login helpers, etc.) and wraps the services configured in the system [docker-compose](../docker-compose.yaml) file. Developers can run the full stack on local hardware without using `docker compose` directly for normal workflows.
-
-### CodeArtifact local authentication
-
-After the dependency registry migration, developers refresh private package credentials with:
-
-```sh
-mh
-```
-
-Bare `mh` also runs automatically before `mh pull`, `mh up`, and during `make update`. Requires `~/.zshrc` from `make install` (`GITHUB_TOKEN`, `aws-platform.env`).
-
-One-time AWS SSO: `make aws-setup` (writes `~/.aws/config` from platform env; browser login once).
-
-| Item | Standard |
-|------|----------|
-| AWS profile | `mentorhub-shared` (override with `MH_AWS_PROFILE_SHARED` if needed) |
-| SSO | Opens browser only when session expired |
-| Token lifetime | ~12 hours. `mh` refreshes the SSO session and the npm CodeArtifact login. `pipenv run install` requests its own PyPI token; a global `pip` executable is not required. |
-| Integration | `make update` runs bare `mh` after copying CLI files |
-
-GitHub tokens remain required for git clone/push; they are **not** required for installing `api_utils` or `mentorhub_spa_utils` after migration.
+The `mh` CLI installs local configuration and wraps Compose for everyday development. Follow [Developer Onboarding](../../CONTRIBUTING.md#install-developer-edition) for initial setup and package authentication.
 
 ## Authentication
 
@@ -297,46 +34,28 @@ mh up all
 
 ## Production alignment
 
-**API gateway and commercial IdP:** In production, traffic is intended to sit behind an **API gateway** (or edge proxy) with **TLS**, routing to SPA static assets and API services. **Authentication** uses a **commercial IdP** (OAuth2/OIDC). Access tokens are issued by the IdP (or a BFF); applications do not use APIs as a substitute IdP. APIs validate JWTs (shared secret or JWKS) with the same claim expectations as in Developer Edition. SPAs redirect to the real IdP login/authorize entry via the configured login base URL—preserving a single auth story from the local welcome page through to production IdP.
+**API gateway and OIDC identity provider:** In production, traffic is intended to sit behind an **API gateway** (or edge proxy) with **TLS**, routing to SPA static assets and API services. **Authentication** uses a configured **OAuth2/OIDC identity provider**. Access tokens are issued by the IdP (or a BFF); applications do not use APIs as a substitute IdP. APIs validate JWTs (shared secret or JWKS) with the same claim expectations as in Developer Edition. SPAs redirect to the real IdP login/authorize entry via the configured login base URL—preserving a single auth story from the local welcome page through to production IdP.
 
 ### Developer Edition welcome nginx (local path router)
 
-The welcome container on **:8080** path-proxies journey SPAs at `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/` — the **local twin** of cloud ALB path routing intent ([mentorhub_cloudformation/ARCHITECTURE.md](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/ARCHITECTURE.md)). **CloudFormation** still deploys the real ALB in AWS; this nginx layer is Developer Edition only and is out of scope for IaC changes here.
+The welcome container on **:8080** path-proxies journey SPAs at `/discovery/`, `/customer/`, `/admin/`, `/mentor/`, and `/mentee/`. Configure equivalent public routes in the production deployment overlay.
 
-- **Not proxied on :8080:** `/api/*` (APIs stay on direct ports), `/runbook/` (Runbook tools use **8395** / **8396**), and **Admin Stripe/Cognito webhooks** — do **not** route webhook ingress through the welcome nginx (**F-AA01**); use direct Admin API port or production ingress.
+- **Not proxied on :8080:** `/api/*` (APIs stay on direct ports), `/runbook/` (Runbook tools use **8395** / **8396**), and **Admin webhook ingress** — do **not** route webhook ingress through the welcome nginx (**F-AA01**); use direct Admin API port or production ingress.
 - **Same-origin navigation:** Full in-app routing under `/{journey}/` requires each journey SPA's Vue **`base`** and nginx prefix configuration — tracked in `tasks/SHIPPED_ISSUE.mentorhub_*_spa.vue_base_and_nginx_prefix.md` (GitHub issues On Deck).
 
 ## Continuous Integration
 
-The developer workflow follows the feature branch pattern. A developer creates a branch to work on a feature and submits a pull request (PR) when the feature is ready to be deployed. When a PR is approved by a reviewer and **merged to `main`**, CI builds and pushes a new container with a `:latest` tag to the system's container registry. Those images are deployed to a cloud DEV environment and are available for developers to use locally.
+- Publish images to GitHub Container Registry after a push to `main`. The [journey publish workflow example](./examples/docker-push.yml) builds both supported architectures. Choose the API or SPA job for the repository.
+- API builds install the pinned public GitHub Release wheel with the existing Pipenv lock. SPA builds install the pinned GitHub Packages dependency with `npm ci`.
+- Grant SPA consumer workflow repositories read access to the npm package in GitHub Packages. The publish workflow uses `contents: read` and `packages: write` for source checkout and image publishing, and passes the npm credential only to the install step as a BuildKit secret.
+- Run any pull request tests in a separate `pull_request` workflow with read permissions, no image publishing, and no privileged credentials for fork builds. Use `packages: read` only where the job can read the package with its own workflow token. Keep credential-dependent checks out of fork jobs that lack access.
 
-### Current state (container publish only)
+## Shared package releases
 
-- **`.github/workflows/docker-push.yml`** runs on **`push` to `main` only** — not on feature-branch pushes or open PRs.
-- Merging a PR to `main` produces a single `push` event; that triggers one publish run.
-- Peer review and branch protection (soft phase) gate merges; automated test gates on PRs are not enabled yet.
-- Existing container workflows publish to GitHub Container Registry until the ECR migration is explicitly planned.
-- Journey API and SPA **container builds** install shared libraries from **CodeArtifact** (`api-utils`, `@mentor-forge/mentorhub_spa_utils`) via GitHub Actions OIDC — not git clones or `GH_PAT` for dependencies. Canonical package and registry values live in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml).
-
-Canonical workflow reference for journey repos:
-- [examples/docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml)
-
-Legacy reference (pre-migration only): [examples/docker-push.yml](./examples/docker-push.yml)
-
-Apply the same `on:` pattern in every mentor-forge repo that publishes images.
-
-### Future state (PR automated tests)
-
-When automated tests should run before merge, add a separate **`.github/workflows/ci.yml`** that triggers on `pull_request` to `main` only. That workflow is distinct from `docker-push.yml`:
-
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci.yml` (future) | `pull_request` → `main` | Run tests on PR branches; required checks for hard/full branch protection |
-| `docker-push.yml` | `push` → `main` | Build and publish container images after merge |
-
-Do not add `pull_request` triggers to `docker-push.yml`. Do not add bare `push:` (all branches) triggers to either workflow.
-
-Future PR CI should use the same CodeArtifact read OIDC role as Docker builds — not `GH_PAT` for dependency access.
+1. Merge the publisher change after review and passing package tests. Use one version across the source manifest, tag, and published archive or package. Inspect the built contents and verify that expected files and entry points are present.
+2. Publish the API wheel as a public GitHub Release asset and the SPA package to GitHub Packages. Treat tags and published artifacts as immutable. Confirm the wheel downloads anonymously and that consumer workflow repositories can read the npm package.
+3. After the release is verified, update each consumer pin and lockfile together. Verify a clean install, tests, and image build from the committed locks before merging.
+4. Roll back a consumer by restoring the prior known-good pin and lockfile or redeploying its previous verified image digest. Publish a corrected package version when needed.
 
 ## Continuous Deployment
 
@@ -362,7 +81,7 @@ main merge
   -> tag/promote same image to production
 ```
 
-Infrastructure provisioning and maintenance automation is not yet complete. Initial AWS deployment automation should target `MentorHub-Dev` first.
+Infrastructure provisioning and environment promotion are handled by the infrastructure repository for the selected provider.
 
 ## API Reverse Proxy
 
@@ -376,7 +95,7 @@ SPA containers use an NGINX configuration template (`nginx.conf.template`) that 
 - **`API_PORT`**: Port of the API server (default: `8083`)
 - **`IDP_LOGIN_URI`**: Full URL for login redirect after logout, on `401`, or when the SPA is not authenticated (Developer Edition default: `http://127.0.0.1:8080/login.html`; production: IdP or gateway login entry). Compose passes this env var into journey SPA containers; **`mh`** sets it from `~/.mentorhub/HOST_NAME` when present (see [CONTRIBUTING.md](../../../CONTRIBUTING.md)).
 
-At **container startup**, journey SPAs also run `envsubst` on `runtime-config.js.template` to write `/runtime-config.js`, setting `window.__MENTORHUB_RUNTIME__.IDP_LOGIN_URI` from **`IDP_LOGIN_URI`**. NGINX serves that file with **`Cache-Control: no-store`**. The SPA loads it before the app bundle so `getIdpLoginBaseUrl()` in `@mentor-forge/mentorhub_spa_utils` reads the runtime value — **same container image** in local dev, Tailscale VPN, and cloud (where production sets Cognito or gateway URL).
+At **container startup**, journey SPAs also run `envsubst` on `runtime-config.js.template` to write `/runtime-config.js`, setting `window.__MENTORHUB_RUNTIME__.IDP_LOGIN_URI` from **`IDP_LOGIN_URI`**. NGINX serves that file with **`Cache-Control: no-store`**. The SPA loads it before the app bundle so `getIdpLoginBaseUrl()` in `@mentor-forge/mentorhub_spa_utils` reads the runtime value — **same container image** in local dev, Tailscale VPN, and cloud (where the deployment sets the identity-provider or gateway URL).
 
 Build-time SPA env (**`VITE_IDP_LOGIN_URI`**) applies to **`npm run dev`** only (typically `http://127.0.0.1:8080/login.html`). Resolution order in spa_utils: runtime **`IDP_LOGIN_URI`** → **`VITE_IDP_LOGIN_URI`** → Developer Edition fallback. Do not rely on client-side loopback hostname rewrites.
 
@@ -416,10 +135,9 @@ Before deploying any API to production, ensure:
 - [ ] HTTPS/TLS is configured via reverse proxy
 - [ ] Monitoring and logging are enabled
 - [ ] All dependencies are up to date
-- [ ] AWS account has CloudTrail enabled
-- [ ] AWS budget alarms are configured
-- [ ] Human access is through IAM Identity Center
-- [ ] Automation uses IAM roles/OIDC, not static access keys
+- [ ] Audit logging and cost alerts are enabled in the hosting environment
+- [ ] Human access uses centrally managed identity
+- [ ] Automation uses short-lived workload credentials
 
 ### JWT Security
 

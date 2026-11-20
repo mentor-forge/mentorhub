@@ -18,14 +18,20 @@ This repository functions as a **versioned asset** managing core API utilities a
 - requests for black box E2E testing
 
 ## Dependency Management
-- All dependencies are managed by `pipenv` via `Pipfile` and `Pipfile.lock`
-- The `api_utils` shared library is published to AWS CodeArtifact (PyPI name `api-utils`, distribution `api_utils`) — see [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml)
-- Domain API Pipfiles use a **single** CodeArtifact `[[source]]` with PyPI upstream so public packages (Flask, pymongo, etc.) and `api-utils` resolve from one index
-- Pin exact semver for `api-utils` (for example `==0.2.1`); do not track `main` or use bare `*` (public PyPI package `api-utils` is unrelated and breaks Config/auth)
-- Local development: run `mh` before `pipenv run install` / `pipenv install --dev` (see [SRE Standards](./sre_standards.md#codeartifact-local-authentication))
-- Docker builds: GitHub Actions obtains a short-lived CodeArtifact token and passes `PIP_INDEX_URL` as a build arg — no git or `GH_PAT` for dependency install (see [docker-push-codeartifact.yml](./examples/docker-push-codeartifact.yml))
 
-All journey domain APIs use CodeArtifact. Canonical package names and registry values live in [mentorhub_cloudformation/config/aws-platform.yaml](https://github.com/mentor-forge/mentorhub_cloudformation/blob/main/config/aws-platform.yaml). Stage0 template cleanup is tracked by SRE tasks in `mentorhub_cloudformation`.
+Use Pipenv and commit `Pipfile` and `Pipfile.lock` together. Resolve public dependencies through PyPI and pin Mentor Hub's `api-utils` to an exact public GitHub Release wheel. The package named `api-utils` on PyPI is unrelated.
+
+```toml
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+api-utils = {file = "https://github.com/mentor-forge/mentorhub_api_utils/releases/download/v1.2.3/api_utils-1.2.3-py3-none-any.whl"}
+```
+
+The version is illustrative. Copy the exact tag and filename from the approved release. Use the same lock in local and container builds. See [Developer Onboarding](../../CONTRIBUTING.md#install-shared-dependencies) for setup and [SRE Standards](./sre_standards.md#shared-package-releases) for the release and rollback process.
 
 ## Standard Developer Commands
 - pipenv run build (package code for deployment)
