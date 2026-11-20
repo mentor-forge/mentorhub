@@ -1,6 +1,6 @@
 # A004 – Make local compose and integration configuration cloud agnostic
 
-**Status**: Pending
+**Status**: Shipped
 
 **Type**: Feature
 
@@ -86,4 +86,6 @@ AWS inventory, secure backup/restore evidence and separately approved decommissi
 
 ## Execution Notes
 
-Reserved for the execution agent. No implementation, tests, service changes or publication have been performed.
+- Audited checked Customer and Admin API source for reads of the removed environment values and for outbound Cognito calls. The Admin inbound webhook and persisted provider representation are existing compatibility contracts. Neither requires the retired Compose settings. No sibling integration code was changed.
+- Removed the unused API environment settings and moved the seeded emulator to the explicit host-local `cognito-mock` profile. Documented opt-in usage and CloudFormation ownership. The Welcome portal currently shows only the Discovery journey launch link, so the portal assertion now checks that link and a separate regression test covers all five existing Nginx routes.
+- Provider-neutral runtime, Welcome authentication, and Developer Edition registry regression suites passed. Resolved `all` profile configuration compared equal to the previous configuration after subtracting the unused variables and optional fixture. Full container startup, 401/logout, and registration parity against the upgraded services were not run here. The Docker daemon socket was unavailable, and cross-repo verification remains in A008.

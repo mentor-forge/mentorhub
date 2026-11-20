@@ -1,5 +1,17 @@
 # Local Development — Cognito, Stripe & Mailpit Mocks
 
+## Current Developer Edition setup
+
+The standard journey profiles use the Welcome persona login and locally signed JWTs. Customer API enables local registration and uses Stripe mock and Mailpit. Customer and Admin API receive no Cognito environment settings. Local registration and the Admin inbound callback continue to use the existing identity provisioning contracts.
+
+For standalone Cognito wire-protocol testing, run `docker compose -f DeveloperEdition/docker-compose.yaml up -d mock_cognito` from the repo root. The optional `cognito-mock` profile exposes its seeded fixture at `127.0.0.1:9229` without a cloud account. The Developer Tools link requires starting this fixture explicitly. Core profiles, including `all`, leave it stopped.
+
+Provider-specific endpoints, identity mapping, deployment overlays, and roles and secrets belong to the infrastructure repo for that provider. [Mentor Hub CloudFormation](https://github.com/mentor-forge/mentorhub_cloudformation) owns AWS-specific deployment.
+
+## Prior design and rationale
+
+The rest of this document records the original design. Its former default Cognito profiles and API environment tables reflect that design.
+
 **Context:** Production uses **AWS Cognito** (Hosted UI + Admin API) and **Stripe** (Checkout, Portal, webhooks). Developer Edition must support local work **without AWS or Stripe accounts** for:
 
 - **Returning users** — SPA login with JWT claims (existing `login.html`)
