@@ -36,9 +36,9 @@ make clone-all
 With the Backend for Frontend pattern, all of our services consist of a single API that supports a single SPA. Common code that is used by multiple API's or SPA's is shared in utility repo's. Review these repo's to see the overall patterns used.
 
 ### mentorhub_api_utils
-Review the README - and then try these developer commands. Run `mh` first if you have not refreshed CodeArtifact credentials recently.
+Review the README, then try these commands. See [Developer Onboarding](../../CONTRIBUTING.md#install-shared-dependencies) for package setup.
 ```sh
-# to install dependencies (CodeArtifact — run mh first)
+# install dependencies
 pipenv run install
 
 # to run unit testing     
@@ -56,9 +56,9 @@ pipenv run e2e
 Leave the dev server running while we move on to the SPA
 
 ### mentorhub_spa_utils
-Review the README - and then try these developer commands. Run `mh` first if you have not refreshed CodeArtifact credentials recently.
+Review the README, then try these commands. See [Developer Onboarding](../../CONTRIBUTING.md#install-shared-dependencies) for package setup.
 ```sh
-# to install dependencies (CodeArtifact — run mh first)
+# install dependencies
 npm ci
 
 # to run unit testing

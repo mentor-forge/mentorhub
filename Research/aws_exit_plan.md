@@ -1,0 +1,64 @@
+# MentorHub AWS exit plan
+
+[I-WE01](https://github.com/mentor-forge/mentorhub/issues/80) covers Developer Edition, dependency distribution and CI. MentorHub owns provider-neutral application contracts and local Compose. [MentorHub CloudFormation](https://github.com/mentor-forge/mentorhub_cloudformation) owns AWS provisioning, backing-service configuration, identity wiring, IAM, secrets and deployment overlays, including reproducible CodeArtifact provisioning. This work leaves production provider selection, production identity/data migration and DNS cutover for future infrastructure work.
+
+## Dependency inventory
+
+| Area | Current coupling | Planned change |
+| --- | --- | --- |
+| Developer tooling | The Makefile verifies AWS CLI/CodeArtifact, installs the platform env and shared Python auth helper, and exposes `aws-setup`. The `mh` registry path calls AWS STS, SSO and CodeArtifact before container commands. | A002 removes active AWS onboarding and auth. Keep GitHub Container Registry login and use scoped GitHub npm authentication. Preserve existing user-managed credentials and configuration. |
+| Package installs and CI | In-scope journeys use CodeArtifact-backed Python or npm dependencies and the standards describe AWS authentication and OIDC. | Publisher issues release GitHub-hosted packages first. Consumers replace private registry prerequisites, regenerate locks, and validate clean installs and builds. A003 updates active standards and onboarding. |
+| Welcome build | The current publishing workflow uses GitHub Container Registry and passes a GitHub token as a build argument. | A005 audits and removes the unused argument while retaining multi-platform publishing on pushes to main. Validate PRs separately without publishing. A007 verifies the patched packaged Nginx image on both architectures. |
+| Local identity | Compose sets `COGNITO_*` values for Customer and Admin APIs and starts `mock_cognito` in several profiles. The checked Customer and Admin API source has no reads of those variables or outbound Cognito SDK calls. Admin has an inbound Cognito webhook and Developer Edition registration uses a persisted provider label through shared identity provisioning. | A004 removed the unused API variables and initially made the emulator opt-in. The emulator was subsequently removed from Developer Edition. The core profiles use the Welcome persona login. Keep Admin registration, inbound webhook compatibility, persona JWT claims, configured login redirects and journey paths. Coordinate Admin integration only where an actual executable dependency is found. |
+| Documentation and history | Onboarding and active examples require AWS auth. Research and shipped records describe prior AWS work. | Update active guidance in A003. Preserve historical records and point current AWS-specific deployment guidance to CloudFormation. |
+
+## Rollout and acceptance
+
+1. Complete the umbrella setup, documentation, local configuration and Welcome CI changes (A002–A005). Validate the owned tooling and runtime changes without AWS CLI, credentials or live endpoints. Capture local results and rollback steps in A006. A007 can follow A005 independently of cross-repo sign-off.
+2. Publish, validate and record permanent version-matched artifacts in the two publisher repos before updating consumers. API Utils publishes a public GitHub Release wheel and source archive. Pin the direct versioned wheel asset in Pipfile and regenerate Pipfile.lock. SPA Utils publishes `@mentor-forge/mentorhub_spa_utils` in GitHub Packages. Use an exact version and regenerate package-lock.json. Keep other dependencies on public PyPI/npm and preserve GHCR for containers.
+3. Keep package credentials limited to their purpose. Public Python Release downloads require no credentials. GitHub npm requires package read access even for the public package. Use an environment-variable reference scoped to the GitHub npm host and the Mentor Forge scope. Consumer CI uses least-privilege package access and passes authentication to Docker via BuildKit secrets. Maintainers merge and tag matching versions. Publisher workflows check package contents and version agreement before publishing. Fix releases with new versions.
+4. Upgrade all five API and five SPA journey consumers. Require clean installs from committed locks, tests, Docker builds and CI. A008 collects actual artifacts, consumer pins and lockfiles, and confirms combined local acceptance, including Developer Edition startup, persona login, registration and cross-journey smoke tests.
+5. Roll back a failing release with a reviewed revert to a verified GitHub-hosted package and its matching lockfile, a verified container pin, or a working local configuration. Keep inventory, backup/restore evidence and separately approved AWS teardown under I-S01. Teardown follows consumer cutover and recovery verification.
+
+## Welcome CI validation
+
+The Welcome workflow validates pull requests to main with read-only repository access, no persisted checkout credentials, no registry login and no image publishing. It runs the Welcome, registry authentication and Compose regression suites, then builds the Welcome image from its public base. The separate publish workflow retains GHCR authentication at the workflow step and publishes the same image for AMD64 and ARM64 on pushes to main. The Docker build receives no GitHub credential.
+
+Local validation passed on Node 24 with a temporary home and stubbed external commands for the registry tests. The tests exercised install, verify, update, and local build orchestration without AWS commands or real credentials. Compose render checks validated the core profiles and the absence of the removed emulator. A clean local ARM64 Welcome build passed with a fresh public base check and no registry credentials passed to the build. Live package installation and upgraded-stack acceptance remain in A008. Record the first GitHub PR validation and post-merge publish runs when they occur.
+
+## Umbrella handoff
+
+The umbrella branch replaces AWS setup with GitHub registry authentication for Developer Edition, simplifies onboarding and both package standards, removes unused cloud settings and the Cognito emulator from local Compose, and adds credential-free Welcome PR checks. The Welcome persona login, journey routes, local registration, Stripe mock, and Mailpit remain part of Developer Edition.
+
+The isolated registry tests passed for install, verify, update, pull, up and local build orchestration. Documentation links, pinned-dependency examples and workflow structure were checked locally. All 13 umbrella regression tests passed after removing the emulator. The Welcome image built locally on ARM64 during A005 before the Welcome portal link was removed. The patched image has its own build and verification in A007. GitHub PR validation and the post-merge publish run still need evidence.
+
+### Rollback
+
+1. For a consumer dependency regression, revert the consumer change that introduced the failing release. Restore a verified GitHub-hosted package pin and its matching lockfile together, then rerun that repo's clean install, tests and image build.
+2. For a Welcome image regression, restore the previous verified image pin for the affected deployment and use that deployment's normal rollout procedure. Record the running image digest and check Welcome login and journey routes. If the previous image has a known security issue, use a patched version that passes the same checks.
+3. For a Developer Edition configuration regression, revert the affected umbrella configuration change. From the rollback checkout run `make update` to refresh the installed CLI and Compose configuration, then start the affected profile with `mh up` and validate its local behavior. Preserve operator-managed configuration and credentials.
+
+The rollback floor is the first GitHub-hosted release of each utility. A008 will record those versions.
+
+### Cross-repo acceptance after the upgrades
+
+[Cross-repo verification](../tasks/PENDING.A008.verify_cross_repository_migration.md) remains outstanding. Record these results before closing the migration:
+
+- Verify the published API Utils wheel and SPA Utils npm release, including actual versions, their sources, and read access from the intended consumers.
+- Check the exact pins and committed lockfiles for all five APIs and five SPAs. Collect each consumer's clean install, regression, Docker build and CI evidence.
+- Run Developer Edition update and startup with the upgraded images and without AWS credentials or CLI. Verify Welcome persona sign-in, journey routing, local registration and the Admin integration against the existing contracts.
+- Record the evidence and remaining gaps in the roadmap. Production hosting, identity migration and live cutover are separate infrastructure work.
+
+The umbrella repo owns local Compose and provider-neutral contracts. CloudFormation owns AWS provisioning, provider configuration and deployment overlays. AWS inventory, backups, restore evidence and teardown authorization remain under [I-S01](https://github.com/mentor-forge/mentorhub_cloudformation/issues/12).
+
+## Migration issues
+
+| Role | Tracking |
+| --- | --- |
+| Umbrella | [Local deployment and coordination](https://github.com/mentor-forge/mentorhub/issues/80) |
+| Publishers | [API Utils](https://github.com/mentor-forge/mentorhub_api_utils/issues/36), [SPA Utils](https://github.com/mentor-forge/mentorhub_spa_utils/issues/43) |
+| API consumers | [Mentor](https://github.com/mentor-forge/mentorhub_mentor_api/issues/43), [Mentee](https://github.com/mentor-forge/mentorhub_mentee_api/issues/34), [Discovery](https://github.com/mentor-forge/mentorhub_discovery_api/issues/18), [Customer](https://github.com/mentor-forge/mentorhub_customer_api/issues/23), [Admin](https://github.com/mentor-forge/mentorhub_admin_api/issues/12) |
+| SPA consumers | [Mentor](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/45), [Mentee](https://github.com/mentor-forge/mentorhub_mentee_spa/issues/38), [Customer](https://github.com/mentor-forge/mentorhub_customer_spa/issues/23), [Discovery](https://github.com/mentor-forge/mentorhub_discovery_spa/issues/20), [Admin](https://github.com/mentor-forge/mentorhub_admin_spa/issues/11) |
+| AWS infrastructure | [I-S01 inventory and restoration](https://github.com/mentor-forge/mentorhub_cloudformation/issues/12) |
+
+MongoDB API and Runbook API are outside the dependency cutover because neither consumes these shared packages. Future provider-specific infrastructure can use the same application contracts.

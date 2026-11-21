@@ -18,6 +18,10 @@ This folder contains workshop tasks that an orchestration agent can execute, bas
 - ./tasks/_ORCHESTRATE.md
 - ./tasks/_PLANNING.md (this file)
 
+## Dependency authentication
+
+Use public GitHub Release wheels for Mentor Hub Python dependencies and scoped GitHub Packages for Mentor Forge npm dependencies. Follow [Developer Onboarding](../CONTRIBUTING.md#install-shared-dependencies) locally and the [SRE Standards](../DeveloperEdition/standards/sre_standards.md#continuous-integration) in CI. Plan publisher releases and package access before consumer installation and validation.
+
 ## Task File Layout
 
 Each task file must contain the following sections under H1 and H2 headings.

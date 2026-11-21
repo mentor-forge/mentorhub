@@ -1,5 +1,17 @@
 # Local Development — Cognito, Stripe & Mailpit Mocks
 
+## Current Developer Edition setup
+
+The standard journey profiles use the Welcome persona login and locally signed JWTs. Customer API enables local registration and uses Stripe mock and Mailpit. Customer and Admin API receive no Cognito environment settings. Local registration and the Admin inbound callback continue to use the existing identity provisioning contracts.
+
+The Cognito emulator and its seed fixtures were removed from Developer Edition. The prior design below records how the fixture was used.
+
+Provider-specific endpoints, identity mapping, deployment overlays, and roles and secrets belong to the infrastructure repo for that provider. [Mentor Hub CloudFormation](https://github.com/mentor-forge/mentorhub_cloudformation) owns AWS-specific deployment.
+
+## Prior design and rationale
+
+The rest of this document records the original design. Its former default Cognito profiles and API environment tables reflect that design.
+
 **Context:** Production uses **AWS Cognito** (Hosted UI + Admin API) and **Stripe** (Checkout, Portal, webhooks). Developer Edition must support local work **without AWS or Stripe accounts** for:
 
 - **Returning users** — SPA login with JWT claims (existing `login.html`)

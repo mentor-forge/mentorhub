@@ -1,7 +1,7 @@
 # `make update` reads GitHub org for docker login from product.yaml.
 PRODUCT_FILE ?= Specifications/product.yaml
 ORG := $(shell yq -r '.organization.git_org' $(PRODUCT_FILE))
-.PHONY: help install update verify container push build-package publish-package clone-all build-all test-all test aws-setup
+.PHONY: help install update verify container push build-package publish-package clone-all build-all test-all test
 
 help:
 	@echo "Mentor Hub Developer CLI - Available commands:"
@@ -10,7 +10,6 @@ help:
 	@echo "  make verify        - Verify build tools and prerequisites"
 	@echo "  make update        - Update mentorhub CLI tools and configure Docker/Git"
 	@echo "  make test          - Run welcome server regression tests"
-	@echo "  make aws-setup     - One-time CodeArtifact SSO setup (~/.aws/config)"
 	@echo "  make build-package - Build the Mentor Hub welcome page Docker container locally"
 	@echo "  make clone-all     - Clone/pull architecture.yaml sibling repos (no container builds)"
 	@echo "  make build-all     - clone-all, then build journey API and SPA containers"
@@ -47,32 +46,12 @@ verify:
 	command -v docker >/dev/null 2>&1 && printf "docker:  " && docker --version || { echo "  FAIL: docker"; fail=1; }; \
 	echo ""; \
 	echo "--- GitHub & Git ---"; \
-	[ -n "$${GITHUB_TOKEN:-}" ] && printf "GITHUB_TOKEN: set\n" || { echo "  FAIL: GITHUB_TOKEN (set env var)"; fail=1; }; \
+	if [ -z "$${GITHUB_TOKEN:-}" ] && [ -f "$$HOME/.mentorhub/GITHUB_TOKEN" ]; then \
+		GITHUB_TOKEN=$$(cat "$$HOME/.mentorhub/GITHUB_TOKEN"); \
+	fi; \
+	[ -n "$${GITHUB_TOKEN:-}" ] && printf "GITHUB_TOKEN: set\n" || { echo "  FAIL: GITHUB_TOKEN (set the variable or save it in ~/.mentorhub/GITHUB_TOKEN)"; fail=1; }; \
 	command -v git >/dev/null 2>&1 && printf "git:     " && git --version || { echo "  FAIL: git"; fail=1; }; \
 	echo ""; \
-	echo "--- AWS (CodeArtifact packages) ---"; \
-	command -v aws >/dev/null 2>&1 && printf "aws:     " && aws --version 2>&1 | head -1 || { echo "  FAIL: aws (install AWS CLI v2 — see CONTRIBUTING.md Step 1)"; fail=1; }; \
-	if [ -f "$$HOME/.mentorhub/aws-platform.env" ]; then \
-		. "$$HOME/.mentorhub/aws-platform.env"; \
-		[ -f "$$HOME/.mentorhub/aws-platform.local.env" ] && . "$$HOME/.mentorhub/aws-platform.local.env"; \
-		printf "aws-platform.env: installed (profile %s)\n" "$${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"; \
-		if aws configure list-profiles 2>/dev/null | grep -qx "$${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"; then \
-			echo "  SSO profile: configured (run make aws-setup if package installs fail)"; \
-		else \
-			echo "  WARN: SSO profile not in ~/.aws/config — run make aws-setup"; \
-		fi; \
-	else \
-		echo "  WARN: ~/.mentorhub/aws-platform.env missing — run make install && make aws-setup"; \
-	fi; \
-	if command -v aws >/dev/null 2>&1 && [ -f "$$HOME/.mentorhub/aws-platform.env" ]; then \
-		. "$$HOME/.mentorhub/aws-platform.env"; \
-		[ -f "$$HOME/.mentorhub/aws-platform.local.env" ] && . "$$HOME/.mentorhub/aws-platform.local.env"; \
-		if aws codeartifact list-repositories --region "$${AWS_REGION:-us-east-1}" --profile "$${MH_AWS_PROFILE_SHARED:-mentorhub-shared}" --max-results 1 >/dev/null 2>&1; then \
-			echo "  CodeArtifact: reachable ($${CODEARTIFACT_PYPI_REPO:-mentorhub-pypi}, $${CODEARTIFACT_NPM_REPO:-mentorhub-npm})"; \
-		else \
-			echo "  WARN: CodeArtifact not reachable — run mh or make aws-setup"; \
-		fi; \
-	fi; \
 	echo "Checking git global user.name and user.email (recommended)..."; \
 	git config --global user.name >/dev/null 2>&1 && echo "  user.name: set" || echo "  user.name: not set (recommended for commits)"; \
 	git config --global user.email >/dev/null 2>&1 && echo "  user.email: set" || echo "  user.email: not set (recommended for commits)"; \
@@ -92,7 +71,6 @@ install:
 	@./scripts/install-prereqs.sh
 	@echo "Installing mentorhub CLI..."
 	@mkdir -p ~/.mentorhub
-	@cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env
 	@if [ ! -f ../.stage0-launch.yaml ]; then \
 		printf 'umbrella: mentorhub\n' > ../.stage0-launch.yaml && \
 		echo "Created ../.stage0-launch.yaml (launchpad stub for interactive mode)"; \
@@ -101,8 +79,6 @@ install:
 		echo "\n# Added by mentorhub CLI install" >> ~/.zshrc; \
 		echo "export PATH=\$$PATH:~/.mentorhub" >> ~/.zshrc; \
 		echo "export GITHUB_TOKEN=\$$(cat ~/.mentorhub/GITHUB_TOKEN)" >> ~/.zshrc; \
-		echo "source \$$HOME/.mentorhub/aws-platform.env" >> ~/.zshrc; \
-		echo "[ -f \$$HOME/.mentorhub/aws-platform.local.env ] && source \$$HOME/.mentorhub/aws-platform.local.env" >> ~/.zshrc; \
 		echo "Added ~/.mentorhub to PATH in ~/.zshrc"; \
 	else \
 		echo "~/.mentorhub already in PATH"; \
@@ -127,43 +103,29 @@ uninstall:
 
 update: verify
 	@echo "Updating mentorhub CLI..."
-	@if [ ! -f ~/.mentorhub/GITHUB_TOKEN ]; then \
-		echo "Error: GITHUB_TOKEN not found! - See ./DeveloperEdition/README.md"; \
-		exit 1; \
-	fi
-	@export GITHUB_TOKEN=$$(cat ~/.mentorhub/GITHUB_TOKEN) && \
+	@if [ -z "$${GITHUB_TOKEN:-}" ] && [ -f "$$HOME/.mentorhub/GITHUB_TOKEN" ]; then \
+		GITHUB_TOKEN=$$(cat "$$HOME/.mentorhub/GITHUB_TOKEN"); \
+	fi; \
+	export GITHUB_TOKEN; \
+	mkdir -p "$$HOME/.mentorhub" && \
 	printf '%s\n' "$(abspath $(CURDIR)/..)" > ~/.mentorhub/MENTORHUB_PATH && \
 	cp ./DeveloperEdition/mh ~/.mentorhub/mh && \
 	chmod +x ~/.mentorhub/mh && \
-	cp ./DeveloperEdition/scripts/codeartifact-pypi-auth.sh ~/.mentorhub/codeartifact-pypi-auth.sh && \
-	chmod +x ~/.mentorhub/codeartifact-pypi-auth.sh && \
 	cp ./DeveloperEdition/docker-compose.yaml ~/.mentorhub/docker-compose.yaml && \
 	cp ./nginx.conf ~/.mentorhub/nginx.conf && \
-	rm -rf ~/.mentorhub/cognito-local && \
-	cp -R ./DeveloperEdition/cognito-local ~/.mentorhub/cognito-local && \
-	cp ./DeveloperEdition/aws-platform.env ~/.mentorhub/aws-platform.env && \
 	if [ ! -f ~/.mentorhub/HOST_NAME ]; then \
 		echo "http://localhost" > ~/.mentorhub/HOST_NAME; \
 		echo "Created ~/.mentorhub/HOST_NAME (default: http://localhost)"; \
 	fi && \
-	if ! grep -q "aws-platform.env" ~/.zshrc 2>/dev/null; then \
-		echo "source \$$HOME/.mentorhub/aws-platform.env" >> ~/.zshrc; \
-		echo "[ -f \$$HOME/.mentorhub/aws-platform.local.env ] && source \$$HOME/.mentorhub/aws-platform.local.env" >> ~/.zshrc; \
-	fi && \
-	git config --global --unset-all url."https://@github.com/".insteadOf 2>/dev/null || true && \
+	{ git config --global --unset-all url."https://@github.com/".insteadOf 2>/dev/null || true; } && \
 	git config --global url."https://x-access-token:$$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/" && \
 	echo "Git URL configured" && \
-	. $$HOME/.mentorhub/aws-platform.env && \
-	[ -f $$HOME/.mentorhub/aws-platform.local.env ] && . $$HOME/.mentorhub/aws-platform.local.env; \
 	MH_GHCR_ORG=$(ORG) ~/.mentorhub/mh && \
 	echo "Updates completed"
 
-aws-setup:
-	@zsh ./DeveloperEdition/aws-sso-setup.sh
-
 container:
 	@echo "Building Mentor Hub container..."
-	@DOCKER_BUILDKIT=0 docker build -t ghcr.io/mentor-forge/mentorhub:latest .
+	@DOCKER_BUILDKIT=0 docker build --pull -t ghcr.io/mentor-forge/mentorhub:latest .
 	@echo "Container built successfully: ghcr.io/mentor-forge/mentorhub:latest"
 
 push:
@@ -213,7 +175,15 @@ clone-all:
 
 build-all: clone-all
 	@echo "Building journey API and SPA containers"
-	@fail=0; \
+	@if [ -z "$${GITHUB_TOKEN:-}" ] && [ -f "$$HOME/.mentorhub/GITHUB_TOKEN" ]; then \
+		GITHUB_TOKEN=$$(cat "$$HOME/.mentorhub/GITHUB_TOKEN"); \
+	fi; \
+	if [ -z "$${GITHUB_TOKEN:-}" ]; then \
+		echo "Error: Set GITHUB_TOKEN (with read:packages) or save it in ~/.mentorhub/GITHUB_TOKEN. See CONTRIBUTING.md."; \
+		exit 1; \
+	fi; \
+	export GITHUB_TOKEN; \
+	fail=0; \
 	apis=$$(yq -r '(.architecture.domains // .architecture.["journey-domains"])[] | select(.is_journey == true) | .repos[] | select(.type == "api") | .name' Specifications/architecture.yaml) || exit 1; \
 	for name in $$apis; do \
 		repo="mentorhub_$$name"; \

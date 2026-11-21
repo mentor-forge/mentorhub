@@ -1,11 +1,15 @@
-# Pre-migration merge-to-main container publish workflow (git-based shared library deps).
-# Copy to .github/workflows/docker-push.yml and adjust image tags per repository.
+# Copy to .github/workflows/docker-push.yml and keep the job for your repo type.
+# For an SPA, grant the consumer repository read access on the npm package.
+# Use the Dockerfile install pattern below in the SPA build stage.
 #
-# After CodeArtifact migration, use docker-push-codeartifact.yml instead.
-# See SRE Standards § Continuous Integration and mentorhub_cloudformation/config/aws-platform.yaml.
+# RUN --mount=type=secret,id=npm_token,required=true \
+#     GITHUB_TOKEN="$(cat /run/secrets/npm_token)" npm ci
+#
+# The SPA .npmrc should contain only scoped registry and auth configuration:
+# @mentor-forge:registry=https://npm.pkg.github.com/
+# //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 
 name: Build and Push Docker Image
-run-name: ${{ github.actor }} ran Build and Push
 
 on:
   push:
@@ -13,23 +17,25 @@ on:
       - main
 
 jobs:
-  build_push:
+  build_push_api:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -37,6 +43,34 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/mentor-forge/REPLACE_ME:latest
-          build-args: |
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          tags: ghcr.io/${{ github.repository }}:latest
+
+  build_push_spa:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+          secrets: |
+            npm_token=${{ secrets.GITHUB_TOKEN }}

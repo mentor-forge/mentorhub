@@ -4,81 +4,18 @@ The Mentor Hub Developer Edition system provides a `mh` Command Line Interface t
 
 NOTE: Native Windows is unsupported; use WSL. 
 
-## Step 1 of 4 - Install Prerequisites
+## Install Developer Edition
 
-You will need to install the following desktop tools first.
+1. Install [Homebrew](https://brew.sh) and start [Docker Desktop](https://www.docker.com/get-started/) or an equivalent Docker Engine with Compose. Use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) on Windows. [MongoDB Compass](https://www.mongodb.com/docs/compass/install/) is useful for inspecting local data.
+2. Clone this repository into the directory where you want the other Mentor Hub repos, then run `make install` from the checkout. It installs the command-line prerequisites through Homebrew and configures zsh for `mh`.
+3. Create a [GitHub personal access token (classic)](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-to-github-packages) with `read:packages` and access to Mentor Forge packages and images. Configure [GitHub SSH access](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for cloning and pushing the sibling repositories. Save the token alone in `~/.mentorhub/GITHUB_TOKEN` and restrict the file to your account with `chmod 600 ~/.mentorhub/GITHUB_TOKEN`.
+4. Start a new zsh session or run `source ~/.zshrc`. From this checkout, run `make update` to install the CLI and Compose configuration, sign in to GitHub Container Registry, and configure scoped npm access.
 
-- **Homebrew** - [https://brew.sh](https://brew.sh) on macOS or Linux (including WSL). 
-After installing, open a new terminal and confirm `brew --version` works. If the command is not found, add the shellenv line the installer prints to `~/.zprofile` or `~/.zshrc`.
-- **Docker Desktop** - [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
-- **Mongo Compass** - [https://www.mongodb.com/docs/compass/install/](https://www.mongodb.com/docs/compass/install/)
-- **WSL** - For Windows users: [https://learn.microsoft.com/en-us/windows/wsl/install](https://learn.microsoft.com/en-us/windows/wsl/install)
-- **git configuration** -
+### Install shared dependencies
 
-```sh
-git config --global user.name "Your Name"
-git config --global user.email yourname@example.com
-```
+In a journey API repo, use its Pipenv install command. Python wheels pinned to public GitHub Release assets download without package credentials.
 
-**Recommended:** [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for clone/push, and global git identity for commits:
-
-## Step 2 of 4 - Install the CLI
-
-These tools need to be available. `make install` uses Homebrew to install the ones it can:
-
-- **make** - usually pre-installed - [https://www.gnu.org/software/make/](https://www.gnu.org/software/make/)
-- **Node.js** (v24+) - [https://nodejs.org/en/download](https://nodejs.org/en/download)
-- **npm** (v11.5+) - Bundled with Node.js
-- **Python 3.12+** - [https://www.python.org/downloads/](https://www.python.org/downloads/)
-- **Pipenv** - [https://pipenv.pypa.io/en/latest/](https://pipenv.pypa.io/en/latest/)
-- **git** - [https://git-scm.com/downloads](https://git-scm.com/downloads)
-- **AWS CLI v2** - [https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-- **jq** - [https://jqlang.github.io/jq/download/](https://jqlang.github.io/jq/download/)
-- **yq** - [https://mikefarah.gitbook.io/yq](https://mikefarah.gitbook.io/yq)
-- **curl** - Usually pre-installed. [https://curl.se/download.html](https://curl.se/download.html)
-- **zsh shell** - Default on macOS. Linux: [https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
-
-Journey SPAs use Vite from their own npm dependencies (`npx vite`). A global Vite install is not required.
-
-`make install` requires `brew` from [Step 1](#step-1-of-4---install-prerequisites). It installs `git`, Node.js, Python 3.12, Pipenv, `jq`, `yq`, AWS CLI, and `curl` when they are missing, and it installs `make` only when `make` is missing. It then installs the Developer Edition `mh` command line utility. Docker Desktop, Mongo Compass, and Homebrew stay manual installs using the links above.
-
-```sh
-## Install Developer Edition 
-make install
-```
-
-Remember to  `source ~/.zshrc` before proceeding.
-
-## Step 3 of 4 - Configure access tokens
-
-When local environment values are required (GitHub access tokens, etc.) they are stored in the hidden folder `~/.mentorhub` instead of a being replicated across multiple repo level .env files. 
-
-### GITHUB_TOKEN
-
-We publish `**api-utils**` (PyPI) and `**@mentor-forge/mentorhub_spa_utils**` (npm) to **AWS CodeArtifact**, and container images to **GitHub Container Registry**. Create a GitHub classic access token with `repo`, `workflow`, and `write:packages` privileges. Save it as `GITHUB_TOKEN` in the `~/.mentorhub/` folder.
-
-To create a token, login to GitHub and click your Profile Pic -> Settings -> Developer Settings -> Personal access tokens -> Tokens(classic) -> Create New -> ✅ repo, ✅ workflow, ✅ write:packages. For reference: [ghcr and github tokens](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-
-### CodeArtifact (private packages)
-
-After [Step 2](#step-2-of-4---install-the-cli), run **once** to configure package-registry access:
-
-```sh
-make aws-setup
-```
-
-This opens a browser login and configures `~/.mentorhub/aws-platform.env` and `~/.aws/config` for profile `mentorhub-shared`. Run bare `mh` (or `make update`) before `pipenv run install` or `npm ci` in journey API/SPA repos. `mh` keeps the AWS SSO session current and refreshes the npm CodeArtifact login (~12 hour lifetime). Python projects do not use a global `pip` login; `pipenv run install` requests its own CodeArtifact token.
-
-## Step 4 of 4 - Finally
-
-After GITHUB_TOKEN and `make aws-setup` are in place, run update to finish the install.
-
-```sh
-## Update Developer Edition configurations
-make update
-```
-
-
+In a journey SPA repo, run `npm ci` from the configured shell. The token must be exported as `GITHUB_TOKEN`. Run `mh` to refresh npm configuration if needed. It configures GitHub Packages for `@mentor-forge` while other scopes and unscoped packages keep their existing registries. See [API Standards](./DeveloperEdition/standards/api_standards.md#dependency-management) and [SPA Standards](./DeveloperEdition/standards/spa_standards.md#dependency-management) for version pins.
 
 ## Developer Edition — portal vs direct ports
 
@@ -88,7 +25,7 @@ Direct service ports are supported on purpose for **Cypress** (per-repo `npm run
 
 ## Development Standards
 
-- Local API mocks (`mock_stripe_api`, `mock_cognito`, `mock_mailpit`) — see [Research/local_dev_mocks.md](./Research/local_dev_mocks.md) for ports and env vars.
+- Local API mocks — see [Research/local_dev_mocks.md](./Research/local_dev_mocks.md) for ports and env vars.
 - Understand a few simple [Architecture Principles](./DeveloperEdition/standards/ArchitecturePrinciples.md)
 - Review the [Data Standards](./DeveloperEdition/standards/data_standards.md).
 - Review the [SRE Standards](./DeveloperEdition/standards/sre_standards.md).
@@ -108,7 +45,7 @@ We utilize an Issue-Feature–Branch pattern for the developer workflow. Our iss
 
 **Type-UserLayerNumber** where:
 
-- **Type** is *F*eature or *D*efect
+- **Type** is *F*eature or *D*efect or *I*nfrastructure
 - **User** identifies the bounded domain or platform component:
   - Journey domains (API/SPA repos): mento**R**, ment**E**, **C**ustomer, co**O**rdinator, **D**iscovery, **A**dmin
   - Platform: **W**elcome/Login (mentorhub), **U**tils (api_utils, spa_utils)
@@ -129,7 +66,7 @@ For Example:
 - **F-DS01** = 1st feature of the Discovery SPA (`mentorhub_discovery_spa`)
 - **F-AA01** = 1st feature of the Admin API (`mentorhub_admin_api`)
 - **F-D29** = 29th Data (mongodb configurator) feature — not Discovery
-- **F-S01** = 1st SRE feature (e.g. Cognito in cloudformation)
+- **F-S01** = 1st SRE feature (e.g. deployment infrastructure)
 
 
 
@@ -171,15 +108,6 @@ Please @_ORCHESTRATE.md all PENDING @tasks
 ```sh
 # Verify you have all the developer pre-req's installed
 make verify
-
-# Install the developer CLI in your search path
-make install
-
-# Configure your AWS account for access to code artifact
-make aws-setup
-
-# Update the developer CLI with the latest compose file
-make update
 
 # Clone/pull architecture.yaml sibling repos (no container builds)
 make clone-all

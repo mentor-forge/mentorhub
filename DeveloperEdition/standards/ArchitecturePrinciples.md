@@ -10,7 +10,7 @@ Bounded domains are defined based on a User Centered view of the data and experi
 A Service domain is implemented as an API Server that supports one browser based Single Page App. Open API Specifications document the contract between the API and SPA engineers. Following Backend for Frontend patterns, the purpose of the API is to make the SPA Engineers job easy.
 
 ### Poly Repo
-We maintain a 1-to-1 relationship between a git repository and a deployable unit. Database configurations, API's, and SPA's are packaged as Docker Containers. Container images are then deployed to different environments. Shared code used across multiple API or SPA code bases are published to private dependency management libraries (npm /pypi). 
+We maintain a 1-to-1 relationship between a git repository and a deployable unit. Database configurations, API's, and SPA's are packaged as Docker Containers. Container images are then deployed to different environments. Shared API code is published as versioned Python wheels on GitHub Releases. Shared SPA code is published to GitHub Packages. Consumers pin and lock both dependencies. Application contracts stay provider-neutral. Provider-specific provisioning belongs in its infrastructure repository.
 
 ## Separation of Concerns
 

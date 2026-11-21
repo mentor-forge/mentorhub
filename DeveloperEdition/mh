@@ -13,13 +13,6 @@ if [[ -f "$HOME/.mentorhub/MENTORHUB_PATH" ]]; then
 elif [[ -n "${MENTORHUB_PATH:-}" ]]; then
   export LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-$MENTORHUB_PATH}"
 fi
-if [[ -f "$HOME/.mentorhub/aws-platform.env" ]]; then
-  source "$HOME/.mentorhub/aws-platform.env"
-fi
-if [[ -f "$HOME/.mentorhub/aws-platform.local.env" ]]; then
-  source "$HOME/.mentorhub/aws-platform.local.env"
-fi
-
 # Tailscale Funnel / VPN access: IDP_LOGIN_URI env var takes precedence.
 # Optional persistent file ~/.mentorhub/IDP_LOGIN_URI is checked next.
 # ~/.mentorhub/HOST_NAME derives http://<HOST_NAME>:8080/login.html.
@@ -113,7 +106,7 @@ COMMANDS
         List all available services related to Mentor Hub Developers Edition
 
     (no command)
-        Refresh GHCR and CodeArtifact credentials when needed, then exit.
+        Refresh GitHub registry credentials when needed, then exit.
         Also runs automatically before mh pull / mh up and during make update.
 
 END
@@ -142,7 +135,7 @@ Commands:
   list-services  List all available services
   manual         Show the manual
 
-Run mh with no command to refresh registry logins (GHCR, CodeArtifact).
+Run mh with no command to refresh registry logins (GHCR and GitHub Packages).
 For "mh e2e all", the Developer Edition stack (or per-repo servers) must
 already be running; the command does not start services.
 END
@@ -528,12 +521,12 @@ function deleteImages {
 }
 
 ################################################################################
-# Silent developer service auth (GHCR + CodeArtifact)
+# GitHub registry authentication
 ################################################################################
 function ensureGhcrLogin {
     typeset ghcr_org="${MH_GHCR_ORG:-mentor-forge}"
     if [[ -z "${GITHUB_TOKEN:-}" ]]; then
-        echo "Error: GITHUB_TOKEN is not set. Run make install and source ~/.zshrc" >&2
+        echo "Error: Set GITHUB_TOKEN (with read:packages) or save it in ~/.mentorhub/GITHUB_TOKEN. See CONTRIBUTING.md." >&2
         return 1
     fi
     echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$ghcr_org" --password-stdin >/dev/null 2>&1 || {
@@ -542,70 +535,27 @@ function ensureGhcrLogin {
     }
 }
 
-function ensureCodeArtifactAuth {
-    typeset profile="${MH_AWS_PROFILE_SHARED:-mentorhub-shared}"
-    typeset region="${AWS_REGION:-us-east-1}"
-    typeset domain="${CODEARTIFACT_DOMAIN:-mentor-forge}"
-    typeset domain_owner="${AWS_SHARED_SERVICES_ACCOUNT_ID:-${CODEARTIFACT_DOMAIN_OWNER:-}}"
-    typeset npm_repo="${CODEARTIFACT_NPM_REPO:-mentorhub-npm}"
-
-    if ! command -v aws >/dev/null 2>&1; then
-        echo "Error: AWS CLI not found. Install AWS CLI v2 — see CONTRIBUTING.md" >&2
-        return 1
-    fi
-
-    if [[ -z "$domain_owner" ]]; then
-        echo "Error: AWS_SHARED_SERVICES_ACCOUNT_ID is not set." >&2
-        echo "Run make update in mentorhub and source ~/.zshrc" >&2
-        return 1
-    fi
-
-    if ! aws sts get-caller-identity --profile "$profile" --region "$region" >/dev/null 2>&1; then
-        echo "AWS SSO session expired — opening login for profile: $profile"
-
-        if grep -qi microsoft /proc/version 2>/dev/null; then
-            export BROWSER="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+function configureGithubPackages {
+    if ! (
+        cd "$HOME" || exit 1
+        unset npm_config_registry NPM_CONFIG_REGISTRY
+        registry=$(npm config get registry --location=user) || exit 1
+        # The retired CodeArtifact login set a default registry for all packages.
+        if [[ "$registry" = https://mentor-forge-*.d.codeartifact.*.amazonaws.com/npm/mentorhub-npm/ ]]; then
+            npm config delete registry --location=user || exit 1
         fi
-
-        aws sso login --profile "$profile" || {
-            echo "Error: AWS SSO login failed for profile $profile — see CONTRIBUTING.md" >&2
-            echo "Fallback option: aws sso login --profile $profile --no-browser --use-device-code" >&2
-            return 1
-        }
-    fi
-
-    typeset identity_account
-    identity_account=$(aws sts get-caller-identity \
-        --profile "$profile" \
-        --region "$region" \
-        --query Account \
-        --output text)
-
-    if [[ "$identity_account" != "$domain_owner" ]]; then
-        echo "Error: profile $profile is AWS account $identity_account, but CodeArtifact is in Shared-Services $domain_owner." >&2
-        echo "Run: make aws-setup   (from mentorhub repo)" >&2
+        npm config set --location=user \
+            '@mentor-forge:registry=https://npm.pkg.github.com/' \
+            '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}'
+    ) >/dev/null 2>&1; then
+        echo "Error: Could not configure the GitHub npm registry. Check npm and your user npm config." >&2
         return 1
     fi
-
-    # Python installs do not use this login. Journey APIs call
-    # `pipenv run install`, which requests a CodeArtifact token and passes it
-    # to `pipenv run pip`. `aws codeartifact login --tool pip` requires a
-    # global `pip` executable (Homebrew Python does not put one on PATH).
-
-    aws codeartifact login --tool npm \
-        --domain "$domain" \
-        --domain-owner "$domain_owner" \
-        --repository "$npm_repo" \
-        --profile "$profile" \
-        --region "$region" >/dev/null 2>&1 || {
-        echo "Error: CodeArtifact npm login failed (profile $profile, repo $npm_repo)" >&2
-        return 1
-    }
 }
 
 function ensureDevServices {
     ensureGhcrLogin || return 1
-    ensureCodeArtifactAuth || return 1
+    configureGithubPackages
 }
 
 ################################################################################
@@ -634,14 +584,13 @@ case $COMMAND in
 
   "")
 
-    ensureCodeArtifactAuth || exit 1
-    echo "AWS SSO is current and npm CodeArtifact login refreshed."
-    echo "pipenv run install requests its own token; npm ci is ready."
+    ensureDevServices || exit 1
+    echo "GHCR login refreshed and GitHub Packages npm configuration updated."
     ;;
 
   "up")
 
-    upProfile
+    upProfile || exit $?
     ;;
 
   "down")
@@ -671,7 +620,7 @@ case $COMMAND in
 
   "pull")
 
-    pull
+    pull || exit $?
     ;;
 
   "e2e")

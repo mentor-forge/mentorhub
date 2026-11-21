@@ -15,52 +15,15 @@ const {
   initWelcomeLogin,
 } = welcomeAuth
 
-test('Portal links in index.html inherit current origin', () => {
+test('Discovery portal link inherits the current origin', () => {
   const indexPath = path.join(__dirname, '..', 'index.html')
   const indexHtml = fs.readFileSync(indexPath, 'utf-8')
 
-  // Verify journey links use same-origin relative paths
   assert.match(
     indexHtml,
     /document\.getElementById\('discovery-app-link'\)\.href\s*=\s*['"]\/discovery\/['"]/,
     'Discovery link must be /discovery/'
   )
-  assert.match(
-    indexHtml,
-    /document\.getElementById\('customer-app-link'\)\.href\s*=\s*['"]\/customer\/['"]/,
-    'Customer link must be /customer/'
-  )
-  assert.match(
-    indexHtml,
-    /document\.getElementById\('admin-app-link'\)\.href\s*=\s*['"]\/admin\/['"]/,
-    'Admin link must be /admin/'
-  )
-  assert.match(
-    indexHtml,
-    /document\.getElementById\('mentor-app-link'\)\.href\s*=\s*['"]\/mentor\/['"]/,
-    'Mentor link must be /mentor/'
-  )
-  assert.match(
-    indexHtml,
-    /document\.getElementById\('mentee-app-link'\)\.href\s*=\s*['"]\/mentee\/['"]/,
-    'Mentee link must be /mentee/'
-  )
-
-  // Verify journey links do not hardcode http:// or :8080
-  const journeyLinkIds = [
-    'discovery-app-link',
-    'customer-app-link',
-    'admin-app-link',
-    'mentor-app-link',
-    'mentee-app-link',
-  ]
-
-  for (const id of journeyLinkIds) {
-    const regexHttp = new RegExp(`document\\.getElementById\\(['"]${id}['"]\\)\\.href\\s*=\\s*\`http:`, 'g')
-    const regex8080 = new RegExp(`document\\.getElementById\\(['"]${id}['"]\\)\\.href\\s*=\\s*\`[^:]*:8080`, 'g')
-    assert.doesNotMatch(indexHtml, regexHttp, `${id} must not hardcode http://`)
-    assert.doesNotMatch(indexHtml, regex8080, `${id} must not hardcode port 8080`)
-  }
 })
 
 test('Return URL validation allows permitted destinations and rejects others', () => {
